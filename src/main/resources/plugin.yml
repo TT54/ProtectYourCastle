@@ -1,4 +1,4 @@
 name: ProtectYourCastle
 version: '1.0-SNAPSHOT'
-main: fr.tt54.protectYourCastle.ProtectYourCastle
+main: fr.tt54.protectYourCastle.ProtectYourCastleMain
 api-version: '1.20'
