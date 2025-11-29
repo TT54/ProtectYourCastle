@@ -34,6 +34,7 @@ public class Game {
             .registerTypeAdapter(Area.class, new Area.AreaDeserializer())
             .create();
     public static final int GAME_DURATION = 60 * 30;
+    public static final int RESPAWN_DELAY = 20;
 
     public static Game currentGame;
 
@@ -185,7 +186,7 @@ public class Game {
         ItemStack leggings = colorArmor(new ItemStack(Material.LEATHER_LEGGINGS), team.getColor().getArmorColor());
         ItemStack boots = colorArmor(new ItemStack(Material.LEATHER_BOOTS), team.getColor().getArmorColor());
 
-        player.getInventory().setArmorContents(new ItemStack[]{helmet, chestplate, leggings, boots});
+        player.getInventory().setArmorContents(new ItemStack[]{boots, leggings, chestplate, helmet});
     }
 
     public static ItemStack colorArmor(ItemStack armor, Color color){

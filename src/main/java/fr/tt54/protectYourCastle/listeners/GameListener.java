@@ -3,6 +3,9 @@ package fr.tt54.protectYourCastle.listeners;
 import fr.tt54.protectYourCastle.ProtectYourCastleMain;
 import fr.tt54.protectYourCastle.game.Game;
 import fr.tt54.protectYourCastle.game.Team;
+import fr.tt54.protectYourCastle.scoreboard.ScoreboardManager;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -16,8 +19,10 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Set;
+import java.util.TimerTask;
 
 public class GameListener implements Listener {
 
@@ -25,8 +30,18 @@ public class GameListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event){
         final Player player = event.getPlayer();
         final Team team = Team.getPlayerTeam(player.getUniqueId());
-        if(team != null) {
-            player.setPlayerListName(team.getColor().getChatColor() + "[" + team.getColor().name() + "] " + player.getName());
+        if(Game.currentGame != null) {
+            if (team != null) {
+                player.setPlayerListName(team.getColor().getChatColor() + "[" + team.getColor().name() + "] " + player.getName());
+
+                if (player.getGameMode() == GameMode.SPECTATOR) {
+                    beginRespawn(player, team, Game.currentGame);
+                }
+            }
+
+            if(Game.currentGame.isRunning() && Game.currentGame.scoreboard != null){
+                ScoreboardManager.showScoreboard(player, Game.currentGame.scoreboard);
+            }
         }
     }
 
@@ -90,12 +105,15 @@ public class GameListener implements Listener {
         final Team team = Team.getPlayerTeam(event.getEntity().getUniqueId());
 
         event.getDrops().removeIf(loot -> !ALLOWED_DROPS.contains(loot.getType()));
-        player.spigot().respawn();
 
-        if(team != null && Game.currentGame != null && Game.currentGame.bannerHolder.get(team.getColor()).equals(player.getUniqueId())){
+        if(team != null && Game.currentGame != null && player.getUniqueId().equals(Game.currentGame.bannerHolder.get(team.getColor()))){
             Game.currentGame.bannerHolder.remove(team.getColor());
             Bukkit.broadcastMessage("§6[Castle] " + team.getColor().getChatColor() + player.getName() + "§c a perdu la bannière ennemi qu'il transportait");
         }
+
+        Bukkit.getScheduler().runTaskLater(ProtectYourCastleMain.getInstance(), () -> {
+            player.spigot().respawn();
+        }, 1L);
     }
 
     @EventHandler
@@ -104,11 +122,29 @@ public class GameListener implements Listener {
         final Game game = Game.currentGame;
         if(team != null && game != null){
             final Player player = event.getPlayer();
-            player.setGameMode(GameMode.SPECTATOR);
-            Bukkit.getScheduler().runTaskLater(ProtectYourCastleMain.getInstance(), () -> {
-                game.spawnPlayer(player, team);
-            }, 20L * 20);
+            beginRespawn(player, team, game);
         }
+    }
+
+    private void beginRespawn(final Player player, Team team, Game game){
+        player.setGameMode(GameMode.SPECTATOR);
+        player.sendMessage("§cVous allez respawn dans " + Game.RESPAWN_DELAY + " secondes");
+        new BukkitRunnable() {
+
+            int timeLeft = Game.RESPAWN_DELAY;
+
+            @Override
+            public void run() {
+                if(timeLeft == 0) {
+                    game.spawnPlayer(player, team);
+                    this.cancel();
+                } else{
+                    player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("§cRespawn dans " + timeLeft + "s"));
+                }
+
+                timeLeft--;
+            }
+        }.runTaskTimer(ProtectYourCastleMain.getInstance(), 0, 20L);
     }
 
 }
