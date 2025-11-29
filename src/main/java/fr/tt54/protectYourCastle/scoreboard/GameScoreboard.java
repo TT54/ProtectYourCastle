@@ -43,9 +43,9 @@ public class GameScoreboard extends ImpyriaScoreboard {
         fastBoard.updateTitle("§6§lCastle Defender");
 
         if(Game.GAME_DURATION - game.time > 0) {
-            fastBoard.updateLine(0, "§fTemps restant : " + "§7" + minutes + ":" + seconds);
+            fastBoard.updateLine(0, "§fTemps restant : " + "§7" + format.format(minutes) + ":" + format.format(seconds));
         } else{
-            fastBoard.updateLine(0, "§cTemps additionnel : " + "§7" + extraMinutes + ":" + extraSeconds);
+            fastBoard.updateLine(0, "§cTemps additionnel : " + "§7" + format.format(extraMinutes) + ":" + format.format(extraSeconds));
         }
     }
 }
