@@ -69,6 +69,7 @@ public class Trader {
         villager.setAI(false);
         villager.setPersistent(true);
         villager.setInvulnerable(true);
+        villager.setSilent(true);
 
         traders.put(villager.getUniqueId(), this);
     }
@@ -100,6 +101,11 @@ public class Trader {
 
     public List<NPCTrade> getTrades() {
         return this.trades;
+    }
+
+    public void removeTrade(NPCTrade trade) {
+        this.trades.remove(trade);
+        this.buildMerchantMenu();
     }
 
 

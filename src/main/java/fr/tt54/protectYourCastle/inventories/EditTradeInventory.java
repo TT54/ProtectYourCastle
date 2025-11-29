@@ -46,8 +46,12 @@ public class EditTradeInventory extends CorePersonalInventory{
     public void onInventoryClick(InventoryClickEvent event) {
         if(event.getClickedInventory() == event.getInventory()) {
             if(event.getSlot() == 9 * 2){
+                event.setCancelled(true);
+
                 previousInv.openInventory();
             } else if (event.getSlot() == 9 * 2 + 8) {
+                event.setCancelled(true);
+
                 ItemStack item1 = event.getInventory().getItem(9 + 2);
                 ItemStack item2 = event.getInventory().getItem(9 + 3);
                 ItemStack result = event.getInventory().getItem(9 + 6);
@@ -56,12 +60,18 @@ public class EditTradeInventory extends CorePersonalInventory{
                 if(item1 != null && item1.getType() != Material.AIR) inputs.add(item1);
                 if(item2 != null && item2.getType() != Material.AIR) inputs.add(item2);
 
-                if(inputs.isEmpty()){
+                if(result == null || result.getType() == Material.AIR){
+                    if(inputs.isEmpty()){
+                        this.trader.removeTrade(this.trade);
+                        player.sendMessage("§cTrade supprimé");
+                        this.previousInv.openInventory();
+                        return;
+                    }
                     player.sendMessage("§cImpossible de créer un trade vide !");
                     return;
                 }
 
-                if(result == null || result.getType() == Material.AIR){
+                if(inputs.isEmpty()){
                     player.sendMessage("§cImpossible de créer un trade vide !");
                     return;
                 }
