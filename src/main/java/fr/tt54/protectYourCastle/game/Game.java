@@ -6,6 +6,7 @@ import fr.tt54.protectYourCastle.runnable.GameRunnable;
 import fr.tt54.protectYourCastle.scoreboard.GameScoreboard;
 import fr.tt54.protectYourCastle.scoreboard.ScoreboardManager;
 import fr.tt54.protectYourCastle.utils.Area;
+import fr.tt54.protectYourCastle.utils.ItemBuilder;
 import fr.tt54.protectYourCastle.utils.ItemSerialization;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
@@ -80,6 +81,13 @@ public class Game {
 
             scoreboard = new GameScoreboard();
 
+            World world = Bukkit.getWorlds().get(0);
+            world.setTime(0);
+            world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
+            world.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
+            world.setThundering(false);
+            world.setStorm(false);
+
             for(Player player : Bukkit.getOnlinePlayers()){
                 ScoreboardManager.showScoreboard(player, scoreboard);
                 Team team = Team.getPlayerTeam(player.getUniqueId());
@@ -111,7 +119,24 @@ public class Game {
     }
 
     public void finish() {
-        // TODO annoncer le gagnant etc.
+        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "gamemode spectator @a");
+        Team.TeamColor winner = this.getWinner();
+
+        for(Player player : Bukkit.getOnlinePlayers()){
+            Team team = Team.getPlayerTeam(player.getUniqueId());
+            if(team.getColor() == winner){
+                player.sendTitle("§2Victoire !", "§aVotre équipe a gagné avec " + this.getPoints(team.getColor()) + " points");
+            } else{
+                player.sendTitle("§4Défaite...", "§cVotre équipe a perdu avec " + this.getPoints(team.getColor()) + " points");
+            }
+            player.playSound(player.getLocation(), Sound.ENTITY_WITHER_DEATH, .5f, .6f);
+        }
+
+        Bukkit.broadcastMessage("§6[Castle]§f ------ §eRésumé§f ------");
+        for(Team.TeamColor color : Team.TeamColor.values()) {
+            Bukkit.broadcastMessage(color.getChatColor() + color.name() + "§e a obtenu §6" + this.getPoints(color) + " points !");
+        }
+
         this.stop();
     }
 
@@ -187,6 +212,8 @@ public class Game {
         ItemStack boots = colorArmor(new ItemStack(Material.LEATHER_BOOTS), team.getColor().getArmorColor());
 
         player.getInventory().setArmorContents(new ItemStack[]{boots, leggings, chestplate, helmet});
+
+        player.getInventory().addItem(new ItemBuilder(Material.STONE_SWORD).build(), new ItemBuilder(Material.BREAD, 4).build());
     }
 
     public static ItemStack colorArmor(ItemStack armor, Color color){
