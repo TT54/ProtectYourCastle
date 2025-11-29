@@ -1,6 +1,7 @@
 package fr.tt54.protectYourCastle.scoreboard;
 
 import fr.mrmicky.fastboard.FastBoard;
+import fr.tt54.protectYourCastle.game.Game;
 import org.bukkit.entity.Player;
 
 import java.text.DecimalFormat;
@@ -32,6 +33,10 @@ public class GameScoreboard extends ImpyriaScoreboard {
     }
 
     private void drawScoreboard(FastBoard fastBoard, Player player){
+        Game game = Game.currentGame;
+        int minutes = game.time / 60;
+        int seconds = game.time % 60;
 
+        fastBoard.updateLine(0, "§7" + minutes + ":" + seconds);
     }
 }

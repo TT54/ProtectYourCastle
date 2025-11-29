@@ -4,7 +4,14 @@ import com.google.common.reflect.TypeToken;
 import fr.tt54.protectYourCastle.ProtectYourCastleMain;
 import fr.tt54.protectYourCastle.utils.Area;
 import fr.tt54.protectYourCastle.utils.FileManager;
+import fr.tt54.protectYourCastle.utils.ItemBuilder;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.io.File;
 import java.lang.reflect.Type;
@@ -14,6 +21,7 @@ public class Team {
 
     private static Map<TeamColor, Team> teams = new HashMap<>();
     private static final Map<UUID, TeamColor> playerTeam = new HashMap<>();
+    private static final NamespacedKey BANNER_KEY = new NamespacedKey("castle", "banner");
 
     private static final Type teamsType = new TypeToken<Map<TeamColor, Team>>() {}.getType();
 
@@ -55,16 +63,20 @@ public class Team {
         return teams.get(playerTeam.get(player));
     }
 
+    public static Team getTeam(TeamColor teamColor) {
+        return teams.get(teamColor);
+    }
+
     private final TeamColor color;
     private Location spawnLocation;
-    private Location totemLocation;
+    private Location bannerLocation;
     private Area base;
-    private Set<UUID> members;
+    private final Set<UUID> members;
 
-    public Team(TeamColor color, Location spawnLocation, Location totemLocation, Area base, Set<UUID> members) {
+    public Team(TeamColor color, Location spawnLocation, Location bannerLocation, Area base, Set<UUID> members) {
         this.color = color;
         this.spawnLocation = spawnLocation;
-        this.totemLocation = totemLocation;
+        this.bannerLocation = bannerLocation;
         this.base = base;
         this.members = members;
     }
@@ -81,12 +93,12 @@ public class Team {
         this.spawnLocation = spawnLocation;
     }
 
-    public Location getTotemLocation() {
-        return totemLocation;
+    public Location getBannerLocation() {
+        return bannerLocation;
     }
 
-    public void setTotemLocation(Location totemLocation) {
-        this.totemLocation = totemLocation;
+    public void setBannerLocation(Location bannerLocation) {
+        this.bannerLocation = bannerLocation;
     }
 
     public Area getBase() {
@@ -114,9 +126,40 @@ public class Team {
         }
     }
 
+    public ItemStack getBannerItem() {
+        ItemStack is = new ItemBuilder(this.color.banner, this.color.chatColor + "Bannière de l'équipe " + this.color.name()).build();
+
+        ItemMeta meta = is.getItemMeta();
+        PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
+        dataContainer.set(BANNER_KEY, PersistentDataType.BOOLEAN, true);
+        is.setItemMeta(meta);
+
+        return is;
+    }
+
+    public static boolean isBannerItem(ItemStack is){
+        return is.getItemMeta().getPersistentDataContainer().has(BANNER_KEY, PersistentDataType.BOOLEAN);
+    }
+
     public enum TeamColor{
-        RED,
-        YELLOW;
+        RED(Material.RED_BANNER, "§4"),
+        YELLOW(Material.YELLOW_BANNER, "§6");
+
+        private final Material banner;
+        private final String chatColor;
+
+        TeamColor(Material banner, String chatColor) {
+            this.banner = banner;
+            this.chatColor = chatColor;
+        }
+
+        public Material getBanner() {
+            return banner;
+        }
+
+        public String getChatColor() {
+            return chatColor;
+        }
     }
 
 }

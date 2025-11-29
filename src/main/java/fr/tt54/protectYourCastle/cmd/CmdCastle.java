@@ -1,15 +1,17 @@
 package fr.tt54.protectYourCastle.cmd;
 
-import fr.tt54.protectYourCastle.game.ResourceGenerator;
 import fr.tt54.protectYourCastle.game.Game;
+import fr.tt54.protectYourCastle.game.ResourceGenerator;
+import fr.tt54.protectYourCastle.game.Team;
+import fr.tt54.protectYourCastle.utils.Area;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Banner;
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Display;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.TextDisplay;
+import org.bukkit.entity.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -75,6 +77,117 @@ public class CmdCastle extends CoreCommand {
                 Game.currentGame.launch();
                 player.sendMessage("§aLa partie a bien été lancée");
                 return true;
+            } else if(args[0].equalsIgnoreCase("team")){
+                if(args.length >= 2){
+                    if(args[1].equalsIgnoreCase("spawn")){
+                        if(args.length != 6){
+                            player.sendMessage("§cLa bon usage est '/castle team spawn <team> <x> <y> <z>'");
+                            return false;
+                        }
+
+                        Team.TeamColor teamColor;
+                        try {
+                            teamColor = Team.TeamColor.valueOf(args[2].toUpperCase());
+                        } catch (IllegalArgumentException e){
+                            player.sendMessage("§cLa team " + args[2] + " n'existe pas");
+                            return false;
+                        }
+
+                        int x, y, z;
+                        try {
+                            x = Integer.parseInt(args[3]);
+                            y = Integer.parseInt(args[4]);
+                            z = Integer.parseInt(args[5]);
+                        } catch (NumberFormatException e){
+                            player.sendMessage("§cLa bon usage est '/castle team spawn <x> <y> <z>'");
+                            return false;
+                        }
+
+                        Team.getTeam(teamColor).setSpawnLocation(new Location(player.getWorld(), x + .5d, y + 1, z + .5d));
+                        player.sendMessage("§aLe nouveau spawn de l'équipe " + teamColor.name() + " est en " + x + " " + y + " " + z);
+                        return true;
+                    } else if(args[1].equalsIgnoreCase("base")){
+                        if(args.length != 9){
+                            player.sendMessage("§cLa bon usage est '/castle team spawn <team> <x1> <y1> <z1> <x2> <y2> <z2> '");
+                            return false;
+                        }
+
+                        Team.TeamColor teamColor;
+                        try {
+                            teamColor = Team.TeamColor.valueOf(args[2].toUpperCase());
+                        } catch (IllegalArgumentException e){
+                            player.sendMessage("§cLa team " + args[2] + " n'existe pas");
+                            return false;
+                        }
+
+                        int x1, y1, z1, x2, y2, z2;
+                        try {
+                            x1 = Integer.parseInt(args[3]);
+                            y1 = Integer.parseInt(args[4]);
+                            z1 = Integer.parseInt(args[5]);
+                            x2 = Integer.parseInt(args[6]);
+                            y2 = Integer.parseInt(args[7]);
+                            z2 = Integer.parseInt(args[8]);
+                        } catch (NumberFormatException e){
+                            player.sendMessage("§cLa bon usage est '/castle team spawn <team> <x1> <y1> <z1> <x2> <y2> <z2> '");
+                            return false;
+                        }
+
+                        Location loc1 = new Location(player.getWorld(), x1, y1, z1);
+                        Location loc2 = new Location(player.getWorld(), x2, y2, z2);
+                        Team.getTeam(teamColor).setBase(new Area(loc1, loc2));
+                        player.sendMessage("§aLa nouvelle base de l'équipe " + teamColor.name() + " a été placée");
+                        return true;
+                    } else if(args[1].equalsIgnoreCase("banner")){
+                        if(args.length != 3){
+                            player.sendMessage("§cLa bon usage est '/castle team banner <team>'");
+                            return false;
+                        }
+
+                        Team.TeamColor teamColor;
+                        try {
+                            teamColor = Team.TeamColor.valueOf(args[2].toUpperCase());
+                        } catch (IllegalArgumentException e){
+                            player.sendMessage("§cLa team " + args[2] + " n'existe pas");
+                            return false;
+                        }
+
+                        Block block = player.getTargetBlockExact(5);
+                        if(block == null || !(block.getState() instanceof Banner banner)){
+                            player.sendMessage("§cVous devez viser une bannière pour exécuter cette commande !");
+                            return false;
+                        }
+
+                        Team team = Team.getTeam(teamColor);
+                        team.setBannerLocation(block.getLocation());
+                        player.sendMessage("§aLa bannière de l'équipe " + teamColor.name() + " a été placée en " + block.getLocation().getBlockX() + " " + block.getLocation().getBlockY() + " " + block.getLocation().getBlockZ());
+                        return true;
+                    } else if(args[1].equalsIgnoreCase("join")){
+                        if(args.length != 4){
+                            player.sendMessage("§cLa bon usage est '/castle team join <team> <player>'");
+                            return false;
+                        }
+
+                        Team.TeamColor teamColor;
+                        try {
+                            teamColor = Team.TeamColor.valueOf(args[2].toUpperCase());
+                        } catch (IllegalArgumentException e){
+                            player.sendMessage("§cLa team " + args[2] + " n'existe pas");
+                            return false;
+                        }
+
+                        Player target = Bukkit.getPlayer(args[3]);
+                        if(target == null){
+                            player.sendMessage("§cLe joueur " + args[3] + " n'est pas connecté");
+                            return false;
+                        }
+
+                        Team team = Team.getTeam(teamColor);
+                        team.joinTeam(target.getUniqueId());
+                        Bukkit.broadcastMessage("§a" + target.getName() + " a rejoint l'équipe " + team.getColor().getChatColor() + team.getColor().name());
+                        return true;
+                    }
+                }
             }
         }
 
@@ -83,28 +196,78 @@ public class CmdCastle extends CoreCommand {
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if(args.length == 1){
-            return tabComplete(args[0], "generator", "start");
+        if(!(sender instanceof Player player)){
+            return List.of();
         }
-        if(args.length == 2){
+
+        if(args.length == 1){
+            return tabComplete(args[0], "generator", "start", "team");
+        } else if(args.length == 2){
             if(args[0].equalsIgnoreCase("generator")){
                 return tabComplete(args[1], "add");
+            } else if(args[0].equalsIgnoreCase("team")){
+                return tabComplete(args[1], "spawn", "base", "banner");
             }
-        }
-        if(args.length == 3){
+        } else if(args.length == 3){
             if(args[0].equalsIgnoreCase("generator")){
                 if(args[1].equalsIgnoreCase("add")){
                     return tabComplete(args[2], Arrays.stream(Material.values()).map(mat -> mat.name().toLowerCase()));
                 }
+            } else if(args[0].equalsIgnoreCase("team")){
+                if(args[1].equalsIgnoreCase("spawn") || args[1].equalsIgnoreCase("base") || args[1].equalsIgnoreCase("banner") || args[1].equalsIgnoreCase("join")){
+                    return tabComplete(args[2], Arrays.stream(Team.TeamColor.values()).map(teamColor -> teamColor.name().toLowerCase()).toList());
+                }
             }
-        }
-        if(args.length == 4){
+        } else if(args.length == 4){
             if(args[0].equalsIgnoreCase("generator")){
                 if(args[1].equalsIgnoreCase("add")){
-                    return tabComplete(args[2], "1", "10", "20", "30", "60");
+                    return tabComplete(args[3], "1", "10", "20", "30", "60");
+                }
+            } else if(args[0].equalsIgnoreCase("team")){
+                if(args[1].equalsIgnoreCase("spawn") || args[1].equalsIgnoreCase("base")){
+                    Block block = player.getTargetBlockExact(5);
+                    return block != null ? List.of(block.getLocation().getBlockX() + "") : List.of();
+                } else if(args[1].equalsIgnoreCase("join")){
+                    return tabComplete(args[3], Bukkit.getOnlinePlayers().stream().map(Player::getName).toList());
+                }
+            }
+        } else if(args.length == 5){
+             if(args[0].equalsIgnoreCase("team")){
+                 if(args[1].equalsIgnoreCase("spawn") || args[1].equalsIgnoreCase("base")){
+                    Block block = player.getTargetBlockExact(5);
+                    return block != null ? List.of(block.getLocation().getBlockY() + "") : List.of();
+                }
+            }
+        } else if(args.length == 6){
+            if(args[0].equalsIgnoreCase("team")){
+                if(args[1].equalsIgnoreCase("spawn") || args[1].equalsIgnoreCase("base")){
+                    Block block = player.getTargetBlockExact(5);
+                    return block != null ? List.of(block.getLocation().getBlockZ() + "") : List.of();
+                }
+            }
+        } else if(args.length == 7){
+            if(args[0].equalsIgnoreCase("team")){
+                if(args[1].equalsIgnoreCase("base")){
+                    Block block = player.getTargetBlockExact(5);
+                    return block != null ? List.of(block.getLocation().getBlockX() + "") : List.of();
+                }
+            }
+        } else if(args.length == 8){
+            if(args[0].equalsIgnoreCase("team")){
+                if(args[1].equalsIgnoreCase("base")){
+                    Block block = player.getTargetBlockExact(5);
+                    return block != null ? List.of(block.getLocation().getBlockY() + "") : List.of();
+                }
+            }
+        } else if(args.length == 9){
+            if(args[0].equalsIgnoreCase("team")){
+                if(args[1].equalsIgnoreCase("base")){
+                    Block block = player.getTargetBlockExact(5);
+                    return block != null ? List.of(block.getLocation().getBlockZ() + "") : List.of();
                 }
             }
         }
+
         return List.of();
     }
 }

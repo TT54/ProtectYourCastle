@@ -14,8 +14,17 @@ public class GameRunnable extends BukkitRunnable {
 
     @Override
     public void run() {
+        game.time++;
+        if(game.scoreboard != null) {
+            game.scoreboard.updatePlayersScoreboard();
+        }
+
         for(ResourceGenerator generator : game.getGenerators()){
             generator.generate();
+        }
+
+        if(game.time == Game.GAME_DURATION){
+            game.finish();
         }
     }
 
