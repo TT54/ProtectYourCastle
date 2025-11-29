@@ -41,6 +41,7 @@ public class Game {
     private Status gameStatus;
     public int time;
     public Map<Team.TeamColor, Integer> points = new HashMap<>();
+    public Map<Team.TeamColor, UUID> bannerHolder = new HashMap<>();
 
     private transient GameRunnable runnable;
     public transient GameScoreboard scoreboard;
@@ -121,6 +122,28 @@ public class Game {
 
     public boolean isRunning() {
         return this.gameStatus == Status.RUNNING;
+    }
+
+    public boolean pickupBanner(Player player){
+        Team team = Team.getPlayerTeam(player.getUniqueId());
+        if(team == null){
+            return true;
+        }
+        if(bannerHolder.containsKey(team.getColor())){
+            return false;
+        }
+
+        bannerHolder.put(team.getColor(), player.getUniqueId());
+        return true;
+    }
+
+    public void placeBanner(Team team, Player player, ItemStack is) {
+        this.bannerHolder.remove(team.getColor());
+        if(Team.getBannerOwner(is) != team.getColor()) {
+            Game.currentGame.addPoint(team.getColor(), player, 1);
+        } else{
+            player.sendMessage("§aVous avez ramené votre bannière chez vous");
+        }
     }
 
     public enum Status{

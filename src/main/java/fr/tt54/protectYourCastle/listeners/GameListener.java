@@ -9,6 +9,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
 
 public class GameListener implements Listener {
 
@@ -23,6 +24,10 @@ public class GameListener implements Listener {
                 if(t != team && t.getBase().contains(event.getBlock().getLocation())){
                     event.setCancelled(true);
                     if(event.getBlock().getLocation().distanceSquared(t.getBannerLocation()) < .1){
+                        if(Game.currentGame.bannerHolder.containsKey(team.getColor())){
+                            player.sendMessage("§cVotre équipe a déjà une bannière dans un inventaire");
+                            return;
+                        }
                         Bukkit.broadcastMessage(t.getColor().getChatColor() + player.getName() + "§a a volé une bannière à la team " + t.getColor().getChatColor() + t.getColor().name());
                         player.getWorld().dropItem(player.getLocation().clone().add(0, .5, 0), t.getBannerItem());
                     } else {
@@ -42,9 +47,10 @@ public class GameListener implements Listener {
             Team team = Team.getPlayerTeam(player.getUniqueId());
             if(team != null && event.getClickedBlock().getLocation().distanceSquared(team.getBannerLocation()) < .1){
                 event.setCancelled(true);
-                if(Team.isBannerItem(player.getInventory().getItemInMainHand())){
-                    Game.currentGame.addPoint(team.getColor(), player, player.getInventory().getItemInMainHand().getAmount());
-                    player.getInventory().getItemInMainHand().setAmount(0);
+                ItemStack is = player.getInventory().getItemInMainHand();
+                if(Team.isBannerItem(is)){
+                    Game.currentGame.placeBanner(team, player, is);
+                    is.setAmount(0);
                 } else if(event.getAction() == Action.LEFT_CLICK_BLOCK){
                     player.sendMessage("§cVous ne pouvez pas casser votre bannière !");
                 }

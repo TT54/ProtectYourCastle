@@ -131,14 +131,27 @@ public class Team {
 
         ItemMeta meta = is.getItemMeta();
         PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
-        dataContainer.set(BANNER_KEY, PersistentDataType.BOOLEAN, true);
+        dataContainer.set(BANNER_KEY, PersistentDataType.STRING, this.color.name());
         is.setItemMeta(meta);
 
         return is;
     }
 
     public static boolean isBannerItem(ItemStack is){
-        return is.getItemMeta().getPersistentDataContainer().has(BANNER_KEY, PersistentDataType.BOOLEAN);
+        if(is == null || is.getItemMeta() == null || is.getItemMeta().getPersistentDataContainer() == null) return false;
+        return is.getItemMeta().getPersistentDataContainer().has(BANNER_KEY, PersistentDataType.STRING);
+    }
+
+    public static TeamColor getBannerOwner(ItemStack is){
+        if(is == null || is.getItemMeta() == null || is.getItemMeta().getPersistentDataContainer() == null) return null;
+
+        PersistentDataContainer dataContainer = is.getItemMeta().getPersistentDataContainer();
+        if(dataContainer.has(BANNER_KEY, PersistentDataType.STRING)){
+            try {
+                return TeamColor.valueOf(dataContainer.get(BANNER_KEY, PersistentDataType.STRING));
+            } catch (IllegalArgumentException ignore){}
+        }
+        return null;
     }
 
     public enum TeamColor{
