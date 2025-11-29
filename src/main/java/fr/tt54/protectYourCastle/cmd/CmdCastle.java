@@ -247,6 +247,8 @@ public class CmdCastle extends CoreCommand {
                 return tabComplete(args[1], "add");
             } else if(args[0].equalsIgnoreCase("team")){
                 return tabComplete(args[1], "spawn", "base", "banner", "join", "leave");
+            } else if(args[0].equalsIgnoreCase("trader")){
+                return tabComplete(args[1], "spawn");
             }
         } else if(args.length == 3){
             if(args[0].equalsIgnoreCase("generator")){
