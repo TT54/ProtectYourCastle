@@ -2,6 +2,7 @@ package fr.tt54.protectYourCastle.game;
 
 import com.google.common.reflect.TypeToken;
 import fr.tt54.protectYourCastle.ProtectYourCastleMain;
+import fr.tt54.protectYourCastle.inventories.AddTradeInventory;
 import fr.tt54.protectYourCastle.utils.FileManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -47,6 +48,11 @@ public class Trader {
         player.openMerchant(traders.get(entityUUID).getMerchantMenu(), true);
     }
 
+    public static void openEditionMenu(UUID traderUUID, Player player) {
+        AddTradeInventory inv = new AddTradeInventory(player, traders.get(traderUUID));
+        inv.openInventory();
+    }
+
     private final List<NPCTrade> trades;
     private final String name;
     private transient Merchant merchantMenu;
@@ -69,12 +75,7 @@ public class Trader {
 
     public void addTrade(NPCTrade trade){
         this.trades.add(trade);
-
-        MerchantRecipe recipe = new MerchantRecipe(trade.reward.clone(), Integer.MAX_VALUE);
-        for(ItemStack is : trade.input){
-            recipe.addIngredient(is.clone());
-        }
-        this.merchantMenu.getRecipes().add(recipe);
+        this.buildMerchantMenu();
     }
 
     public void buildMerchantMenu(){
@@ -85,6 +86,7 @@ public class Trader {
             for(ItemStack is : trade.input){
                 recipe.addIngredient(is.clone());
             }
+            recipes.add(recipe);
         }
         this.merchantMenu.setRecipes(recipes);
     }
