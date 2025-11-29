@@ -24,7 +24,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Set;
-import java.util.TimerTask;
 
 public class GameListener implements Listener {
 
@@ -32,13 +31,14 @@ public class GameListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event){
         final Player player = event.getPlayer();
         final Team team = Team.getPlayerTeam(player.getUniqueId());
-        if(Game.currentGame != null) {
-            if (team != null) {
-                player.setPlayerListName(team.getColor().getChatColor() + "[" + team.getColor().name() + "] " + player.getName());
 
-                if (player.getGameMode() == GameMode.SPECTATOR) {
-                    beginRespawn(player, team, Game.currentGame);
-                }
+        if(team != null){
+            player.setPlayerListName(team.getColor().getChatColor() + "[" + team.getColor().name() + "] " + player.getName());
+        }
+
+        if(Game.currentGame != null) {
+            if (team != null && player.getGameMode() == GameMode.SPECTATOR) {
+                beginRespawn(player, team, Game.currentGame);
             }
 
             if(Game.currentGame.isRunning() && Game.currentGame.scoreboard != null){
