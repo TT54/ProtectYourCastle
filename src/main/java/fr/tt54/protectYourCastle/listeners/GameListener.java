@@ -154,7 +154,6 @@ public class GameListener implements Listener {
         if(Trader.isTrader(event.getRightClicked().getUniqueId())){
             event.setCancelled(true);
             if(event.getPlayer().isSneaking() && event.getPlayer().getGameMode() == GameMode.CREATIVE){
-                // TODO Ouvrir le menu d'édition
                 Trader.openEditionMenu(event.getRightClicked().getUniqueId(), event.getPlayer());
             } else {
                 Trader.openTradeMenu(event.getRightClicked().getUniqueId(), event.getPlayer());
