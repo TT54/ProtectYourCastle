@@ -1,7 +1,7 @@
-package fr.tt54.protectYourCastle;
+package fr.tt54.protectYourCastle.game;
 
 import com.google.common.reflect.TypeToken;
-import fr.tt54.protectYourCastle.game.Game;
+import fr.tt54.protectYourCastle.ProtectYourCastleMain;
 import fr.tt54.protectYourCastle.utils.FileManager;
 import org.bukkit.Location;
 import org.bukkit.Material;

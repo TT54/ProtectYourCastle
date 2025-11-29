@@ -2,7 +2,6 @@ package fr.tt54.protectYourCastle.game;
 
 import com.google.gson.*;
 import fr.tt54.protectYourCastle.ProtectYourCastleMain;
-import fr.tt54.protectYourCastle.ResourceGenerator;
 import fr.tt54.protectYourCastle.runnable.GameRunnable;
 import fr.tt54.protectYourCastle.utils.Area;
 import org.bukkit.Bukkit;

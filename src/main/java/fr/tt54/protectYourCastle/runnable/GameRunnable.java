@@ -1,6 +1,6 @@
 package fr.tt54.protectYourCastle.runnable;
 
-import fr.tt54.protectYourCastle.ResourceGenerator;
+import fr.tt54.protectYourCastle.game.ResourceGenerator;
 import fr.tt54.protectYourCastle.game.Game;
 import org.bukkit.scheduler.BukkitRunnable;
 
