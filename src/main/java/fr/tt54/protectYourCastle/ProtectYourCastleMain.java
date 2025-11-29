@@ -3,6 +3,7 @@ package fr.tt54.protectYourCastle;
 import fr.tt54.protectYourCastle.cmd.CmdCastle;
 import fr.tt54.protectYourCastle.game.ResourceGenerator;
 import fr.tt54.protectYourCastle.game.Team;
+import fr.tt54.protectYourCastle.game.Trader;
 import fr.tt54.protectYourCastle.listeners.BannerListener;
 import fr.tt54.protectYourCastle.listeners.GameListener;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -17,6 +18,7 @@ public final class ProtectYourCastleMain extends JavaPlugin {
 
         ResourceGenerator.load();
         Team.load();
+        Trader.load();
 
         this.getCommand("castle").setExecutor(new CmdCastle());
         this.getCommand("castle").setTabCompleter(new CmdCastle());
@@ -29,6 +31,7 @@ public final class ProtectYourCastleMain extends JavaPlugin {
     public void onDisable() {
         ResourceGenerator.save();
         Team.save();
+        Trader.save();
     }
 
     public static ProtectYourCastleMain getInstance() {

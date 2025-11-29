@@ -3,6 +3,7 @@ package fr.tt54.protectYourCastle.listeners;
 import fr.tt54.protectYourCastle.ProtectYourCastleMain;
 import fr.tt54.protectYourCastle.game.Game;
 import fr.tt54.protectYourCastle.game.Team;
+import fr.tt54.protectYourCastle.game.Trader;
 import fr.tt54.protectYourCastle.scoreboard.ScoreboardManager;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -15,6 +16,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
@@ -145,6 +147,18 @@ public class GameListener implements Listener {
                 timeLeft--;
             }
         }.runTaskTimer(ProtectYourCastleMain.getInstance(), 0, 20L);
+    }
+
+    @EventHandler
+    public void onInteractWithEntity(PlayerInteractEntityEvent event){
+        if(Trader.isTrader(event.getRightClicked().getUniqueId())){
+            event.setCancelled(true);
+            if(event.getPlayer().isSneaking() && event.getPlayer().getGameMode() == GameMode.CREATIVE){
+                // TODO Ouvrir le menu d'édition
+            } else {
+                Trader.openTradeMenu(event.getRightClicked().getUniqueId(), event.getPlayer());
+            }
+        }
     }
 
 }

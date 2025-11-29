@@ -3,6 +3,7 @@ package fr.tt54.protectYourCastle.cmd;
 import fr.tt54.protectYourCastle.game.Game;
 import fr.tt54.protectYourCastle.game.ResourceGenerator;
 import fr.tt54.protectYourCastle.game.Team;
+import fr.tt54.protectYourCastle.game.Trader;
 import fr.tt54.protectYourCastle.utils.Area;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -16,6 +17,7 @@ import org.bukkit.entity.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -210,6 +212,22 @@ public class CmdCastle extends CoreCommand {
                         return true;
                     }
                 }
+            } else if(args[0].equalsIgnoreCase("trader")){
+                if(args.length >= 2){
+                    if(args[1].equalsIgnoreCase("spawn")){
+                        String name = "Marchant";
+                        if(args.length > 2){
+                            name = "";
+                            for(int i = 2; i < args.length; i++){
+                                name += " " + args[i];
+                            }
+                            name = name.substring(1);
+                        }
+
+                        Trader trader = new Trader(name);
+                        trader.spawn(player.getLocation());
+                    }
+                }
             }
         }
 
@@ -223,12 +241,12 @@ public class CmdCastle extends CoreCommand {
         }
 
         if(args.length == 1){
-            return tabComplete(args[0], "generator", "start", "team");
+            return tabComplete(args[0], "generator", "start", "team", "trader");
         } else if(args.length == 2){
             if(args[0].equalsIgnoreCase("generator")){
                 return tabComplete(args[1], "add");
             } else if(args[0].equalsIgnoreCase("team")){
-                return tabComplete(args[1], "spawn", "base", "banner", "join");
+                return tabComplete(args[1], "spawn", "base", "banner", "join", "leave");
             }
         } else if(args.length == 3){
             if(args[0].equalsIgnoreCase("generator")){

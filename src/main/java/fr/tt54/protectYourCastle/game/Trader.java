@@ -1,0 +1,127 @@
+package fr.tt54.protectYourCastle.game;
+
+import com.google.common.reflect.TypeToken;
+import fr.tt54.protectYourCastle.ProtectYourCastleMain;
+import fr.tt54.protectYourCastle.utils.FileManager;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Villager;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.Merchant;
+import org.bukkit.inventory.MerchantRecipe;
+
+import java.io.File;
+import java.lang.reflect.Type;
+import java.util.*;
+
+public class Trader {
+
+    private static final Type traderType = new TypeToken<Map<UUID, Trader>>() {}.getType();
+
+    public static Map<UUID, Trader> traders = new HashMap<>();
+
+    public static void load(){
+        traders.clear();
+
+        File tradersFile = FileManager.getFileWithoutCreating("traders.json", ProtectYourCastleMain.getInstance());
+
+        if (!tradersFile.exists()) {
+            ProtectYourCastleMain.getInstance().saveResource("traders.json", false);
+        }
+
+        traders = Game.gson.fromJson(FileManager.read(tradersFile), traderType);
+    }
+
+    public static void save(){
+        File tradersFile = FileManager.getFile("traders.json", ProtectYourCastleMain.getInstance());
+        FileManager.write(Game.gson.toJson(traders), tradersFile);
+    }
+
+    public static boolean isTrader(UUID entityUUID) {
+        return traders.containsKey(entityUUID);
+    }
+
+    public static void openTradeMenu(UUID entityUUID, Player player){
+        player.openMerchant(traders.get(entityUUID).getMerchantMenu(), true);
+    }
+
+    private final List<NPCTrade> trades;
+    private final String name;
+    private transient Merchant merchantMenu;
+
+    public Trader(String name) {
+        this.trades = new ArrayList<>();
+        this.name = name;
+    }
+
+    public void spawn(Location location){
+        location = location.clone();
+        location.setPitch(0);
+        Villager villager = (Villager) location.getWorld().spawnEntity(location, EntityType.VILLAGER);
+        villager.setAI(false);
+        villager.setPersistent(true);
+        villager.setInvulnerable(true);
+
+        traders.put(villager.getUniqueId(), this);
+    }
+
+    public void addTrade(NPCTrade trade){
+        this.trades.add(trade);
+
+        MerchantRecipe recipe = new MerchantRecipe(trade.reward.clone(), Integer.MAX_VALUE);
+        for(ItemStack is : trade.input){
+            recipe.addIngredient(is.clone());
+        }
+        this.merchantMenu.getRecipes().add(recipe);
+    }
+
+    public void buildMerchantMenu(){
+        this.merchantMenu = Bukkit.createMerchant(this.name);
+        List<MerchantRecipe> recipes = new ArrayList<>();
+        for(NPCTrade trade : trades){
+            MerchantRecipe recipe = new MerchantRecipe(trade.reward.clone(), Integer.MAX_VALUE);
+            for(ItemStack is : trade.input){
+                recipe.addIngredient(is.clone());
+            }
+        }
+        this.merchantMenu.setRecipes(recipes);
+    }
+
+    private Merchant getMerchantMenu() {
+        if(this.merchantMenu == null){
+            this.buildMerchantMenu();
+        }
+        return this.merchantMenu;
+    }
+
+
+    public static class NPCTrade{
+
+        private List<ItemStack> input;
+        private ItemStack reward;
+
+        public NPCTrade(List<ItemStack> input, ItemStack reward) {
+            this.input = input;
+            this.reward = reward;
+        }
+
+        public List<ItemStack> getInput() {
+            return input;
+        }
+
+        public void setInput(List<ItemStack> input) {
+            this.input = input;
+        }
+
+        public ItemStack getReward() {
+            return reward;
+        }
+
+        public void setReward(ItemStack reward) {
+            this.reward = reward;
+        }
+    }
+
+}
