@@ -75,6 +75,8 @@ public class Trader {
         villager.setPersistent(true);
         villager.setInvulnerable(true);
         villager.setSilent(true);
+        villager.setCustomName(this.name);
+        villager.setCustomNameVisible(true);
 
         traders.put(villager.getUniqueId(), this);
     }
