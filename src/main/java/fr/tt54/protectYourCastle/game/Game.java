@@ -173,6 +173,7 @@ public class Game {
     }
 
     public void spawnPlayer(Player player, Team team) {
+        player.getInventory().clear();
         player.teleport(team.getSpawnLocation());
         player.setGameMode(GameMode.SURVIVAL);
         player.setHealth(20);
