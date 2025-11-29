@@ -12,11 +12,14 @@ import java.util.*;
 
 public class Team {
 
-    public static Map<TeamColor, Team> teams = new HashMap<>();
+    private static Map<TeamColor, Team> teams = new HashMap<>();
+    private static final Map<UUID, TeamColor> playerTeam = new HashMap<>();
+
     private static final Type teamsType = new TypeToken<Map<TeamColor, Team>>() {}.getType();
 
     public static void load(){
         teams.clear();
+        playerTeam.clear();
 
         File teamsFile = FileManager.getFileWithoutCreating("teams.json", ProtectYourCastleMain.getInstance());
 
@@ -25,6 +28,12 @@ public class Team {
         }
 
         teams = Game.gson.fromJson(FileManager.read(teamsFile), teamsType);
+
+        for(Team team : teams.values()){
+            for(UUID player : team.members){
+                playerTeam.put(player, team.color);
+            }
+        }
 
         for(TeamColor teamColor : TeamColor.values()){
             if(!teams.containsKey(teamColor)){
@@ -36,6 +45,14 @@ public class Team {
     public static void save(){
         File teamsFile = FileManager.getFile("teams.json", ProtectYourCastleMain.getInstance());
         FileManager.write(Game.gson.toJson(teams), teamsFile);
+    }
+
+    public static Collection<Team> getTeams() {
+        return teams.values();
+    }
+
+    public static Team getPlayerTeam(UUID player){
+        return teams.get(playerTeam.get(player));
     }
 
     private final TeamColor color;
@@ -84,8 +101,17 @@ public class Team {
         return members;
     }
 
-    public void setMembers(Set<UUID> members) {
-        this.members = members;
+    public void joinTeam(UUID player){
+        if(!playerTeam.containsKey(player)) {
+            this.members.add(player);
+            playerTeam.put(player, this.color);
+        }
+    }
+
+    public void leaveTeam(UUID player){
+        if(this.members.remove(player)){
+            playerTeam.remove(player);
+        }
     }
 
     public enum TeamColor{
