@@ -1,10 +1,48 @@
 package fr.tt54.protectYourCastle;
 
+import com.google.common.reflect.TypeToken;
+import fr.tt54.protectYourCastle.game.Game;
+import fr.tt54.protectYourCastle.utils.FileManager;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
+import java.io.File;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+
 public class ResourceGenerator {
+
+    private static List<ResourceGenerator> resourceGenerators = new ArrayList<>();
+
+    private static final Type generatorsType = new TypeToken<List<ResourceGenerator>>() {}.getType();
+
+
+    public static void addGenerator(ResourceGenerator generator){
+        resourceGenerators.add(generator);
+    }
+
+    public static List<ResourceGenerator> getResourceGenerators() {
+        return resourceGenerators;
+    }
+
+    public static void load(){
+        resourceGenerators.clear();
+
+        File generatorsFile = FileManager.getFileWithoutCreating("generators.json", ProtectYourCastleMain.getInstance());
+
+        if (!generatorsFile.exists()) {
+            ProtectYourCastleMain.getInstance().saveResource("generators.json", false);
+        }
+
+        resourceGenerators = Game.gson.fromJson(FileManager.read(generatorsFile), generatorsType);
+    }
+
+    public static void save(){
+        File generatorsFile = FileManager.getFile("generators.json", ProtectYourCastleMain.getInstance());
+        FileManager.write(Game.gson.toJson(resourceGenerators), generatorsFile);
+    }
 
     private Material material;
     private long cooldown; // En secondes

@@ -1,5 +1,7 @@
 package fr.tt54.protectYourCastle;
 
+import fr.tt54.protectYourCastle.cmd.CmdCastle;
+import fr.tt54.protectYourCastle.listeners.GameListener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class ProtectYourCastleMain extends JavaPlugin {
@@ -9,11 +11,18 @@ public final class ProtectYourCastleMain extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
+
+        ResourceGenerator.load();
+
+        this.getCommand("castle").setExecutor(new CmdCastle());
+        this.getCommand("castle").setTabCompleter(new CmdCastle());
+
+        this.getServer().getPluginManager().registerEvents(new GameListener(), this);
     }
 
     @Override
     public void onDisable() {
-
+        ResourceGenerator.save();
     }
 
     public static ProtectYourCastleMain getInstance() {

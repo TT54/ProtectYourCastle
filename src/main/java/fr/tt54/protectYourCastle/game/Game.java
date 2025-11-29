@@ -1,21 +1,45 @@
 package fr.tt54.protectYourCastle.game;
 
+import com.google.gson.*;
 import fr.tt54.protectYourCastle.ProtectYourCastleMain;
 import fr.tt54.protectYourCastle.ResourceGenerator;
 import fr.tt54.protectYourCastle.runnable.GameRunnable;
+import fr.tt54.protectYourCastle.utils.Area;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
+import java.lang.reflect.Type;
 import java.util.List;
+import java.util.UUID;
 
 public class Game {
 
-    private final List<ResourceGenerator> generators = new ArrayList<>();
+    public static final Gson gson = new GsonBuilder()
+            .setPrettyPrinting()
+            .serializeNulls()
+            .disableHtmlEscaping()
+            .registerTypeAdapter(Location.class, new LocationSerializer())
+            .registerTypeAdapter(Location.class, new LocationDeserializer())
+            .registerTypeAdapter(Area.class, new Area.AreaSerializer())
+            .registerTypeAdapter(Area.class, new Area.AreaDeserializer())
+            .create();
+
+    public static Game currentGame;
+
     private Status gameStatus;
     private transient GameRunnable runnable;
 
     public Game() {
+    }
+
+    public static boolean createNew() {
+        if(currentGame == null || currentGame.gameStatus == Status.STOPPED){
+            currentGame = new Game();
+            return true;
+        }
+        return false;
     }
 
     public void prepare(){
@@ -53,7 +77,7 @@ public class Game {
     }
 
     public List<ResourceGenerator> getGenerators() {
-        return generators;
+        return ResourceGenerator.getResourceGenerators();
     }
 
     public enum Status{
@@ -63,5 +87,35 @@ public class Game {
         PAUSED,
         STOPPED;
 
+    }
+
+    public static class LocationSerializer implements JsonSerializer<Location>{
+
+        @Override
+        public JsonElement serialize(Location location, Type type, JsonSerializationContext jsonSerializationContext) {
+            JsonObject object = new JsonObject();
+            object.add("world", new JsonPrimitive(location.getWorld().getUID().toString()));
+            object.add("x", new JsonPrimitive(location.getX()));
+            object.add("y", new JsonPrimitive(location.getY()));
+            object.add("z", new JsonPrimitive(location.getZ()));
+            object.add("yaw", new JsonPrimitive(location.getYaw()));
+            object.add("pitch", new JsonPrimitive(location.getPitch()));
+            return object;
+        }
+    }
+
+    public static class LocationDeserializer implements JsonDeserializer<Location> {
+
+        @Override
+        public Location deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+            JsonObject object = jsonElement.getAsJsonObject();
+            World world = Bukkit.getWorld(UUID.fromString(object.get("world").getAsString()));
+            double x = object.get("x").getAsDouble();
+            double y = object.get("y").getAsDouble();
+            double z = object.get("z").getAsDouble();
+            float yaw = object.get("yaw").getAsFloat();
+            float pitch = object.get("pitch").getAsFloat();
+            return new Location(world, x, y, z, yaw, pitch);
+        }
     }
 }

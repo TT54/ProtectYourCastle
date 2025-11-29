@@ -1,7 +1,7 @@
 package fr.tt54.protectYourCastle.inventories;
 
-import fr.impyria.core.utils.items.DefaultItems;
-import fr.impyria.core.utils.items.ItemBuilder;
+import fr.tt54.protectYourCastle.utils.DefaultItems;
+import fr.tt54.protectYourCastle.utils.ItemBuilder;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
