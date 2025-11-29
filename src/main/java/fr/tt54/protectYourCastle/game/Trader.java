@@ -44,6 +44,14 @@ public class Trader {
         return traders.containsKey(entityUUID);
     }
 
+    public static void removeTrader(UUID traderUUID) {
+        traders.remove(traderUUID);
+    }
+
+    public static Trader getTrader(UUID traderUUID) {
+        return traders.get(traderUUID);
+    }
+
     public static void openTradeMenu(UUID entityUUID, Player player){
         player.openMerchant(traders.get(entityUUID).getMerchantMenu(), true);
     }

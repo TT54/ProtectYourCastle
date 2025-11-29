@@ -243,6 +243,26 @@ public class CmdCastle extends CoreCommand {
                             trader = new Trader(name);
                         }
                         trader.spawn(player.getLocation());
+                        player.sendMessage("§aVous avez fait apparaître un marchant");
+                        return true;
+                    } else if(args[1].equalsIgnoreCase("remove")){
+                        Trader removed = null;
+                        for(Entity entity : player.getWorld().getNearbyEntities(player.getLocation(), 2, 2, 2)){
+                            if(entity instanceof Villager villager && Trader.isTrader(villager.getUniqueId())){
+                                removed = Trader.getTrader(villager.getUniqueId());
+                                Trader.removeTrader(villager.getUniqueId());
+                                villager.remove();
+                                break;
+                            }
+                        }
+
+                        if(removed != null){
+                            player.sendMessage("§aLe marchant " + removed.getName() + " a bien été supprimé");
+                            return true;
+                        } else {
+                            player.sendMessage("§cAucun marchant trouvé autour de vous");
+                            return false;
+                        }
                     }
                 }
             }
@@ -265,7 +285,7 @@ public class CmdCastle extends CoreCommand {
             } else if(args[0].equalsIgnoreCase("team")){
                 return tabComplete(args[1], "spawn", "base", "banner", "join", "leave");
             } else if(args[0].equalsIgnoreCase("trader")){
-                return tabComplete(args[1], "spawn");
+                return tabComplete(args[1], "spawn", "remove");
             }
         } else if(args.length == 3){
             if(args[0].equalsIgnoreCase("generator")){
