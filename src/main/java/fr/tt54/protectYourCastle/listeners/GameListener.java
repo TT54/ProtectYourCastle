@@ -15,6 +15,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockExplodeEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -27,7 +29,7 @@ import java.util.Set;
 
 public class GameListener implements Listener {
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onPlayerJoin(PlayerJoinEvent event){
         final Player player = event.getPlayer();
         final Team team = Team.getPlayerTeam(player.getUniqueId());
@@ -47,7 +49,7 @@ public class GameListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event){
         if(Game.currentGame == null || !Game.currentGame.isRunning()) return;
 
@@ -72,7 +74,7 @@ public class GameListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onRightClick(PlayerInteractEvent event){
         if(Game.currentGame == null || !Game.currentGame.isRunning()) return;
         Player player = event.getPlayer();
@@ -101,7 +103,7 @@ public class GameListener implements Listener {
 
     private static final Set<Material> ALLOWED_DROPS = Set.of(Material.IRON_INGOT, Material.GOLD_INGOT, Material.DIAMOND, Material.EMERALD);
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onPlayerDeath(PlayerDeathEvent event){
         final Player player = event.getEntity();
         final Team team = Team.getPlayerTeam(event.getEntity().getUniqueId());
@@ -118,7 +120,7 @@ public class GameListener implements Listener {
         }, 1L);
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onPlayerRespawn(PlayerRespawnEvent event){
         final Team team = Team.getPlayerTeam(event.getPlayer().getUniqueId());
         final Game game = Game.currentGame;
@@ -149,7 +151,7 @@ public class GameListener implements Listener {
         }.runTaskTimer(ProtectYourCastleMain.getInstance(), 0, 20L);
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onInteractWithEntity(PlayerInteractEntityEvent event){
         if(Trader.isTrader(event.getRightClicked().getUniqueId())){
             event.setCancelled(true);
@@ -158,6 +160,42 @@ public class GameListener implements Listener {
             } else {
                 Trader.openTradeMenu(event.getRightClicked().getUniqueId(), event.getPlayer());
             }
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void blockExplose(BlockExplodeEvent event){
+        if(Game.currentGame != null){
+            event.blockList().removeIf(block -> {
+                if(block == null) return false;
+
+                for(Team.TeamColor teamColor : Team.TeamColor.values()){
+                    Team team = Team.getTeam(teamColor);
+                    if(team.getBannerLocation().distanceSquared(block.getLocation()) <= 16){
+                        return true;
+                    }
+                }
+
+                return false;
+            });
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void entityExplose(EntityExplodeEvent event){
+        if(Game.currentGame != null){
+            event.blockList().removeIf(block -> {
+                if(block == null) return false;
+
+                for(Team.TeamColor teamColor : Team.TeamColor.values()){
+                    Team team = Team.getTeam(teamColor);
+                    if(team.getBannerLocation().distanceSquared(block.getLocation()) <= 16){
+                        return true;
+                    }
+                }
+
+                return false;
+            });
         }
     }
 
