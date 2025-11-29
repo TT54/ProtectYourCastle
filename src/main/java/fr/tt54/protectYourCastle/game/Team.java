@@ -5,10 +5,8 @@ import fr.tt54.protectYourCastle.ProtectYourCastleMain;
 import fr.tt54.protectYourCastle.utils.Area;
 import fr.tt54.protectYourCastle.utils.FileManager;
 import fr.tt54.protectYourCastle.utils.ItemBuilder;
-import org.bukkit.Color;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
+import org.bukkit.*;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -123,11 +121,21 @@ public class Team {
         if(this.members.add(player)) {
             playerTeam.put(player, this.color);
         }
+
+        Player p = Bukkit.getPlayer(player);
+        if(p != null){
+            p.setPlayerListName(this.color.chatColor + "[" + this.color.name() + "] " + p.getName());
+        }
     }
 
     public void leaveTeam(UUID player){
         if(this.members.remove(player)){
             playerTeam.remove(player);
+        }
+
+        Player p = Bukkit.getPlayer(player);
+        if(p != null){
+            p.setPlayerListName(p.getName());
         }
     }
 

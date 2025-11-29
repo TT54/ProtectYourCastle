@@ -11,18 +11,24 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.block.CampfireStartEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 public class GameListener implements Listener {
+
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event){
+        final Player player = event.getPlayer();
+        final Team team = Team.getPlayerTeam(player.getUniqueId());
+        if(team != null) {
+            player.setPlayerListName(team.getColor().getChatColor() + "[" + team.getColor().name() + "] " + player.getName());
+        }
+    }
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event){
