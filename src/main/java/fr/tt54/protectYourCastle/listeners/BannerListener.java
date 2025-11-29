@@ -23,7 +23,7 @@ public class BannerListener implements Listener {
             final Team team = Team.getPlayerTeam(player.getUniqueId());
             if(team != null && Team.isBannerItem(event.getItem().getItemStack())){
                 if(game.pickupBanner(player)){
-                    Bukkit.broadcastMessage(team.getColor().getChatColor() + player.getName() + "§a vient de récupérer une bannière !");
+                    Bukkit.broadcastMessage("§6[Castle] " + team.getColor().getChatColor() + player.getName() + "§a vient de récupérer une bannière !");
                 } else{
                     event.setCancelled(true);
                     player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("§cVotre équipe a déjà un morceau de totem dans un inventaire"));

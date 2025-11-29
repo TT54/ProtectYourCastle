@@ -7,11 +7,10 @@ import fr.tt54.protectYourCastle.scoreboard.GameScoreboard;
 import fr.tt54.protectYourCastle.scoreboard.ScoreboardManager;
 import fr.tt54.protectYourCastle.utils.Area;
 import fr.tt54.protectYourCastle.utils.ItemSerialization;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -82,6 +81,10 @@ public class Game {
 
             for(Player player : Bukkit.getOnlinePlayers()){
                 ScoreboardManager.showScoreboard(player, scoreboard);
+                Team team = Team.getPlayerTeam(player.getUniqueId());
+                if(team != null) {
+                    spawnPlayer(player, team);
+                }
             }
 
             this.gameStatus = Status.RUNNING;
@@ -113,7 +116,7 @@ public class Game {
 
     public void addPoint(Team.TeamColor teamColor, Player placer, int amount){
         this.points.put(teamColor, this.points.getOrDefault(teamColor, 0) + 1);
-        Bukkit.broadcastMessage("§aL'équipe " + teamColor.getChatColor() + teamColor.name() + "§a vient de gagner " + amount + " point grâce à " + placer.getName() + " !");
+        Bukkit.broadcastMessage("§6[Castle] §aL'équipe " + teamColor.getChatColor() + teamColor.name() + "§a vient de gagner " + amount + " point grâce à " + placer.getName() + " !");
     }
 
     public List<ResourceGenerator> getGenerators() {
@@ -142,8 +145,53 @@ public class Game {
         if(Team.getBannerOwner(is) != team.getColor()) {
             Game.currentGame.addPoint(team.getColor(), player, 1);
         } else{
-            player.sendMessage("§aVous avez ramené votre bannière chez vous");
+            player.sendMessage("§6[Castle] §aVous avez ramené votre bannière chez vous");
         }
+    }
+
+    public int getPoints(Team.TeamColor color){
+        return this.points.getOrDefault(color, 0);
+    }
+
+    public boolean hasWinner(){
+        return this.getWinner() != null;
+    }
+
+    public Team.TeamColor getWinner() {
+        int maxPoints = 0;
+        Team.TeamColor winner = null;
+        for(Team.TeamColor teamColor : Team.TeamColor.values()){
+            int points = getPoints(teamColor);
+            if(maxPoints < points) {
+                maxPoints = points;
+                winner = teamColor;
+            } else if(maxPoints == points){
+                winner = null;
+            }
+        }
+        return winner;
+    }
+
+    public void spawnPlayer(Player player, Team team) {
+        player.teleport(team.getSpawnLocation());
+        player.setGameMode(GameMode.SURVIVAL);
+        player.setHealth(20);
+        player.setSaturation(20);
+        player.setFoodLevel(20);
+
+        ItemStack helmet = colorArmor(new ItemStack(Material.LEATHER_HELMET), team.getColor().getArmorColor());
+        ItemStack chestplate = colorArmor(new ItemStack(Material.LEATHER_CHESTPLATE), team.getColor().getArmorColor());
+        ItemStack leggings = colorArmor(new ItemStack(Material.LEATHER_LEGGINGS), team.getColor().getArmorColor());
+        ItemStack boots = colorArmor(new ItemStack(Material.LEATHER_BOOTS), team.getColor().getArmorColor());
+
+        player.getInventory().setArmorContents(new ItemStack[]{helmet, chestplate, leggings, boots});
+    }
+
+    public static ItemStack colorArmor(ItemStack armor, Color color){
+        LeatherArmorMeta meta = (LeatherArmorMeta) armor.getItemMeta();
+        meta.setColor(color);
+        armor.setItemMeta(meta);
+        return armor;
     }
 
     public enum Status{

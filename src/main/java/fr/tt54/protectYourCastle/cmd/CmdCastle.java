@@ -7,6 +7,7 @@ import fr.tt54.protectYourCastle.utils.Area;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Banner;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
@@ -186,6 +187,27 @@ public class CmdCastle extends CoreCommand {
                         team.joinTeam(target.getUniqueId());
                         Bukkit.broadcastMessage("§a" + target.getName() + " a rejoint l'équipe " + team.getColor().getChatColor() + team.getColor().name());
                         return true;
+                    } else if(args[1].equalsIgnoreCase("leave")){
+                        if(args.length != 3){
+                            player.sendMessage("§cLa bon usage est '/castle team leave <player>'");
+                            return false;
+                        }
+
+                        OfflinePlayer target = Bukkit.getPlayer(args[2]);
+                        if(target == null){
+                            player.sendMessage("§cLe joueur " + args[2] + " n'existe pas");
+                            return false;
+                        }
+
+                        Team team = Team.getPlayerTeam(target.getUniqueId());
+                        if(team == null){
+                            player.sendMessage("§cLe joueur " + target.getName() + " n'a pas d'équipe");
+                            return false;
+                        }
+
+                        team.leaveTeam(target.getUniqueId());
+                        Bukkit.broadcastMessage("§a" + target.getName() + " a quitté l'équipe " + team.getColor().getChatColor() + team.getColor().name());
+                        return true;
                     }
                 }
             }
@@ -206,7 +228,7 @@ public class CmdCastle extends CoreCommand {
             if(args[0].equalsIgnoreCase("generator")){
                 return tabComplete(args[1], "add");
             } else if(args[0].equalsIgnoreCase("team")){
-                return tabComplete(args[1], "spawn", "base", "banner");
+                return tabComplete(args[1], "spawn", "base", "banner", "join");
             }
         } else if(args.length == 3){
             if(args[0].equalsIgnoreCase("generator")){

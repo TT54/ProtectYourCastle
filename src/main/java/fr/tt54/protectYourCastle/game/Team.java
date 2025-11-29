@@ -5,6 +5,7 @@ import fr.tt54.protectYourCastle.ProtectYourCastleMain;
 import fr.tt54.protectYourCastle.utils.Area;
 import fr.tt54.protectYourCastle.utils.FileManager;
 import fr.tt54.protectYourCastle.utils.ItemBuilder;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -114,8 +115,12 @@ public class Team {
     }
 
     public void joinTeam(UUID player){
-        if(!playerTeam.containsKey(player)) {
-            this.members.add(player);
+        Team team = getPlayerTeam(player);
+        if(team != null) {
+            team.leaveTeam(player);
+        }
+
+        if(this.members.add(player)) {
             playerTeam.put(player, this.color);
         }
     }
@@ -155,15 +160,17 @@ public class Team {
     }
 
     public enum TeamColor{
-        RED(Material.RED_BANNER, "§4"),
-        YELLOW(Material.YELLOW_BANNER, "§6");
+        RED(Material.RED_BANNER, "§4", Color.RED),
+        YELLOW(Material.YELLOW_BANNER, "§6", Color.YELLOW);
 
         private final Material banner;
         private final String chatColor;
+        private final Color color;
 
-        TeamColor(Material banner, String chatColor) {
+        TeamColor(Material banner, String chatColor, Color color) {
             this.banner = banner;
             this.chatColor = chatColor;
+            this.color = color;
         }
 
         public Material getBanner() {
@@ -172,6 +179,10 @@ public class Team {
 
         public String getChatColor() {
             return chatColor;
+        }
+
+        public Color getArmorColor() {
+            return color;
         }
     }
 

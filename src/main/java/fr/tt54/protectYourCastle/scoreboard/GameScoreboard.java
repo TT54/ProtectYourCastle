@@ -34,9 +34,18 @@ public class GameScoreboard extends ImpyriaScoreboard {
 
     private void drawScoreboard(FastBoard fastBoard, Player player){
         Game game = Game.currentGame;
-        int minutes = game.time / 60;
-        int seconds = game.time % 60;
+        int minutes = (Game.GAME_DURATION - game.time) / 60;
+        int seconds = (Game.GAME_DURATION - game.time) % 60;
 
-        fastBoard.updateLine(0, "§7" + minutes + ":" + seconds);
+        int extraMinutes = (game.time - Game.GAME_DURATION) / 60;
+        int extraSeconds = (game.time - Game.GAME_DURATION) % 60;
+
+        fastBoard.updateTitle("§6§lCastle Defender");
+
+        if(Game.GAME_DURATION - game.time > 0) {
+            fastBoard.updateLine(0, "§fTemps restant : " + "§7" + minutes + ":" + seconds);
+        } else{
+            fastBoard.updateLine(0, "§cTemps additionnel : " + "§7" + extraMinutes + ":" + extraSeconds);
+        }
     }
 }
