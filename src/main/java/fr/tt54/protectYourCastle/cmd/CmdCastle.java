@@ -224,7 +224,24 @@ public class CmdCastle extends CoreCommand {
                             name = name.substring(1);
                         }
 
-                        Trader trader = new Trader(name);
+                        Trader sameExisting = null;
+                        for(Trader trader : Trader.traders.values()){
+                            if(trader.getName().equalsIgnoreCase(name)){
+                                sameExisting = trader;
+                                player.sendMessage("§aUn marchant du même nom a été trouvé, ses trades ont été copiés");
+                            }
+                        }
+
+                        Trader trader;
+                        if(sameExisting != null){
+                            List<Trader.NPCTrade> trades = new ArrayList<>();
+                            for(Trader.NPCTrade trade : sameExisting.getTrades()){
+                                trades.add(trade.clone());
+                            }
+                            trader = new Trader(name, trades);
+                        } else {
+                            trader = new Trader(name);
+                        }
                         trader.spawn(player.getLocation());
                     }
                 }

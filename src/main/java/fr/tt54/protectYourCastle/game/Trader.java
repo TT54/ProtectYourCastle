@@ -62,6 +62,11 @@ public class Trader {
         this.name = name;
     }
 
+    public Trader(String name, List<NPCTrade> trades) {
+        this.trades = trades;
+        this.name = name;
+    }
+
     public void spawn(Location location){
         location = location.clone();
         location.setPitch(0);
@@ -77,6 +82,10 @@ public class Trader {
     public void addTrade(NPCTrade trade){
         this.trades.add(trade);
         this.buildMerchantMenu();
+    }
+
+    public String getName() {
+        return name;
     }
 
     public void buildMerchantMenu(){
@@ -133,6 +142,15 @@ public class Trader {
 
         public void setReward(ItemStack reward) {
             this.reward = reward;
+        }
+
+        @Override
+        public NPCTrade clone() {
+            List<ItemStack> clonedInput = new ArrayList<>();
+            for(ItemStack is : this.input){
+                clonedInput.add(is.clone());
+            }
+            return new NPCTrade(clonedInput, this.reward.clone());
         }
     }
 
