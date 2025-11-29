@@ -15,14 +15,16 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AddTradeInventory extends CorePersonalInventory{
+public class EditTradeInventory extends CorePersonalInventory{
 
     private final Trader trader;
+    private final Trader.NPCTrade trade;
     private final CorePersonalInventory previousInv;
 
-    public AddTradeInventory(Player player, Trader trader, CorePersonalInventory previousInv) {
+    public EditTradeInventory(Player player, Trader trader, Trader.NPCTrade trade, CorePersonalInventory previousInv) {
         super("Ajouter un trade", player);
         this.trader = trader;
+        this.trade = trade;
         this.previousInv = previousInv;
     }
 
@@ -30,9 +32,9 @@ public class AddTradeInventory extends CorePersonalInventory{
     public @NotNull Inventory getInventory() {
         Inventory inv = createBaseInventory(3);
 
-        inv.setItem(9 + 2, new ItemStack(Material.AIR));
-        inv.setItem(9 + 3, new ItemStack(Material.AIR));
-        inv.setItem(9 + 6, new ItemStack(Material.AIR));
+        inv.setItem(9 + 2, !this.trade.getInput().isEmpty() ? this.trade.getInput().get(0).clone() : new ItemStack(Material.AIR));
+        inv.setItem(9 + 3, this.trade.getInput().size() >= 2 ? this.trade.getInput().get(1).clone() : new ItemStack(Material.AIR));
+        inv.setItem(9 + 6, this.trade.getReward().clone());
 
         inv.setItem(9 * 2, DefaultItems.BACK.build());
         inv.setItem(9 * 2 + 8, new ItemBuilder(Material.LIME_STAINED_GLASS_PANE, "§aValider").build());
@@ -64,9 +66,11 @@ public class AddTradeInventory extends CorePersonalInventory{
                     return;
                 }
 
-                Trader.NPCTrade trade = new Trader.NPCTrade(inputs, result);
-                this.trader.addTrade(trade);
-                this.openInventory();
+                this.trade.setInput(inputs);
+                this.trade.setReward(result);
+                this.trader.buildMerchantMenu();
+
+                this.previousInv.openInventory();
             } else if (event.getSlot() != 9 + 2 && event.getSlot() != 9 + 3 && event.getSlot() != 9 + 6) {
                 event.setCancelled(true);
             }

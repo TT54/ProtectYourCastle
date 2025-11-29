@@ -2,7 +2,7 @@ package fr.tt54.protectYourCastle.game;
 
 import com.google.common.reflect.TypeToken;
 import fr.tt54.protectYourCastle.ProtectYourCastleMain;
-import fr.tt54.protectYourCastle.inventories.AddTradeInventory;
+import fr.tt54.protectYourCastle.inventories.TradeListInventory;
 import fr.tt54.protectYourCastle.utils.FileManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -49,7 +49,7 @@ public class Trader {
     }
 
     public static void openEditionMenu(UUID traderUUID, Player player) {
-        AddTradeInventory inv = new AddTradeInventory(player, traders.get(traderUUID));
+        TradeListInventory inv = new TradeListInventory(player, 1, traders.get(traderUUID));
         inv.openInventory();
     }
 
@@ -96,6 +96,10 @@ public class Trader {
             this.buildMerchantMenu();
         }
         return this.merchantMenu;
+    }
+
+    public List<NPCTrade> getTrades() {
+        return this.trades;
     }
 
 
