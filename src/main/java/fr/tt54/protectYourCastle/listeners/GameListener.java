@@ -16,6 +16,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -69,6 +70,22 @@ public class GameListener implements Listener {
                     } else {
                         player.sendMessage("§cVous ne pouvez pas casser de blocs à la main dans la base ennemie");
                     }
+                }
+            }
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onBlockPlace(BlockPlaceEvent event){
+        if(Game.currentGame == null || !Game.currentGame.isRunning()) return;
+
+        Player player = event.getPlayer();
+        Team team = Team.getPlayerTeam(player.getUniqueId());
+        if(team != null){
+            for(Team t : Team.getTeams()){
+                if(t != team && t.getBase().contains(event.getBlock().getLocation())){
+                    event.setCancelled(true);
+                    player.sendMessage("§cVous ne pouvez pas poser de blocs à la main dans la base ennemie");
                 }
             }
         }
