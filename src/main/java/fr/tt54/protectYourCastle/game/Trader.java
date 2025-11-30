@@ -85,6 +85,9 @@ public class Trader {
         villager.setSilent(true);
         villager.setCustomName(this.name);
         villager.setCustomNameVisible(true);
+        villager.setCollidable(false);
+        villager.setMaxHealth(1024);
+        villager.setHealth(1024);
 
         traders.put(villager.getUniqueId(), this);
     }
