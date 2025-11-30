@@ -34,7 +34,7 @@ public class Game {
             .registerTypeAdapter(Area.class, new Area.AreaSerializer())
             .registerTypeAdapter(Area.class, new Area.AreaDeserializer())
             .create();
-    public static final int GAME_DURATION = 60 * 30;
+    public static final int GAME_DURATION = 60 * 60;
     public static final int RESPAWN_DELAY = 20;
 
     public static Game currentGame;
