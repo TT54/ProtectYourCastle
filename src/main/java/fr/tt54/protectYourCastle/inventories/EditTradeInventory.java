@@ -78,7 +78,6 @@ public class EditTradeInventory extends CorePersonalInventory{
 
                 this.trade.setInput(inputs);
                 this.trade.setReward(result);
-                this.trader.buildMerchantMenu();
 
                 this.previousInv.openInventory();
             } else if (event.getSlot() != 9 + 2 && event.getSlot() != 9 + 3 && event.getSlot() != 9 + 6) {

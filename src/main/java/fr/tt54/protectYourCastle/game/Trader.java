@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Merchant;
+import org.bukkit.inventory.MerchantInventory;
 import org.bukkit.inventory.MerchantRecipe;
 
 import java.io.File;
@@ -63,7 +64,6 @@ public class Trader {
 
     private final List<NPCTrade> trades;
     private final String name;
-    private transient Merchant merchantMenu;
 
     public Trader(String name) {
         this.trades = new ArrayList<>();
@@ -94,15 +94,14 @@ public class Trader {
 
     public void addTrade(NPCTrade trade){
         this.trades.add(trade);
-        this.buildMerchantMenu();
     }
 
     public String getName() {
         return name;
     }
 
-    public void buildMerchantMenu(){
-        this.merchantMenu = Bukkit.createMerchant(this.name);
+    public Merchant buildMerchantMenu(){
+        Merchant merchantMenu = Bukkit.createMerchant(this.name);
         List<MerchantRecipe> recipes = new ArrayList<>();
         for(NPCTrade trade : trades){
             MerchantRecipe recipe = new MerchantRecipe(trade.reward.clone(), Integer.MAX_VALUE);
@@ -111,14 +110,12 @@ public class Trader {
             }
             recipes.add(recipe);
         }
-        this.merchantMenu.setRecipes(recipes);
+        merchantMenu.setRecipes(recipes);
+        return merchantMenu;
     }
 
     private Merchant getMerchantMenu() {
-        if(this.merchantMenu == null){
-            this.buildMerchantMenu();
-        }
-        return this.merchantMenu;
+        return this.buildMerchantMenu();
     }
 
     public List<NPCTrade> getTrades() {
@@ -127,7 +124,6 @@ public class Trader {
 
     public void removeTrade(NPCTrade trade) {
         this.trades.remove(trade);
-        this.buildMerchantMenu();
     }
 
 
