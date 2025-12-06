@@ -11,7 +11,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.lang.reflect.Type;
@@ -156,7 +155,6 @@ public class Team {
         Player p = Bukkit.getPlayer(player);
         if(p != null){
             p.setPlayerListName(this.color.chatColor + "[" + this.color.name() + "] " + p.getName());
-            this.glowPlayerForMembers(p);
         }
     }
 
@@ -168,7 +166,6 @@ public class Team {
         Player p = Bukkit.getPlayer(player);
         if(p != null){
             p.setPlayerListName(p.getName());
-            this.unglowPlayer(p);
         }
     }
 
@@ -198,39 +195,6 @@ public class Team {
             } catch (IllegalArgumentException ignore){}
         }
         return null;
-    }
-
-    public List<Player> getOnlinePlayers() {
-        return this.members.stream().map(Bukkit::getPlayer).filter(Objects::nonNull).toList();
-    }
-
-    public void glowPlayerForMembers(@NotNull Player player){
-        for(Player p : this.getOnlinePlayers()){
-            if(p != player) {
-                try {
-                    System.out.println("aaa");
-                    System.out.println(ChatColor.getByChar(this.getColor().chatColor.charAt(1)).name());
-                    System.out.println("bbb");
-                    ProtectYourCastleMain.getInstance().glowingEntities.setGlowing(player, p, ChatColor.getByChar(this.getColor().chatColor.charAt(1)));
-                    ProtectYourCastleMain.getInstance().glowingEntities.setGlowing(p, player, ChatColor.getByChar(this.getColor().chatColor.charAt(1)));
-                } catch (ReflectiveOperationException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-    }
-
-    public void unglowPlayer(@NotNull Player player){
-        for (Player p : this.getOnlinePlayers()) {
-            if (p != player) {
-                try {
-                    ProtectYourCastleMain.getInstance().glowingEntities.unsetGlowing(player, p);
-                    ProtectYourCastleMain.getInstance().glowingEntities.unsetGlowing(p, player);
-                } catch (ReflectiveOperationException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
     }
 
     public enum TeamColor{
