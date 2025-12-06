@@ -45,7 +45,7 @@ public class Team {
 
         for(TeamColor teamColor : TeamColor.values()){
             if(!teams.containsKey(teamColor)){
-                teams.put(teamColor, new Team(teamColor, null, null, null, new HashSet<>()));
+                teams.put(teamColor, new Team(teamColor, null, null, null, null, null, null, new HashSet<>()));
             }
         }
     }
@@ -70,14 +70,20 @@ public class Team {
     private final TeamColor color;
     private Location spawnLocation;
     private Location bannerLocation;
+    private Location rollbackLocation;
+    private Location drawbridgeLocation;
     private Area base;
+    private Area protectedSpawn;
     private final Set<UUID> members;
 
-    public Team(TeamColor color, Location spawnLocation, Location bannerLocation, Area base, Set<UUID> members) {
+    public Team(TeamColor color, Location spawnLocation, Location bannerLocation, Location rollbackLocation, Location drawbridgeLocation, Area base, Area protectedSpawn, Set<UUID> members) {
         this.color = color;
         this.spawnLocation = spawnLocation;
         this.bannerLocation = bannerLocation;
+        this.rollbackLocation = rollbackLocation;
+        this.drawbridgeLocation = drawbridgeLocation;
         this.base = base;
+        this.protectedSpawn = protectedSpawn;
         this.members = members;
     }
 
@@ -107,6 +113,30 @@ public class Team {
 
     public void setBase(Area base) {
         this.base = base;
+    }
+
+    public Area getProtectedSpawn() {
+        return protectedSpawn;
+    }
+
+    public void setProtectedSpawn(Area protectedSpawn) {
+        this.protectedSpawn = protectedSpawn;
+    }
+
+    public Location getDrawbridgeLocation() {
+        return drawbridgeLocation;
+    }
+
+    public void setDrawbridgeLocation(Location drawbridgeLocation) {
+        this.drawbridgeLocation = drawbridgeLocation;
+    }
+
+    public Location getRollbackLocation() {
+        return rollbackLocation;
+    }
+
+    public void setRollbackLocation(Location rollbackLocation) {
+        this.rollbackLocation = rollbackLocation;
     }
 
     public Set<UUID> getMembers() {

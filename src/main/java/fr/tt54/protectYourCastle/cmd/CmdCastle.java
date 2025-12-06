@@ -110,6 +110,60 @@ public class CmdCastle extends CoreCommand {
                         Team.getTeam(teamColor).setSpawnLocation(new Location(player.getWorld(), x + .5d, y + 1, z + .5d));
                         player.sendMessage("§aLe nouveau spawn de l'équipe " + teamColor.name() + " est en " + x + " " + y + " " + z);
                         return true;
+                    } else if(args[1].equalsIgnoreCase("rollback")){
+                        if(args.length != 6){
+                            player.sendMessage("§cLa bon usage est '/castle team rollback <team> <x> <y> <z>'");
+                            return false;
+                        }
+
+                        Team.TeamColor teamColor;
+                        try {
+                            teamColor = Team.TeamColor.valueOf(args[2].toUpperCase());
+                        } catch (IllegalArgumentException e){
+                            player.sendMessage("§cLa team " + args[2] + " n'existe pas");
+                            return false;
+                        }
+
+                        int x, y, z;
+                        try {
+                            x = Integer.parseInt(args[3]);
+                            y = Integer.parseInt(args[4]);
+                            z = Integer.parseInt(args[5]);
+                        } catch (NumberFormatException e){
+                            player.sendMessage("§cLa bon usage est '/castle team rollback <x> <y> <z>'");
+                            return false;
+                        }
+
+                        Team.getTeam(teamColor).setRollbackLocation(new Location(player.getWorld(), x + .5d, y + 1, z + .5d));
+                        player.sendMessage("§aLe nouveau point de rollback de l'équipe " + teamColor.name() + " est en " + x + " " + y + " " + z);
+                        return true;
+                    } else if(args[1].equalsIgnoreCase("drawbridge")){
+                        if(args.length != 6){
+                            player.sendMessage("§cLa bon usage est '/castle team drawbridge <team> <x> <y> <z>'");
+                            return false;
+                        }
+
+                        Team.TeamColor teamColor;
+                        try {
+                            teamColor = Team.TeamColor.valueOf(args[2].toUpperCase());
+                        } catch (IllegalArgumentException e){
+                            player.sendMessage("§cLa team " + args[2] + " n'existe pas");
+                            return false;
+                        }
+
+                        int x, y, z;
+                        try {
+                            x = Integer.parseInt(args[3]);
+                            y = Integer.parseInt(args[4]);
+                            z = Integer.parseInt(args[5]);
+                        } catch (NumberFormatException e){
+                            player.sendMessage("§cLa bon usage est '/castle team drawbridge <x> <y> <z>'");
+                            return false;
+                        }
+
+                        Team.getTeam(teamColor).setDrawbridgeLocation(new Location(player.getWorld(), x, y, z));
+                        player.sendMessage("§aLe nouveau pont-levis de l'équipe " + teamColor.name() + " est en " + x + " " + y + " " + z);
+                        return true;
                     } else if(args[1].equalsIgnoreCase("base")){
                         if(args.length != 9){
                             player.sendMessage("§cLa bon usage est '/castle team spawn <team> <x1> <y1> <z1> <x2> <y2> <z2> '");
@@ -139,8 +193,40 @@ public class CmdCastle extends CoreCommand {
 
                         Location loc1 = new Location(player.getWorld(), x1, y1, z1);
                         Location loc2 = new Location(player.getWorld(), x2, y2, z2);
-                        Team.getTeam(teamColor).setBase(new Area(loc1, loc2));
+                        Team.getTeam(teamColor).setBase(new Area(loc1, loc2, false));
                         player.sendMessage("§aLa nouvelle base de l'équipe " + teamColor.name() + " a été placée");
+                        return true;
+                    } else if(args[1].equalsIgnoreCase("protected")){
+                        if(args.length != 9){
+                            player.sendMessage("§cLa bon usage est '/castle team protected <team> <x1> <y1> <z1> <x2> <y2> <z2> '");
+                            return false;
+                        }
+
+                        Team.TeamColor teamColor;
+                        try {
+                            teamColor = Team.TeamColor.valueOf(args[2].toUpperCase());
+                        } catch (IllegalArgumentException e){
+                            player.sendMessage("§cLa team " + args[2] + " n'existe pas");
+                            return false;
+                        }
+
+                        int x1, y1, z1, x2, y2, z2;
+                        try {
+                            x1 = Integer.parseInt(args[3]);
+                            y1 = Integer.parseInt(args[4]);
+                            z1 = Integer.parseInt(args[5]);
+                            x2 = Integer.parseInt(args[6]);
+                            y2 = Integer.parseInt(args[7]);
+                            z2 = Integer.parseInt(args[8]);
+                        } catch (NumberFormatException e){
+                            player.sendMessage("§cLa bon usage est '/castle team protected <team> <x1> <y1> <z1> <x2> <y2> <z2> '");
+                            return false;
+                        }
+
+                        Location loc1 = new Location(player.getWorld(), x1, y1, z1);
+                        Location loc2 = new Location(player.getWorld(), x2, y2, z2);
+                        Team.getTeam(teamColor).setProtectedSpawn(new Area(loc1, loc2, true));
+                        player.sendMessage("§aLa nouvelle zone protégée de l'équipe " + teamColor.name() + " a été placée");
                         return true;
                     } else if(args[1].equalsIgnoreCase("banner")){
                         if(args.length != 3){
@@ -284,7 +370,7 @@ public class CmdCastle extends CoreCommand {
             if(args[0].equalsIgnoreCase("generator")){
                 return tabComplete(args[1], "add");
             } else if(args[0].equalsIgnoreCase("team")){
-                return tabComplete(args[1], "spawn", "base", "banner", "join", "leave");
+                return tabComplete(args[1], "spawn", "base", "banner", "join", "leave", "protected", "rollback", "drawbridge");
             } else if(args[0].equalsIgnoreCase("trader")){
                 return tabComplete(args[1], "spawn", "remove");
             }
@@ -294,7 +380,7 @@ public class CmdCastle extends CoreCommand {
                     return tabComplete(args[2], Arrays.stream(Material.values()).map(mat -> mat.name().toLowerCase()));
                 }
             } else if(args[0].equalsIgnoreCase("team")){
-                if(args[1].equalsIgnoreCase("spawn") || args[1].equalsIgnoreCase("base") || args[1].equalsIgnoreCase("banner") || args[1].equalsIgnoreCase("join")){
+                if(args[1].equalsIgnoreCase("spawn") || args[1].equalsIgnoreCase("drawbridge") || args[1].equalsIgnoreCase("rollback") || args[1].equalsIgnoreCase("protected") || args[1].equalsIgnoreCase("base") || args[1].equalsIgnoreCase("banner") || args[1].equalsIgnoreCase("join")){
                     return tabComplete(args[2], Arrays.stream(Team.TeamColor.values()).map(teamColor -> teamColor.name().toLowerCase()).toList());
                 }
             }
@@ -304,7 +390,7 @@ public class CmdCastle extends CoreCommand {
                     return tabComplete(args[3], "1", "10", "20", "30", "60");
                 }
             } else if(args[0].equalsIgnoreCase("team")){
-                if(args[1].equalsIgnoreCase("spawn") || args[1].equalsIgnoreCase("base")){
+                if(args[1].equalsIgnoreCase("spawn") || args[1].equalsIgnoreCase("drawbridge") || args[1].equalsIgnoreCase("rollback") || args[1].equalsIgnoreCase("protected") || args[1].equalsIgnoreCase("base")){
                     Block block = player.getTargetBlockExact(5);
                     return block != null ? List.of(block.getLocation().getBlockX() + "") : List.of();
                 } else if(args[1].equalsIgnoreCase("join")){
@@ -313,35 +399,35 @@ public class CmdCastle extends CoreCommand {
             }
         } else if(args.length == 5){
              if(args[0].equalsIgnoreCase("team")){
-                 if(args[1].equalsIgnoreCase("spawn") || args[1].equalsIgnoreCase("base")){
+                 if(args[1].equalsIgnoreCase("spawn") || args[1].equalsIgnoreCase("drawbridge") || args[1].equalsIgnoreCase("rollback") || args[1].equalsIgnoreCase("protected") || args[1].equalsIgnoreCase("base")){
                     Block block = player.getTargetBlockExact(5);
                     return block != null ? List.of(block.getLocation().getBlockY() + "") : List.of();
                 }
             }
         } else if(args.length == 6){
             if(args[0].equalsIgnoreCase("team")){
-                if(args[1].equalsIgnoreCase("spawn") || args[1].equalsIgnoreCase("base")){
+                if(args[1].equalsIgnoreCase("spawn") || args[1].equalsIgnoreCase("drawbridge") || args[1].equalsIgnoreCase("rollback") || args[1].equalsIgnoreCase("protected") || args[1].equalsIgnoreCase("base")){
                     Block block = player.getTargetBlockExact(5);
                     return block != null ? List.of(block.getLocation().getBlockZ() + "") : List.of();
                 }
             }
         } else if(args.length == 7){
             if(args[0].equalsIgnoreCase("team")){
-                if(args[1].equalsIgnoreCase("base")){
+                if(args[1].equalsIgnoreCase("base") || args[1].equalsIgnoreCase("protected")){
                     Block block = player.getTargetBlockExact(5);
                     return block != null ? List.of(block.getLocation().getBlockX() + "") : List.of();
                 }
             }
         } else if(args.length == 8){
             if(args[0].equalsIgnoreCase("team")){
-                if(args[1].equalsIgnoreCase("base")){
+                if(args[1].equalsIgnoreCase("base") || args[1].equalsIgnoreCase("protected")){
                     Block block = player.getTargetBlockExact(5);
                     return block != null ? List.of(block.getLocation().getBlockY() + "") : List.of();
                 }
             }
         } else if(args.length == 9){
             if(args[0].equalsIgnoreCase("team")){
-                if(args[1].equalsIgnoreCase("base")){
+                if(args[1].equalsIgnoreCase("base") || args[1].equalsIgnoreCase("protected")){
                     Block block = player.getTargetBlockExact(5);
                     return block != null ? List.of(block.getLocation().getBlockZ() + "") : List.of();
                 }

@@ -2,6 +2,7 @@ package fr.tt54.protectYourCastle;
 
 import fr.skytasul.glowingentities.GlowingEntities;
 import fr.tt54.protectYourCastle.cmd.CmdCastle;
+import fr.tt54.protectYourCastle.cmd.CmdDrawbridge;
 import fr.tt54.protectYourCastle.game.ResourceGenerator;
 import fr.tt54.protectYourCastle.game.Team;
 import fr.tt54.protectYourCastle.game.Trader;
@@ -24,6 +25,7 @@ public final class ProtectYourCastleMain extends JavaPlugin {
         Team.load();
         Trader.load();
 
+        this.getCommand("drawbridge").setExecutor(new CmdDrawbridge());
         this.getCommand("castle").setExecutor(new CmdCastle());
         this.getCommand("castle").setTabCompleter(new CmdCastle());
 

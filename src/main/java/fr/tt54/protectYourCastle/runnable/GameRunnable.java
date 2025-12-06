@@ -48,6 +48,17 @@ public class GameRunnable extends BukkitRunnable {
                 team.getBannerLocation().getBlock().setType(Material.valueOf(teamColor.getBanner().name().replace("_", "_WALL_")));
             }
         }
+
+        for(Player player : Bukkit.getOnlinePlayers()){
+            Team team = Team.getPlayerTeam(player.getUniqueId());
+            if(team != null){
+                for(Team t : Team.getTeams()){
+                    if(t != team && t.getProtectedSpawn() != null && t.getRollbackLocation() != null && t.getProtectedSpawn().contains(player.getLocation())){
+                        player.teleport(t.getRollbackLocation());
+                    }
+                }
+            }
+        }
     }
 
 }
