@@ -37,7 +37,11 @@ public class GameListener implements Listener {
 
         if(team != null){
             player.setPlayerListName(team.getColor().getChatColor() + "[" + team.getColor().name() + "] " + player.getName());
+            Bukkit.getScheduler().runTaskLater(ProtectYourCastleMain.getInstance(), () -> {
+                team.glowPlayerForMembers(player);
+            }, 20L);
         }
+
 
         if(Game.currentGame != null) {
             if (team != null && player.getGameMode() == GameMode.SPECTATOR) {
