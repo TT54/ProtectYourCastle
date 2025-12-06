@@ -45,7 +45,7 @@ public class GameRunnable extends BukkitRunnable {
         for(Team.TeamColor teamColor : Team.TeamColor.values()){
             Team team = Team.getTeam(teamColor);
             if(!(team.getBannerLocation().getBlock().getState() instanceof Banner)){
-                team.getBannerLocation().getBlock().setType(Material.valueOf(teamColor.getBanner().name().replace("_", "_WALL_")));
+                team.getBannerLocation().getBlock().setType(Material.valueOf(teamColor.getBanner().name()));
             }
         }
 
