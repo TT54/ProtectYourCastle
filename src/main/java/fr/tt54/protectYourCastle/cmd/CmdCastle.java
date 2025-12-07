@@ -352,6 +352,23 @@ public class CmdCastle extends CoreCommand {
                         }
                     }
                 }
+            } else if(args[0].equalsIgnoreCase("set_duration")){
+                if(args.length != 2){
+                    player.sendMessage("§cBon usage : '/castle set_duration <duration>'");
+                    return false;
+                }
+
+                int duration;
+                try {
+                    duration = Integer.parseInt(args[1]);
+                } catch (NumberFormatException e){
+                    player.sendMessage("§cBon usage : '/castle set_duration <duration>'");
+                    return false;
+                }
+
+                Game.GAME_DURATION = 60 * duration;
+                player.sendMessage("§aDurée de : " + duration + "min");
+                return true;
             }
         }
 

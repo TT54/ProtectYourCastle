@@ -34,7 +34,7 @@ public class Game {
             .registerTypeAdapter(Area.class, new Area.AreaSerializer())
             .registerTypeAdapter(Area.class, new Area.AreaDeserializer())
             .create();
-    public static final int GAME_DURATION = 60 * 60;
+    public static int GAME_DURATION = 60 * 60;
     public static final int RESPAWN_DELAY = 20;
 
     public static Game currentGame;
@@ -124,6 +124,8 @@ public class Game {
 
         for(Player player : Bukkit.getOnlinePlayers()){
             Team team = Team.getPlayerTeam(player.getUniqueId());
+            if(team == null) continue;
+
             if(team.getColor() == winner){
                 player.sendTitle("§2Victoire !", "§aVotre équipe a gagné avec " + this.getPoints(team.getColor()) + " points");
             } else{
