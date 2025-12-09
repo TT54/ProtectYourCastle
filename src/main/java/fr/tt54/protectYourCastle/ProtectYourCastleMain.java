@@ -7,6 +7,7 @@ import fr.tt54.protectYourCastle.game.Team;
 import fr.tt54.protectYourCastle.game.Trader;
 import fr.tt54.protectYourCastle.listeners.BannerListener;
 import fr.tt54.protectYourCastle.listeners.GameListener;
+import fr.tt54.pycmod.PYCVoiceChatPlugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class ProtectYourCastleMain extends JavaPlugin {
@@ -27,6 +28,8 @@ public final class ProtectYourCastleMain extends JavaPlugin {
 
         this.getServer().getPluginManager().registerEvents(new GameListener(), this);
         this.getServer().getPluginManager().registerEvents(new BannerListener(), this);
+
+        PYCVoiceChatPlugin.waitForEnabling().thenApply(api -> PYCVoiceChatPlugin.createOpenGroup("global", true));
     }
 
     @Override
