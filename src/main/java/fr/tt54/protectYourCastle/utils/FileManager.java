@@ -130,7 +130,7 @@ public class FileManager {
             if (in != null) {
                 File outFile = new File(javaPlugin.getDataFolder(), "copy" + resourcePath);
                 int lastIndex = resourcePath.lastIndexOf(47);
-                File outDir = new File(javaPlugin.getDataFolder(), resourcePath.substring(0, lastIndex >= 0 ? lastIndex : 0));
+                File outDir = new File(javaPlugin.getDataFolder(), resourcePath.substring(0, Math.max(lastIndex, 0)));
                 if (!outDir.exists()) {
                     outDir.mkdirs();
                 }
