@@ -1,5 +1,5 @@
 name: ProtectYourCastle
-version: '1.1-SNAPSHOT'
+version: '1.2-SNAPSHOT'
 main: fr.tt54.protectYourCastle.ProtectYourCastleMain
 api-version: '1.20'
 commands:
