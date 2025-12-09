@@ -37,6 +37,7 @@ public class GameListener implements Listener {
 
         if(team != null){
             player.setPlayerListName(team.getColor().getChatColor() + "[" + team.getColor().name() + "] " + player.getName());
+            ProtectYourCastleMain.voiceChatBridge.joinTeamGroup(player, team);
         }
 
         if(Game.currentGame != null) {

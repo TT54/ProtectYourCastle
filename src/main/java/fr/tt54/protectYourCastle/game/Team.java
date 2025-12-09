@@ -76,6 +76,8 @@ public class Team {
     private Area protectedSpawn;
     private final Set<UUID> members;
 
+    private transient UUID voiceChatGroupUUID;
+
     public Team(TeamColor color, SavedLocation spawnLocation, SavedLocation bannerLocation, SavedLocation rollbackLocation, SavedLocation drawbridgeLocation, Area base, Area protectedSpawn, Set<UUID> members) {
         this.color = color;
         this.spawnLocation = spawnLocation;
@@ -196,6 +198,14 @@ public class Team {
             } catch (IllegalArgumentException ignore){}
         }
         return null;
+    }
+
+    public UUID getVoiceChatGroupUUID() {
+        return voiceChatGroupUUID;
+    }
+
+    public void setVoiceChatGroupUUID(UUID voiceChatGroupUUID) {
+        this.voiceChatGroupUUID = voiceChatGroupUUID;
     }
 
     public enum TeamColor{

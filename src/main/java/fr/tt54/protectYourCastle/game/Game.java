@@ -67,8 +67,9 @@ public class Game {
     public void prepare(){
         this.gameStatus = Status.PREPARING;
 
-        for(Team.TeamColor color : Team.TeamColor.values()){
-            this.points.put(color, 0);
+        for(Team team : Team.getTeams()){
+            this.points.put(team.getColor(), 0);
+            ProtectYourCastleMain.voiceChatBridge.createTeamGroup(team);
         }
 
         File sourceGameWorldFolder = new File(ProtectYourCastleMain.getInstance().getDataFolder(), "game_world");
@@ -85,9 +86,6 @@ public class Game {
 
         WorldCreator creator = new WorldCreator("game_world");
         gameWorld = creator.createWorld();
-
-        System.out.println(gameWorld.getUID().toString());
-        System.out.println(Bukkit.getWorld(gameWorld.getUID()));
 
         for(Player player : Bukkit.getOnlinePlayers()){
             // TODO Ouvrir le menu de sélection d'équipe

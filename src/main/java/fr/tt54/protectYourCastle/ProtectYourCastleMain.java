@@ -7,12 +7,13 @@ import fr.tt54.protectYourCastle.game.Team;
 import fr.tt54.protectYourCastle.game.Trader;
 import fr.tt54.protectYourCastle.listeners.BannerListener;
 import fr.tt54.protectYourCastle.listeners.GameListener;
-import fr.tt54.pycmod.PYCVoiceChatPlugin;
+import fr.tt54.protectYourCastle.voicechat.VoiceChatBridge;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class ProtectYourCastleMain extends JavaPlugin {
 
     private static ProtectYourCastleMain instance;
+    public static VoiceChatBridge voiceChatBridge = new VoiceChatBridge();
 
     @Override
     public void onEnable() {
@@ -29,7 +30,11 @@ public final class ProtectYourCastleMain extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(new GameListener(), this);
         this.getServer().getPluginManager().registerEvents(new BannerListener(), this);
 
-        PYCVoiceChatPlugin.waitForEnabling().thenApply(api -> PYCVoiceChatPlugin.createOpenGroup("global", true));
+        try {
+            voiceChatBridge.enable();
+        } catch (Exception | Error e){
+            System.err.println("Impossible d'activer la liaison avec voicechat");
+        }
     }
 
     @Override
