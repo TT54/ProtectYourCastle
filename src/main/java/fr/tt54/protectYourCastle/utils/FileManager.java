@@ -207,4 +207,32 @@ public class FileManager {
         }
     }*/
 
+    public static void copy(File initial, File destination){
+        if(initial.isDirectory()){
+            copyFolder(initial, destination);
+        } else {
+            copyFile(initial, destination);
+        }
+    }
+
+    public static void copyFile(File initialFile, File destinationFile){
+        try(FileInputStream inputStream = new FileInputStream(initialFile);
+                FileOutputStream outputStream = new FileOutputStream(destinationFile)){
+            byte[] buf = new byte[1024];
+            int length;
+            while ((length = inputStream.read(buf)) > 0) {
+                outputStream.write(buf, 0, length);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void copyFolder(File initialFolder, File destinationFolder){
+        destinationFolder.mkdir();
+        for(File file : initialFolder.listFiles()){
+            copy(file, new File(destinationFolder, file.getName()));
+        }
+    }
+
 }

@@ -6,18 +6,23 @@ import fr.tt54.protectYourCastle.runnable.GameRunnable;
 import fr.tt54.protectYourCastle.scoreboard.GameScoreboard;
 import fr.tt54.protectYourCastle.scoreboard.ScoreboardManager;
 import fr.tt54.protectYourCastle.utils.Area;
+import fr.tt54.protectYourCastle.utils.FileManager;
 import fr.tt54.protectYourCastle.utils.ItemBuilder;
 import fr.tt54.protectYourCastle.utils.ItemSerialization;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.util.FileUtil;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.stream.Stream;
 
 public class Game {
 
@@ -45,6 +50,7 @@ public class Game {
     public Map<Team.TeamColor, UUID> bannerHolder = new HashMap<>();
 
     private transient GameRunnable runnable;
+    private transient World gameWorld;
     public transient GameScoreboard scoreboard;
 
     public Game() {
@@ -64,6 +70,24 @@ public class Game {
         for(Team.TeamColor color : Team.TeamColor.values()){
             this.points.put(color, 0);
         }
+
+        File sourceGameWorldFolder = new File(ProtectYourCastleMain.getInstance().getDataFolder(), "game_world");
+        File gameWorldFolder = new File(ProtectYourCastleMain.getInstance().getDataFolder().getParentFile().getParentFile(), "game_world");
+        if(gameWorldFolder.exists()) {
+            try (Stream<Path> paths = Files.walk(gameWorldFolder.toPath())) {
+                paths.sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        FileManager.copy(sourceGameWorldFolder, gameWorldFolder);
+
+        WorldCreator creator = new WorldCreator("game_world");
+        gameWorld = creator.createWorld();
+
+        System.out.println(gameWorld.getUID().toString());
+        System.out.println(Bukkit.getWorld(gameWorld.getUID()));
 
         for(Player player : Bukkit.getOnlinePlayers()){
             // TODO Ouvrir le menu de sélection d'équipe

@@ -4,14 +4,15 @@ import com.google.common.reflect.TypeToken;
 import fr.tt54.protectYourCastle.ProtectYourCastleMain;
 import fr.tt54.protectYourCastle.inventories.TradeListInventory;
 import fr.tt54.protectYourCastle.utils.FileManager;
+import fr.tt54.protectYourCastle.utils.SavedLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Merchant;
-import org.bukkit.inventory.MerchantInventory;
 import org.bukkit.inventory.MerchantRecipe;
 
 import java.io.File;
@@ -64,6 +65,7 @@ public class Trader {
 
     private final List<NPCTrade> trades;
     private final String name;
+    private SavedLocation savedLocation;
 
     public Trader(String name) {
         this.trades = new ArrayList<>();
@@ -75,8 +77,21 @@ public class Trader {
         this.name = name;
     }
 
+    public void respawn(){
+        if(this.savedLocation != null){
+            Location location = this.savedLocation.toLocation();
+            if(location.getWorld() != null){
+                for(Entity entity : location.getWorld().getNearbyEntities(location, 1, 1, 1, entity -> entity instanceof Villager && entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(this.name))){
+                    entity.remove();
+                }
+                this.spawn(location);
+            }
+        }
+    }
+
     public void spawn(Location location){
         location = location.clone();
+        this.savedLocation = SavedLocation.fromLocation(location);
         location.setPitch(0);
         Villager villager = (Villager) location.getWorld().spawnEntity(location, EntityType.VILLAGER);
         villager.setAI(false);

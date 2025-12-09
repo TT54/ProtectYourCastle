@@ -5,6 +5,7 @@ import fr.tt54.protectYourCastle.game.ResourceGenerator;
 import fr.tt54.protectYourCastle.game.Team;
 import fr.tt54.protectYourCastle.game.Trader;
 import fr.tt54.protectYourCastle.utils.Area;
+import fr.tt54.protectYourCastle.utils.SavedLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -66,7 +67,7 @@ public class CmdCastle extends CoreCommand {
                         textDisplay.setSeeThrough(true);
                         textDisplay.setText("§eGénérateur de " + material.name().toLowerCase());
 
-                        ResourceGenerator generator = new ResourceGenerator(material, delay, delay, location);
+                        ResourceGenerator generator = new ResourceGenerator(material, delay, delay, SavedLocation.fromLocation(location));
                         ResourceGenerator.addGenerator(generator);
                         player.sendMessage("§aUn générateur a été ajouté sur votre position");
                         return true;

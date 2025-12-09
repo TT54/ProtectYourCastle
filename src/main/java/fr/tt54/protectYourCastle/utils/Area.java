@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public class Area {
 
-    private final World world;
+    private final UUID world;
     private final int minX;
     private final int minY;
     private final int minZ;
@@ -19,6 +19,16 @@ public class Area {
     private final int maxZ;
 
     public Area(World world, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+        this.world = world.getUID();
+        this.minX = minX;
+        this.minY = minY;
+        this.minZ = minZ;
+        this.maxX = maxX;
+        this.maxY = maxY;
+        this.maxZ = maxZ;
+    }
+
+    public Area(UUID world, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
         this.world = world;
         this.minX = minX;
         this.minY = minY;
@@ -29,7 +39,7 @@ public class Area {
     }
 
     public Area(World world, int minX, int minZ, int maxX, int maxZ) {
-        this.world = world;
+        this.world = world.getUID();
         this.minX = minX;
         this.minZ = minZ;
         this.maxX = maxX;
@@ -39,7 +49,7 @@ public class Area {
     }
 
     public Area(Location loc1, Location loc2, boolean useY){
-        this.world = loc1.getWorld();
+        this.world = loc1.getWorld().getUID();
         this.minX = Math.min(loc1.getBlockX(), loc2.getBlockX());
         this.minZ = Math.min(loc1.getBlockZ(), loc2.getBlockZ());
         this.maxX = Math.max(loc1.getBlockX(), loc2.getBlockX());
@@ -55,7 +65,7 @@ public class Area {
     }
 
     public World getWorld() {
-        return world;
+        return Bukkit.getWorld(world);
     }
 
     public int getMinX() {
@@ -91,7 +101,7 @@ public class Area {
         @Override
         public JsonElement serialize(Area area, Type type, JsonSerializationContext jsonSerializationContext) {
             JsonObject object = new JsonObject();
-            object.add("world", new JsonPrimitive(area.getWorld().getUID().toString()));
+            object.add("world", new JsonPrimitive(area.world.toString()));
             object.add("minX", new JsonPrimitive(area.getMinX()));
             object.add("minY", new JsonPrimitive(area.getMinY()));
             object.add("minZ", new JsonPrimitive(area.getMinZ()));
@@ -107,12 +117,12 @@ public class Area {
         @Override
         public Area deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
             JsonObject object = jsonElement.getAsJsonObject();
-            World world = Bukkit.getWorld(UUID.fromString(object.get("world").getAsString()));
+            UUID world = UUID.fromString(object.get("world").getAsString());
             int minX = object.get("minX").getAsInt();
-            int minY = object.get("minY").getAsInt();
+            int minY = !object.has("minY") ? -1000 : object.get("minY").getAsInt();
             int minZ = object.get("minZ").getAsInt();
             int maxX = object.get("maxX").getAsInt();
-            int maxY = object.get("maxY").getAsInt();
+            int maxY = !object.has("maxY") ? 1000 : object.get("maxY").getAsInt();
             int maxZ = object.get("maxZ").getAsInt();
             return new Area(world, minX, minY, minZ, maxX, maxY, maxZ);
         }

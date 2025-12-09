@@ -5,6 +5,7 @@ import fr.tt54.protectYourCastle.ProtectYourCastleMain;
 import fr.tt54.protectYourCastle.utils.Area;
 import fr.tt54.protectYourCastle.utils.FileManager;
 import fr.tt54.protectYourCastle.utils.ItemBuilder;
+import fr.tt54.protectYourCastle.utils.SavedLocation;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -67,15 +68,15 @@ public class Team {
     }
 
     private final TeamColor color;
-    private Location spawnLocation;
-    private Location bannerLocation;
-    private Location rollbackLocation;
-    private Location drawbridgeLocation;
+    private SavedLocation spawnLocation;
+    private SavedLocation bannerLocation;
+    private SavedLocation rollbackLocation;
+    private SavedLocation drawbridgeLocation;
     private Area base;
     private Area protectedSpawn;
     private final Set<UUID> members;
 
-    public Team(TeamColor color, Location spawnLocation, Location bannerLocation, Location rollbackLocation, Location drawbridgeLocation, Area base, Area protectedSpawn, Set<UUID> members) {
+    public Team(TeamColor color, SavedLocation spawnLocation, SavedLocation bannerLocation, SavedLocation rollbackLocation, SavedLocation drawbridgeLocation, Area base, Area protectedSpawn, Set<UUID> members) {
         this.color = color;
         this.spawnLocation = spawnLocation;
         this.bannerLocation = bannerLocation;
@@ -91,19 +92,19 @@ public class Team {
     }
 
     public Location getSpawnLocation() {
-        return spawnLocation;
+        return spawnLocation == null ? null : spawnLocation.toLocation();
     }
 
     public void setSpawnLocation(Location spawnLocation) {
-        this.spawnLocation = spawnLocation;
+        this.spawnLocation = SavedLocation.fromLocation(spawnLocation);
     }
 
     public Location getBannerLocation() {
-        return bannerLocation;
+        return bannerLocation == null ? null : bannerLocation.toLocation();
     }
 
     public void setBannerLocation(Location bannerLocation) {
-        this.bannerLocation = bannerLocation;
+        this.bannerLocation = SavedLocation.fromLocation(bannerLocation);
     }
 
     public Area getBase() {
@@ -123,19 +124,19 @@ public class Team {
     }
 
     public Location getDrawbridgeLocation() {
-        return drawbridgeLocation;
+        return drawbridgeLocation == null ? null : drawbridgeLocation.toLocation();
     }
 
     public void setDrawbridgeLocation(Location drawbridgeLocation) {
-        this.drawbridgeLocation = drawbridgeLocation;
+        this.drawbridgeLocation = SavedLocation.fromLocation(drawbridgeLocation);
     }
 
     public Location getRollbackLocation() {
-        return rollbackLocation;
+        return rollbackLocation == null ? null : rollbackLocation.toLocation();
     }
 
     public void setRollbackLocation(Location rollbackLocation) {
-        this.rollbackLocation = rollbackLocation;
+        this.rollbackLocation = SavedLocation.fromLocation(rollbackLocation);
     }
 
     public Set<UUID> getMembers() {

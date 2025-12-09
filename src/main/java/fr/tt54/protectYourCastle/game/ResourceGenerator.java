@@ -3,6 +3,7 @@ package fr.tt54.protectYourCastle.game;
 import com.google.common.reflect.TypeToken;
 import fr.tt54.protectYourCastle.ProtectYourCastleMain;
 import fr.tt54.protectYourCastle.utils.FileManager;
+import fr.tt54.protectYourCastle.utils.SavedLocation;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -47,9 +48,9 @@ public class ResourceGenerator {
     private Material material;
     private long cooldown; // En secondes
     private long timeBeforeNextDrop;
-    private Location location;
+    private SavedLocation location;
 
-    public ResourceGenerator(Material material, long cooldown, long timeBeforeNextDrop, Location location) {
+    public ResourceGenerator(Material material, long cooldown, long timeBeforeNextDrop, SavedLocation location) {
         this.material = material;
         this.cooldown = cooldown;
         this.timeBeforeNextDrop = timeBeforeNextDrop;
@@ -81,11 +82,11 @@ public class ResourceGenerator {
     }
 
     public Location getLocation() {
-        return location;
+        return location.toLocation();
     }
 
     public void setLocation(Location location) {
-        this.location = location;
+        this.location = SavedLocation.fromLocation(location);
     }
 
     public void generate(){
