@@ -108,7 +108,8 @@ public class Game {
 
             World world = this.gameWorld;
             world.setTime(6000);
-            world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
+            world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, true);
+            world.setGameRule(GameRule.DO_MOB_SPAWNING, false);
             world.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
             world.setThundering(false);
             world.setStorm(false);
