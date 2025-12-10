@@ -85,7 +85,7 @@ public class Game {
         FileManager.copy(sourceGameWorldFolder, gameWorldFolder);
 
         WorldCreator creator = new WorldCreator("game_world");
-        gameWorld = creator.createWorld();
+        this.gameWorld = creator.createWorld();
 
         for(Player player : Bukkit.getOnlinePlayers()){
             // TODO Ouvrir le menu de sélection d'équipe
@@ -103,8 +103,8 @@ public class Game {
 
             scoreboard = new GameScoreboard();
 
-            World world = Bukkit.getWorlds().get(0);
-            world.setTime(0);
+            World world = this.gameWorld;
+            world.setTime(6000);
             world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
             world.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
             world.setThundering(false);
