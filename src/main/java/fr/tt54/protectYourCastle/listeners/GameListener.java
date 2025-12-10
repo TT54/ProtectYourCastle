@@ -169,10 +169,10 @@ public class GameListener implements Listener {
 
     private void beginRespawn(final Player player, Team team, Game game){
         player.setGameMode(GameMode.SPECTATOR);
-        player.sendMessage("§cVous allez respawn dans " + Game.RESPAWN_DELAY + " secondes");
+        player.sendMessage("§cVous allez respawn dans " + GameParameters.RESPAWN_DELAY.get() + " secondes");
         new BukkitRunnable() {
 
-            int timeLeft = Game.RESPAWN_DELAY;
+            int timeLeft = GameParameters.RESPAWN_DELAY.get();
 
             @Override
             public void run() {

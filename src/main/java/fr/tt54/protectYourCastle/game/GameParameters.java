@@ -17,6 +17,7 @@ public class GameParameters {
 
     public static Parameter<Integer> MAP_RADIUS = new Parameter<>("map_radius", 500);
     public static Parameter<Integer> GAME_DURATION = new Parameter<>("game_duration", 60);
+    public static Parameter<Integer> RESPAWN_DELAY = new Parameter<>("respawn_delay", 20);
 
     public static Parameter<Integer> LOBBY_X = new Parameter<>("lobby_x", 0);
     public static Parameter<Integer> LOBBY_Y = new Parameter<>("lobby_y", 100);

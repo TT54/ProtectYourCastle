@@ -13,7 +13,6 @@ import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -41,7 +40,6 @@ public class Game {
             .registerTypeAdapter(GameParameters.class, new GameParameters.GameParametersJsonSerializer())
             .registerTypeAdapter(GameParameters.class, new GameParameters.GameParametersJsonDeserializer())
             .create();
-    public static final int RESPAWN_DELAY = 20;
 
     public static Game currentGame;
 
