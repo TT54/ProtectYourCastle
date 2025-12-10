@@ -113,6 +113,9 @@ public class Game {
             world.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
             world.setThundering(false);
             world.setStorm(false);
+            WorldBorder worldBorder = world.getWorldBorder();
+            worldBorder.setCenter(0, 0);
+            worldBorder.setSize(GameParameters.MAP_RADIUS.get());
 
             for(Player player : Bukkit.getOnlinePlayers()){
                 ScoreboardManager.showScoreboard(player, scoreboard);
