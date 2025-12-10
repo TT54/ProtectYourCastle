@@ -13,6 +13,7 @@ import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -53,7 +54,7 @@ public class Game {
     public Map<UUID, Integer> bannerBrokenPerPlayer = new HashMap<>();
 
     private transient GameRunnable runnable;
-    private transient World gameWorld;
+    public transient World gameWorld;
     public transient GameScoreboard scoreboard;
 
     public Game() {
@@ -143,7 +144,14 @@ public class Game {
 
             for(Player player : Bukkit.getOnlinePlayers()){
                 ScoreboardManager.removeScoreboard(player);
+
+                player.getInventory().clear();
+                // TODO Clear Curios inventory
+                player.teleport(new Location(Bukkit.getWorlds().get(0), GameParameters.LOBBY_X.get() + .5d, GameParameters.LOBBY_Y.get(), GameParameters.LOBBY_Z.get() + .5d));
+                player.setGameMode(GameMode.SURVIVAL);
             }
+
+            Bukkit.unloadWorld(gameWorld, false);
 
             this.scoreboard = null;
             this.gameStatus = Status.STOPPED;

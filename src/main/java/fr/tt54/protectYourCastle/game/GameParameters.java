@@ -17,6 +17,10 @@ public class GameParameters {
 
     public static Parameter<Integer> MAP_RADIUS = new Parameter<>("map_radius", 500);
 
+    public static Parameter<Integer> LOBBY_X = new Parameter<>("lobby_x", 0);
+    public static Parameter<Integer> LOBBY_Y = new Parameter<>("lobby_y", 100);
+    public static Parameter<Integer> LOBBY_Z = new Parameter<>("lobby_z", 0);
+
     private final Map<Parameter<?>, Object> parametersMap;
 
     public GameParameters() {
