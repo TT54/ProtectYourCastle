@@ -169,8 +169,14 @@ public class GameListener implements Listener {
                 if(timeLeft == 0) {
                     game.spawnPlayer(player, team);
                     this.cancel();
+                    return;
                 } else{
                     player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("§cRespawn dans " + timeLeft + "s"));
+                }
+
+                if(Game.currentGame == null || !Game.currentGame.isRunning()){
+                    this.cancel();
+                    return;
                 }
 
                 timeLeft--;
