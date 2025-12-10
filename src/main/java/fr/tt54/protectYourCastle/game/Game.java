@@ -38,8 +38,9 @@ public class Game {
             .registerTypeAdapter(Location.class, new LocationDeserializer())
             .registerTypeAdapter(Area.class, new Area.AreaSerializer())
             .registerTypeAdapter(Area.class, new Area.AreaDeserializer())
+            .registerTypeAdapter(GameParameters.class, new GameParameters.GameParametersJsonSerializer())
+            .registerTypeAdapter(GameParameters.class, new GameParameters.GameParametersJsonDeserializer())
             .create();
-    public static int GAME_DURATION = 60 * 60;
     public static final int RESPAWN_DELAY = 20;
 
     public static Game currentGame;

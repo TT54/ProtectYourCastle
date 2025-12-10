@@ -1,9 +1,6 @@
 package fr.tt54.protectYourCastle.cmd;
 
-import fr.tt54.protectYourCastle.game.Game;
-import fr.tt54.protectYourCastle.game.ResourceGenerator;
-import fr.tt54.protectYourCastle.game.Team;
-import fr.tt54.protectYourCastle.game.Trader;
+import fr.tt54.protectYourCastle.game.*;
 import fr.tt54.protectYourCastle.utils.Area;
 import fr.tt54.protectYourCastle.utils.SavedLocation;
 import org.bukkit.Bukkit;
@@ -367,7 +364,7 @@ public class CmdCastle extends CoreCommand {
                     return false;
                 }
 
-                Game.GAME_DURATION = 60 * duration;
+                GameParameters.gameParameters.setParameter(GameParameters.GAME_DURATION, 60 * duration);
                 player.sendMessage("§aDurée de : " + duration + "min");
                 return true;
             }

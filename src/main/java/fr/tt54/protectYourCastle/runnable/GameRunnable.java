@@ -1,5 +1,6 @@
 package fr.tt54.protectYourCastle.runnable;
 
+import fr.tt54.protectYourCastle.game.GameParameters;
 import fr.tt54.protectYourCastle.game.ResourceGenerator;
 import fr.tt54.protectYourCastle.game.Game;
 import fr.tt54.protectYourCastle.game.Team;
@@ -29,11 +30,11 @@ public class GameRunnable extends BukkitRunnable {
             generator.generate();
         }
 
-        if(game.time >= Game.GAME_DURATION){
+        if(game.time >= GameParameters.GAME_DURATION.get()){
             if(game.hasWinner()) {
                 game.finish();
                 this.cancel();
-            } else if(game.time == Game.GAME_DURATION){
+            } else if(game.time == GameParameters.GAME_DURATION.get()){
                 for(Player player : Bukkit.getOnlinePlayers()){
                     player.playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_SHOOT, .5f, .5f);
                 }
