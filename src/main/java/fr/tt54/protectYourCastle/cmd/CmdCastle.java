@@ -367,6 +367,54 @@ public class CmdCastle extends CoreCommand {
                 GameParameters.gameParameters.setParameter(GameParameters.GAME_DURATION, 60 * duration);
                 player.sendMessage("§aDurée de : " + duration + "min");
                 return true;
+            } else if(args[0].equalsIgnoreCase("parameter")){
+                if(args.length >= 2){
+                    if(args[1].equalsIgnoreCase("set")){
+                        if(args.length != 4){
+                            player.sendMessage("§cBon usage : '/castle parameter set <parameter> <value>'");
+                            return false;
+                        }
+
+                        String parameter = args[2];
+                        String value = args[3];
+
+                        if(GameParameters.Parameter.getParameter(parameter) == null){
+                            player.sendMessage("§cLe paramètre " + parameter + " est introuvable");
+                            return false;
+                        }
+
+                        if(GameParameters.gameParameters.setParameter(parameter, value)){
+                            player.sendMessage("§aParamètre mis à jour : §3" + parameter + " §2-> §e" + value);
+                            return true;
+                        }
+
+                        player.sendMessage("§cLa valeur renseignée est incompatible avec ce paramètre ou ce dernier n'existe pas");
+                        return false;
+                    } else if(args[1].equalsIgnoreCase("get")){
+                        if(args.length != 3){
+                            player.sendMessage("§cBon usage : '/castle parameter get <parameter>'");
+                            return false;
+                        }
+
+                        String paramName = args[2];
+                        GameParameters.Parameter<?> parameter = GameParameters.Parameter.getParameter(paramName);
+                        if(parameter != null){
+                            player.sendMessage("§8-------- §eParamètres §8--------");
+                            player.sendMessage("§6" + parameter.getName() + " : §e" + GameParameters.gameParameters.getParameter(parameter).toString());
+                            return true;
+                        }
+
+                        player.sendMessage("§cLe paramètre " + paramName + " est introuvable");
+                        return false;
+                    } else if (args[1].equalsIgnoreCase("list")) {
+                        GameParameters parameters = GameParameters.gameParameters;
+                        player.sendMessage("§8-------- §eParamètres §8--------");
+                        for(GameParameters.Parameter<?> parameter : GameParameters.Parameter.existingParameters){
+                            player.sendMessage("§6" + parameter.getName() + " : §e" + parameters.getParameter(parameter).toString());
+                        }
+                        return true;
+                    }
+                }
             }
         }
 
@@ -380,7 +428,7 @@ public class CmdCastle extends CoreCommand {
         }
 
         if(args.length == 1){
-            return tabComplete(args[0], "generator", "start", "team", "trader");
+            return tabComplete(args[0], "generator", "start", "team", "trader", "parameter");
         } else if(args.length == 2){
             if(args[0].equalsIgnoreCase("generator")){
                 return tabComplete(args[1], "add");
@@ -388,6 +436,8 @@ public class CmdCastle extends CoreCommand {
                 return tabComplete(args[1], "spawn", "base", "banner", "join", "leave", "protected", "rollback", "drawbridge");
             } else if(args[0].equalsIgnoreCase("trader")){
                 return tabComplete(args[1], "spawn", "remove");
+            } else if(args[0].equalsIgnoreCase("parameter")){
+                return tabComplete(args[1], "set", "get", "list");
             }
         } else if(args.length == 3){
             if(args[0].equalsIgnoreCase("generator")){
@@ -397,6 +447,10 @@ public class CmdCastle extends CoreCommand {
             } else if(args[0].equalsIgnoreCase("team")){
                 if(args[1].equalsIgnoreCase("spawn") || args[1].equalsIgnoreCase("drawbridge") || args[1].equalsIgnoreCase("rollback") || args[1].equalsIgnoreCase("protected") || args[1].equalsIgnoreCase("base") || args[1].equalsIgnoreCase("banner") || args[1].equalsIgnoreCase("join")){
                     return tabComplete(args[2], Arrays.stream(Team.TeamColor.values()).map(teamColor -> teamColor.name().toLowerCase()).toList());
+                }
+            } else if(args[0].equalsIgnoreCase("parameter")){
+                if(args[1].equalsIgnoreCase("set") || args[1].equalsIgnoreCase("get")){
+                    return tabComplete(args[2], GameParameters.Parameter.existingParameters.stream().map(GameParameters.Parameter::getName));
                 }
             }
         } else if(args.length == 4){
