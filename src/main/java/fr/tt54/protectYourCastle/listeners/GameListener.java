@@ -133,6 +133,10 @@ public class GameListener implements Listener {
             Bukkit.broadcastMessage("§6[Castle] " + team.getColor().getChatColor() + player.getName() + "§c a perdu la bannière ennemi qu'il transportait");
         }
 
+        if(Game.currentGame != null && Game.currentGame.isRunning() && player.getKiller() != null){
+            Game.currentGame.addKill(player.getKiller());
+        }
+
         Bukkit.getScheduler().runTaskLater(ProtectYourCastleMain.getInstance(), () -> {
             player.spigot().respawn();
         }, 1L);

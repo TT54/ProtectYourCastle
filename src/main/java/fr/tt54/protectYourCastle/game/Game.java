@@ -13,14 +13,13 @@ import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
-import org.bukkit.util.FileUtil;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -48,6 +47,8 @@ public class Game {
     public int time;
     public Map<Team.TeamColor, Integer> points = new HashMap<>();
     public Map<Team.TeamColor, UUID> bannerHolder = new HashMap<>();
+    public Map<UUID, Integer> kills = new HashMap<>();
+    public Map<UUID, Integer> pointsPerPlayer = new HashMap<>();
 
     private transient GameRunnable runnable;
     private transient World gameWorld;
@@ -122,10 +123,13 @@ public class Game {
         }
     }
 
-    public void stop(){
+    public GameStatistics stop(){
         if(this.runnable != null && gameStatus != Status.STOPPED) {
             this.runnable.cancel();
             this.runnable = null;
+
+            GameStatistics statistics = this.getStatistics();
+            GameStatistics.gameStatistics.add(statistics);
 
             for(ResourceGenerator generator : this.getGenerators()){
                 generator.getLocation().getChunk().setForceLoaded(false);
@@ -137,7 +141,22 @@ public class Game {
 
             this.scoreboard = null;
             this.gameStatus = Status.STOPPED;
+            return statistics;
         }
+        return null;
+    }
+
+    public GameStatistics getStatistics(){
+        Map<UUID, Team.TeamColor> playersTeam = new HashMap<>();
+        Map<Team.TeamColor, Integer> scores = new HashMap<>();
+        for(Team team : Team.getTeams()){
+            for(UUID player : team.getMembers()){
+                playersTeam.put(player, team.getColor());
+            }
+            scores.put(team.getColor(), this.getPoints(team.getColor()));
+        }
+
+        return new GameStatistics(playersTeam, scores, new HashMap<>(this.kills), new HashMap<>(this.pointsPerPlayer));
     }
 
     public void finish() {
@@ -165,7 +184,8 @@ public class Game {
     }
 
     public void addPoint(Team.TeamColor teamColor, Player placer, int amount){
-        this.points.put(teamColor, this.points.getOrDefault(teamColor, 0) + 1);
+        this.points.put(teamColor, this.getPoints(teamColor) + 1);
+        this.pointsPerPlayer.put(placer.getUniqueId(), this.getPlayerPointsCollected(placer.getUniqueId()) + 1);
         Bukkit.broadcastMessage("§6[Castle] §aL'équipe " + teamColor.getChatColor() + teamColor.name() + "§a vient de gagner " + amount + " point grâce à " + placer.getName() + " !");
     }
 
@@ -245,6 +265,18 @@ public class Game {
         meta.setColor(color);
         armor.setItemMeta(meta);
         return armor;
+    }
+
+    public void addKill(@NotNull Player killer) {
+        this.kills.put(killer.getUniqueId(), 1 + this.getPlayerKills(killer.getUniqueId()));
+    }
+
+    public int getPlayerKills(UUID playerUUID){
+        return this.kills.getOrDefault(playerUUID, 0);
+    }
+
+    public int getPlayerPointsCollected(UUID playerUUID){
+        return this.pointsPerPlayer.getOrDefault(playerUUID, 0);
     }
 
     public enum Status{

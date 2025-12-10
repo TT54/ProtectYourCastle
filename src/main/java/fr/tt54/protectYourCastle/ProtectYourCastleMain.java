@@ -2,6 +2,7 @@ package fr.tt54.protectYourCastle;
 
 import fr.tt54.protectYourCastle.cmd.CmdCastle;
 import fr.tt54.protectYourCastle.cmd.CmdDrawbridge;
+import fr.tt54.protectYourCastle.game.GameStatistics;
 import fr.tt54.protectYourCastle.game.ResourceGenerator;
 import fr.tt54.protectYourCastle.game.Team;
 import fr.tt54.protectYourCastle.game.Trader;
@@ -22,6 +23,7 @@ public final class ProtectYourCastleMain extends JavaPlugin {
         ResourceGenerator.load();
         Team.load();
         Trader.load();
+        GameStatistics.load();
 
         this.getCommand("drawbridge").setExecutor(new CmdDrawbridge());
         this.getCommand("castle").setExecutor(new CmdCastle());
@@ -42,6 +44,7 @@ public final class ProtectYourCastleMain extends JavaPlugin {
         ResourceGenerator.save();
         Team.save();
         Trader.save();
+        GameStatistics.save();
     }
 
     public static ProtectYourCastleMain getInstance() {
