@@ -2,10 +2,7 @@ package fr.tt54.protectYourCastle;
 
 import fr.tt54.protectYourCastle.cmd.CmdCastle;
 import fr.tt54.protectYourCastle.cmd.CmdDrawbridge;
-import fr.tt54.protectYourCastle.game.GameStatistics;
-import fr.tt54.protectYourCastle.game.ResourceGenerator;
-import fr.tt54.protectYourCastle.game.Team;
-import fr.tt54.protectYourCastle.game.Trader;
+import fr.tt54.protectYourCastle.game.*;
 import fr.tt54.protectYourCastle.listeners.BannerListener;
 import fr.tt54.protectYourCastle.listeners.GameListener;
 import fr.tt54.protectYourCastle.voicechat.VoiceChatBridge;
@@ -24,6 +21,7 @@ public final class ProtectYourCastleMain extends JavaPlugin {
         Team.load();
         Trader.load();
         GameStatistics.load();
+        GameParameters.load();
 
         this.getCommand("drawbridge").setExecutor(new CmdDrawbridge());
         this.getCommand("castle").setExecutor(new CmdCastle());
@@ -45,6 +43,7 @@ public final class ProtectYourCastleMain extends JavaPlugin {
         Team.save();
         Trader.save();
         GameStatistics.save();
+        GameParameters.save();
     }
 
     public static ProtectYourCastleMain getInstance() {
