@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public record GameStatistics(Map<UUID, Team.TeamColor> players, Map<Team.TeamColor, Integer> scores, Map<UUID, Integer> kills, Map<UUID, Integer> pointsPerPlayer) {
+public record GameStatistics(Map<UUID, Team.TeamColor> players, Map<Team.TeamColor, Integer> scores, Map<UUID, Integer> kills, Map<UUID, Integer> deaths, Map<UUID, Integer> pointsPerPlayer, Map<UUID, Integer> bannerBrokenPerPlayer) {
 
     public static List<GameStatistics> gameStatistics = new ArrayList<>();
     private static final Type statisticsType = new TypeToken<List<GameStatistics>>() {}.getType();

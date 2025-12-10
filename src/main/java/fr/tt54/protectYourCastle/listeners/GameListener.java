@@ -68,6 +68,7 @@ public class GameListener implements Listener {
                         }
                         Bukkit.broadcastMessage("§6[Castle] " + t.getColor().getChatColor() + player.getName() + "§a a volé une bannière à la team " + t.getColor().getChatColor() + t.getColor().name());
                         player.getWorld().dropItem(player.getLocation().clone().add(0, .5, 0), t.getBannerItem());
+                        Game.currentGame.addBannerBroken(player);
                     } else {
                         player.sendMessage("§cVous ne pouvez pas casser de blocs à la main dans la base ennemie");
                     }
@@ -128,13 +129,17 @@ public class GameListener implements Listener {
 
         event.getDrops().removeIf(loot -> !ALLOWED_DROPS.contains(loot.getType()));
 
-        if(team != null && Game.currentGame != null && player.getUniqueId().equals(Game.currentGame.bannerHolder.get(team.getColor()))){
-            Game.currentGame.bannerHolder.remove(team.getColor());
-            Bukkit.broadcastMessage("§6[Castle] " + team.getColor().getChatColor() + player.getName() + "§c a perdu la bannière ennemi qu'il transportait");
-        }
+        if(Game.currentGame != null && Game.currentGame.isRunning()){
+            if(team != null && player.getUniqueId().equals(Game.currentGame.bannerHolder.get(team.getColor()))){
+                Game.currentGame.bannerHolder.remove(team.getColor());
+                Bukkit.broadcastMessage("§6[Castle] " + team.getColor().getChatColor() + player.getName() + "§c a perdu la bannière ennemi qu'il transportait");
+            }
 
-        if(Game.currentGame != null && Game.currentGame.isRunning() && player.getKiller() != null){
-            Game.currentGame.addKill(player.getKiller());
+            if(player.getKiller() != null) {
+                Game.currentGame.addKill(player.getKiller());
+            }
+
+            Game.currentGame.addDeath(player);
         }
 
         Bukkit.getScheduler().runTaskLater(ProtectYourCastleMain.getInstance(), () -> {

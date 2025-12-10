@@ -48,7 +48,9 @@ public class Game {
     public Map<Team.TeamColor, Integer> points = new HashMap<>();
     public Map<Team.TeamColor, UUID> bannerHolder = new HashMap<>();
     public Map<UUID, Integer> kills = new HashMap<>();
+    public Map<UUID, Integer> deaths = new HashMap<>();
     public Map<UUID, Integer> pointsPerPlayer = new HashMap<>();
+    public Map<UUID, Integer> bannerBrokenPerPlayer = new HashMap<>();
 
     private transient GameRunnable runnable;
     private transient World gameWorld;
@@ -156,7 +158,7 @@ public class Game {
             scores.put(team.getColor(), this.getPoints(team.getColor()));
         }
 
-        return new GameStatistics(playersTeam, scores, new HashMap<>(this.kills), new HashMap<>(this.pointsPerPlayer));
+        return new GameStatistics(playersTeam, scores, new HashMap<>(this.kills), new HashMap<>(this.deaths), new HashMap<>(this.pointsPerPlayer), new HashMap<>(this.bannerBrokenPerPlayer));
     }
 
     public void finish() {
@@ -277,6 +279,22 @@ public class Game {
 
     public int getPlayerPointsCollected(UUID playerUUID){
         return this.pointsPerPlayer.getOrDefault(playerUUID, 0);
+    }
+
+    public int getBannerBroken(UUID playerUUID){
+        return this.bannerBrokenPerPlayer.getOrDefault(playerUUID, 0);
+    }
+
+    public void addBannerBroken(Player player) {
+        this.bannerBrokenPerPlayer.put(player.getUniqueId(), 1 + this.getBannerBroken(player.getUniqueId()));
+    }
+
+    public int getDeaths(UUID playerUUID){
+        return this.deaths.getOrDefault(playerUUID, 0);
+    }
+
+    public void addDeath(Player player){
+        this.deaths.put(player.getUniqueId(), this.getDeaths(player.getUniqueId()));
     }
 
     public enum Status{
