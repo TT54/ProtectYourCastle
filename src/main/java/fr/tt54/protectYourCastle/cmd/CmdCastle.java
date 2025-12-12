@@ -450,7 +450,7 @@ public class CmdCastle extends CoreCommand {
                 }
             } else if(args[0].equalsIgnoreCase("parameter")){
                 if(args[1].equalsIgnoreCase("set") || args[1].equalsIgnoreCase("get")){
-                    return tabComplete(args[2], GameParameters.Parameter.existingParameters.stream().map(GameParameters.Parameter::getName));
+                    return GameParameters.Parameter.existingParameters.stream().map(GameParameters.Parameter::getName).filter(s -> s.contains(args[2])).toList();
                 }
             }
         } else if(args.length == 4){
