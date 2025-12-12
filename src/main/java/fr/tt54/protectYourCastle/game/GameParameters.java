@@ -25,6 +25,7 @@ public class GameParameters {
 
     public static Parameter<Boolean> KEEP_ARTIFACTS = new Parameter<>("keep_artifactes", true);
     public static Parameter<Boolean> KEEP_ARMOR = new Parameter<>("keep_armor", true);
+    public static Parameter<Boolean> INCREASED_RESOURCES = new Parameter<>("increased_resources", true);
 
     private final Map<Parameter<?>, Object> parametersMap;
 

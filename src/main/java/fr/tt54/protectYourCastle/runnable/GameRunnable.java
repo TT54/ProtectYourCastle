@@ -14,9 +14,12 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class GameRunnable extends BukkitRunnable {
 
     private final Game game;
+    private int resourcesToGenerate = 0;
 
     public GameRunnable(Game game) {
         this.game = game;
+        for(Team team : Team.getTeams())
+            this.resourcesToGenerate = Math.max(this.resourcesToGenerate, team.getMembers().size());
     }
 
     @Override
@@ -29,7 +32,8 @@ public class GameRunnable extends BukkitRunnable {
         }
 
         for(ResourceGenerator generator : game.getGenerators()){
-            generator.generate();
+            generator.generate(GameParameters.INCREASED_RESOURCES.get() && generator.getMaterial() != Material.DIAMOND && generator.getMaterial() != Material.EMERALD
+                    ? resourcesToGenerate : 1);
         }
 
         if(game.time >= GameParameters.GAME_DURATION.get()){

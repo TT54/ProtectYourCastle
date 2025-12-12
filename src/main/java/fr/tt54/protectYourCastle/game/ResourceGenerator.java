@@ -89,11 +89,11 @@ public class ResourceGenerator {
         this.location = SavedLocation.fromLocation(location);
     }
 
-    public void generate(){
+    public void generate(int amount){
         this.timeBeforeNextDrop--;
         if(this.timeBeforeNextDrop == 0){
             this.timeBeforeNextDrop = this.cooldown;
-            this.getLocation().getWorld().dropItem(this.getLocation(), new ItemStack(this.material));
+            this.getLocation().getWorld().dropItem(this.getLocation(), new ItemStack(this.material, amount));
         }
     }
 }
