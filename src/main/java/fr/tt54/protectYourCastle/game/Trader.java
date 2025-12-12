@@ -2,7 +2,7 @@ package fr.tt54.protectYourCastle.game;
 
 import com.google.common.reflect.TypeToken;
 import fr.tt54.protectYourCastle.ProtectYourCastleMain;
-import fr.tt54.protectYourCastle.inventories.TradeListInventory;
+import fr.tt54.protectYourCastle.inventories.trades.TradeListInventory;
 import fr.tt54.protectYourCastle.utils.FileManager;
 import fr.tt54.protectYourCastle.utils.SavedLocation;
 import org.bukkit.Bukkit;

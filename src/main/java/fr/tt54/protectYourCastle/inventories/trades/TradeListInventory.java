@@ -1,6 +1,7 @@
-package fr.tt54.protectYourCastle.inventories;
+package fr.tt54.protectYourCastle.inventories.trades;
 
 import fr.tt54.protectYourCastle.game.Trader;
+import fr.tt54.protectYourCastle.inventories.PageableInventory;
 import fr.tt54.protectYourCastle.utils.ItemBuilder;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -12,7 +13,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 
-public class TradeListInventory extends PageableInventory<Trader.NPCTrade>{
+public class TradeListInventory extends PageableInventory<Trader.NPCTrade> {
 
     private final Trader trader;
 
