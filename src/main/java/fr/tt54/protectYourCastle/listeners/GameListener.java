@@ -28,6 +28,8 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 public class GameListener implements Listener {
@@ -137,7 +139,32 @@ public class GameListener implements Listener {
         final Player player = event.getEntity();
         final Team team = Team.getPlayerTeam(event.getEntity().getUniqueId());
 
-        event.getDrops().removeIf(loot -> !ALLOWED_DROPS.contains(loot.getType()));
+        List<ItemStack> addedDrops = new ArrayList<>();
+        for(ItemStack is : event.getEntity().getInventory().getStorageContents()){
+            if(is == null) continue;
+            if(ALLOWED_DROPS.contains(is.getType())) addedDrops.add(is.clone());
+            is.setAmount(0);
+        }
+        for(ItemStack is : event.getEntity().getInventory().getExtraContents()){
+            if(is == null) continue;
+            if(ALLOWED_DROPS.contains(is.getType())) addedDrops.add(is.clone());
+            is.setAmount(0);
+        }
+        for(ItemStack is : event.getEntity().getInventory().getArmorContents()){
+            if(is == null) continue;
+            if(!GameParameters.KEEP_ARMOR.get()){
+                is.setAmount(0);
+            } else if(is.getType().name().contains("NETHERITE")){
+                Material newType = Material.getMaterial(is.getType().name().replace("NETHERITE", "DIAMOND"));
+                if(newType != null) {
+                    is.setType(newType);
+                }
+            }
+        }
+        event.getDrops().addAll(addedDrops);
+        if(!GameParameters.KEEP_ARTIFACTS.get()){
+            // TODO Clear curios items
+        }
 
         if(Game.currentGame != null && Game.currentGame.isRunning()){
             if(team != null && player.getUniqueId().equals(Game.currentGame.bannerHolder.get(team.getColor()))){
@@ -177,7 +204,7 @@ public class GameListener implements Listener {
             @Override
             public void run() {
                 if(timeLeft == 0) {
-                    game.spawnPlayer(player, team);
+                    game.spawnPlayer(player, team, false);
                     this.cancel();
                     return;
                 } else{

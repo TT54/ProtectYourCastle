@@ -23,6 +23,9 @@ public class GameParameters {
     public static Parameter<Integer> LOBBY_Y = new Parameter<>("lobby_y", 100);
     public static Parameter<Integer> LOBBY_Z = new Parameter<>("lobby_z", 0);
 
+    public static Parameter<Boolean> KEEP_ARTIFACTS = new Parameter<>("keep_artifactes", true);
+    public static Parameter<Boolean> KEEP_ARMOR = new Parameter<>("keep_armor", true);
+
     private final Map<Parameter<?>, Object> parametersMap;
 
     public GameParameters() {

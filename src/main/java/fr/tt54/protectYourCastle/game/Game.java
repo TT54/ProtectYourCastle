@@ -111,6 +111,7 @@ public class Game {
             world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, true);
             world.setGameRule(GameRule.DO_MOB_SPAWNING, false);
             world.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
+            world.setGameRule(GameRule.KEEP_INVENTORY, true);
             world.setThundering(false);
             world.setStorm(false);
             WorldBorder worldBorder = world.getWorldBorder();
@@ -121,7 +122,7 @@ public class Game {
                 ScoreboardManager.showScoreboard(player, scoreboard);
                 Team team = Team.getPlayerTeam(player.getUniqueId());
                 if(team != null) {
-                    spawnPlayer(player, team);
+                    spawnPlayer(player, team, true);
                 }
             }
 
@@ -255,22 +256,23 @@ public class Game {
         return winner;
     }
 
-    public void spawnPlayer(Player player, Team team) {
-        player.getInventory().clear();
+    public void spawnPlayer(Player player, Team team, boolean isFirstSpawn) {
+        if(isFirstSpawn) {
+            player.getInventory().clear();
+            // TODO Clear curios inventory
+        }
         player.teleport(team.getSpawnLocation());
         player.setGameMode(GameMode.SURVIVAL);
         player.setHealth(20);
         player.setSaturation(20);
         player.setFoodLevel(20);
 
-        ItemStack helmet = colorArmor(new ItemStack(Material.LEATHER_HELMET), team.getColor().getArmorColor());
-        ItemStack chestplate = colorArmor(new ItemStack(Material.LEATHER_CHESTPLATE), team.getColor().getArmorColor());
-        ItemStack leggings = colorArmor(new ItemStack(Material.LEATHER_LEGGINGS), team.getColor().getArmorColor());
-        ItemStack boots = colorArmor(new ItemStack(Material.LEATHER_BOOTS), team.getColor().getArmorColor());
+        if(player.getInventory().getHelmet() != null) player.getInventory().setHelmet(new ItemStack(Material.IRON_HELMET));
+        if(player.getInventory().getChestplate() != null) player.getInventory().setChestplate(new ItemStack(Material.IRON_CHESTPLATE));
+        if(player.getInventory().getLeggings() != null) player.getInventory().setLeggings(new ItemStack(Material.IRON_LEGGINGS));
+        if(player.getInventory().getBoots() != null) player.getInventory().setBoots(new ItemStack(Material.IRON_BOOTS));
 
-        player.getInventory().setArmorContents(new ItemStack[]{boots, leggings, chestplate, helmet});
-
-        player.getInventory().addItem(new ItemBuilder(Material.STONE_SWORD).build(), new ItemBuilder(Material.BREAD, 4).build());
+        player.getInventory().addItem(new ItemBuilder(Material.IRON_SWORD).build(), new ItemBuilder(Material.BREAD, 4).build());
     }
 
     public static ItemStack colorArmor(ItemStack armor, Color color){
