@@ -152,7 +152,7 @@ public class Game {
                 player.setGameMode(GameMode.SURVIVAL);
             }
 
-            Bukkit.unloadWorld(gameWorld, false);
+            Bukkit.getScheduler().runTaskLater(ProtectYourCastleMain.getInstance(), () -> Bukkit.unloadWorld(gameWorld, false), 10L);
 
             this.scoreboard = null;
             this.gameStatus = Status.STOPPED;

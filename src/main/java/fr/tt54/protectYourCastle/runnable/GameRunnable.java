@@ -21,6 +21,8 @@ public class GameRunnable extends BukkitRunnable {
 
     @Override
     public void run() {
+        if(this.isCancelled()) return;
+
         game.time++;
         if(game.scoreboard != null) {
             game.scoreboard.updatePlayersScoreboard();
