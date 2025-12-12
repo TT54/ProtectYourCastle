@@ -1,4 +1,4 @@
-package fr.tt54.protectYourCastle.voicechat;
+package fr.tt54.protectYourCastle.mod_bridges;
 
 import fr.tt54.protectYourCastle.game.Team;
 import fr.tt54.pycmod.PYCVoiceChatPlugin;

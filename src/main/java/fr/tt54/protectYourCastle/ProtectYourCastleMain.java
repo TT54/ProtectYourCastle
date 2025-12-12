@@ -5,7 +5,7 @@ import fr.tt54.protectYourCastle.cmd.CmdDrawbridge;
 import fr.tt54.protectYourCastle.game.*;
 import fr.tt54.protectYourCastle.listeners.BannerListener;
 import fr.tt54.protectYourCastle.listeners.GameListener;
-import fr.tt54.protectYourCastle.voicechat.VoiceChatBridge;
+import fr.tt54.protectYourCastle.mod_bridges.VoiceChatBridge;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class ProtectYourCastleMain extends JavaPlugin {

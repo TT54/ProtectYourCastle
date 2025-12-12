@@ -9,6 +9,7 @@ import fr.tt54.protectYourCastle.utils.Area;
 import fr.tt54.protectYourCastle.utils.FileManager;
 import fr.tt54.protectYourCastle.utils.ItemBuilder;
 import fr.tt54.protectYourCastle.utils.ItemSerialization;
+import fr.tt54.pycmod.PYCCuriosBridge;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
