@@ -116,7 +116,7 @@ public class Game {
             world.setStorm(false);
             WorldBorder worldBorder = world.getWorldBorder();
             worldBorder.setCenter(0, 0);
-            worldBorder.setSize(GameParameters.MAP_RADIUS.get());
+            worldBorder.setSize(2 * GameParameters.MAP_RADIUS.get() + 1);
 
             for(Player player : Bukkit.getOnlinePlayers()){
                 ScoreboardManager.showScoreboard(player, scoreboard);
