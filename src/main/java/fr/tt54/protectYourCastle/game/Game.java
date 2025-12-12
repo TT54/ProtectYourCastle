@@ -139,6 +139,7 @@ public class Game {
         if(this.runnable != null && gameStatus != Status.STOPPED) {
             this.runnable.cancel();
             this.runnable = null;
+            currentGame = null;
 
             GameStatistics statistics = this.getStatistics();
             GameStatistics.gameStatistics.add(statistics);

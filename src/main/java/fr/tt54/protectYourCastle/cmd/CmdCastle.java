@@ -79,6 +79,15 @@ public class CmdCastle extends CoreCommand {
                 Game.currentGame.launch();
                 player.sendMessage("§aLa partie a bien été lancée");
                 return true;
+            } else if(args[0].equalsIgnoreCase("stop")){
+                if(Game.currentGame == null){
+                    player.sendMessage("§cIl n'y a aucune partie en cours");
+                    return false;
+                }
+                Game.currentGame.stop();
+                player.sendMessage("§aLa partie a bien été arrêtée");
+                Bukkit.broadcastMessage("§6[Castle] §cLa partie a été arrêtée");
+                return true;
             } else if(args[0].equalsIgnoreCase("team")){
                 if(args.length >= 2){
                     if(args[1].equalsIgnoreCase("spawn")){
@@ -428,7 +437,7 @@ public class CmdCastle extends CoreCommand {
         }
 
         if(args.length == 1){
-            return tabComplete(args[0], "generator", "start", "team", "trader", "parameter");
+            return tabComplete(args[0], "generator", "start", "team", "trader", "parameter", "stop");
         } else if(args.length == 2){
             if(args[0].equalsIgnoreCase("generator")){
                 return tabComplete(args[1], "add");
