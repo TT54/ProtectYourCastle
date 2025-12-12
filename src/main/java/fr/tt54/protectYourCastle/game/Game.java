@@ -91,6 +91,10 @@ public class Game {
         WorldCreator creator = new WorldCreator("game_world");
         this.gameWorld = creator.createWorld();
 
+        for(Trader trader : new ArrayList<>(Trader.traders.values())){
+            trader.respawn();
+        }
+
         for(Player player : Bukkit.getOnlinePlayers()){
             // TODO Ouvrir le menu de sélection d'équipe
         }

@@ -81,6 +81,7 @@ public class Trader {
         if(this.savedLocation != null){
             Location location = this.savedLocation.toLocation();
             if(location.getWorld() != null){
+                if(!location.getWorld().isChunkLoaded(location.getChunk())) location.getWorld().loadChunk(location.getChunk());
                 for(Entity entity : location.getWorld().getNearbyEntities(location, 1, 1, 1, entity -> entity instanceof Villager && entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(this.name))){
                     entity.remove();
                 }
