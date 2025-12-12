@@ -267,10 +267,10 @@ public class Game {
         player.setSaturation(20);
         player.setFoodLevel(20);
 
-        if(player.getInventory().getHelmet() != null) player.getInventory().setHelmet(new ItemStack(Material.IRON_HELMET));
-        if(player.getInventory().getChestplate() != null) player.getInventory().setChestplate(new ItemStack(Material.IRON_CHESTPLATE));
-        if(player.getInventory().getLeggings() != null) player.getInventory().setLeggings(new ItemStack(Material.IRON_LEGGINGS));
-        if(player.getInventory().getBoots() != null) player.getInventory().setBoots(new ItemStack(Material.IRON_BOOTS));
+        if(player.getInventory().getHelmet() == null || player.getInventory().getHelmet().getType() == Material.AIR) player.getInventory().setHelmet(new ItemStack(Material.IRON_HELMET));
+        if(player.getInventory().getChestplate() == null || player.getInventory().getChestplate().getType() == Material.AIR) player.getInventory().setChestplate(new ItemStack(Material.IRON_CHESTPLATE));
+        if(player.getInventory().getLeggings() == null || player.getInventory().getLeggings().getType() == Material.AIR) player.getInventory().setLeggings(new ItemStack(Material.IRON_LEGGINGS));
+        if(player.getInventory().getBoots() == null || player.getInventory().getBoots().getType() == Material.AIR) player.getInventory().setBoots(new ItemStack(Material.IRON_BOOTS));
 
         player.getInventory().addItem(new ItemBuilder(Material.IRON_SWORD).build(), new ItemBuilder(Material.BREAD, 4).build());
     }
