@@ -5,6 +5,7 @@ import fr.tt54.protectYourCastle.game.Game;
 import fr.tt54.protectYourCastle.game.GameParameters;
 import fr.tt54.protectYourCastle.game.Team;
 import fr.tt54.protectYourCastle.game.Trader;
+import fr.tt54.protectYourCastle.mod_bridges.CuriosBridge;
 import fr.tt54.protectYourCastle.scoreboard.ScoreboardManager;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -163,7 +164,7 @@ public class GameListener implements Listener {
         }
         event.getDrops().addAll(addedDrops);
         if(!GameParameters.KEEP_ARTIFACTS.get()){
-            // TODO Clear curios items
+            CuriosBridge.clearPlayerCuriosInventory(player);
         }
 
         if(Game.currentGame != null && Game.currentGame.isRunning()){

@@ -2,6 +2,7 @@ package fr.tt54.protectYourCastle.game;
 
 import com.google.gson.*;
 import fr.tt54.protectYourCastle.ProtectYourCastleMain;
+import fr.tt54.protectYourCastle.mod_bridges.CuriosBridge;
 import fr.tt54.protectYourCastle.runnable.GameRunnable;
 import fr.tt54.protectYourCastle.scoreboard.GameScoreboard;
 import fr.tt54.protectYourCastle.scoreboard.ScoreboardManager;
@@ -9,7 +10,6 @@ import fr.tt54.protectYourCastle.utils.Area;
 import fr.tt54.protectYourCastle.utils.FileManager;
 import fr.tt54.protectYourCastle.utils.ItemBuilder;
 import fr.tt54.protectYourCastle.utils.ItemSerialization;
-import fr.tt54.pycmod.PYCCuriosBridge;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -147,7 +147,7 @@ public class Game {
                 ScoreboardManager.removeScoreboard(player);
 
                 player.getInventory().clear();
-                // TODO Clear Curios inventory
+                CuriosBridge.clearPlayerCuriosInventory(player);
                 player.teleport(new Location(Bukkit.getWorlds().get(0), GameParameters.LOBBY_X.get() + .5d, GameParameters.LOBBY_Y.get(), GameParameters.LOBBY_Z.get() + .5d));
                 player.setGameMode(GameMode.SURVIVAL);
             }
@@ -260,7 +260,7 @@ public class Game {
     public void spawnPlayer(Player player, Team team, boolean isFirstSpawn) {
         if(isFirstSpawn) {
             player.getInventory().clear();
-            // TODO Clear curios inventory
+            CuriosBridge.clearPlayerCuriosInventory(player);
         }
         player.teleport(team.getSpawnLocation());
         player.setGameMode(GameMode.SURVIVAL);
