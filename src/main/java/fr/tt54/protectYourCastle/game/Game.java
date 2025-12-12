@@ -109,6 +109,16 @@ public class Game {
                 generator.getLocation().getChunk().setForceLoaded(true);
             }
 
+            for(Team team : Team.getTeams()){
+                this.points.put(team.getColor(), 0);
+                ProtectYourCastleMain.voiceChatBridge.createTeamGroup(team);
+                for(UUID member : new ArrayList<>(team.getMembers())){
+                    if(Bukkit.getPlayer(member) == null){
+                        team.leaveTeam(member);
+                    }
+                }
+            }
+
             scoreboard = new GameScoreboard();
 
             World world = this.gameWorld;
