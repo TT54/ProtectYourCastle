@@ -3,6 +3,7 @@ package fr.tt54.protectYourCastle.inventories.lobby;
 import fr.tt54.protectYourCastle.game.GameStatistics;
 import fr.tt54.protectYourCastle.game.Team;
 import fr.tt54.protectYourCastle.inventories.CorePersonalInventory;
+import fr.tt54.protectYourCastle.utils.DefaultItems;
 import fr.tt54.protectYourCastle.utils.ItemBuilder;
 import fr.tt54.protectYourCastle.utils.TimeUnit;
 import org.bukkit.Bukkit;
@@ -56,6 +57,8 @@ public class GameStatsInventory extends CorePersonalInventory {
         );
         inv.setItem(9 * 3 + 5, getTeamInfoItem(Team.TeamColor.RED));
 
+        inv.setItem(9 * 4, DefaultItems.BACK.build());
+
         return inv;
     }
 
@@ -78,6 +81,10 @@ public class GameStatsInventory extends CorePersonalInventory {
     @Override
     public void onInventoryClick(InventoryClickEvent event) {
         event.setCancelled(true);
+        if(event.getClickedInventory() == event.getInventory() && event.getSlot() == 9 * 4){
+            GameStatsListInventory inv = new GameStatsListInventory(this.player, 1);
+            inv.openInventory();
+        }
     }
 
     @Override

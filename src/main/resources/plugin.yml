@@ -8,3 +8,5 @@ commands:
   drawbridge:
     description: Ouvre le pont-levis
     aliases: [db, pontlevis]
+  stats:
+    description: Affiche les statistiques des dernières parties
