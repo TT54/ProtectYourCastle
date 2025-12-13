@@ -130,7 +130,7 @@ public class Game {
             worldBorder.setCenter(0, 0);
             worldBorder.setSize(2 * GameParameters.MAP_RADIUS.get() + 1);
 
-            for(Player player : Bukkit.getOnlinePlayers()){
+            for(Player player : new ArrayList<>(Bukkit.getOnlinePlayers())){
                 ScoreboardManager.showScoreboard(player, scoreboard);
                 Team team = Team.getPlayerTeam(player.getUniqueId());
                 if(team != null) {
@@ -156,7 +156,7 @@ public class Game {
                 generator.getLocation().getChunk().setForceLoaded(false);
             }
 
-            for(Player player : Bukkit.getOnlinePlayers()){
+            for(Player player : new ArrayList<>(Bukkit.getOnlinePlayers())){
                 ScoreboardManager.removeScoreboard(player);
 
                 player.getInventory().clear();
