@@ -55,8 +55,8 @@ public class GameListener implements Listener {
             }
 
             if(team == null){
-                player.setGameMode(GameMode.SPECTATOR);
-                player.teleport(Game.currentGame.gameWorld.getHighestBlockAt(new Location(Game.currentGame.gameWorld, 0, 0, 0)).getLocation().clone().add(.5, 0, .5));
+                player.teleport(new Location(Bukkit.getWorlds().get(0), GameParameters.LOBBY_X.get() + .5d, GameParameters.LOBBY_Y.get(), GameParameters.LOBBY_Z.get() + .5d));
+                player.setGameMode(GameMode.SURVIVAL);
             }
         } else{
             player.teleport(new Location(Bukkit.getWorlds().get(0), GameParameters.LOBBY_X.get() + .5d, GameParameters.LOBBY_Y.get(), GameParameters.LOBBY_Z.get() + .5d));
@@ -192,6 +192,8 @@ public class GameListener implements Listener {
         if(team != null && game != null){
             final Player player = event.getPlayer();
             beginRespawn(player, team, game);
+        } else{
+            event.setRespawnLocation(new Location(Bukkit.getWorlds().get(0), GameParameters.LOBBY_X.get() + .5d, GameParameters.LOBBY_Y.get(), GameParameters.LOBBY_Z.get() + .5d));
         }
     }
 
