@@ -26,8 +26,8 @@ public class GameStatistics {
         gameStatistics = Game.gson.fromJson(FileManager.read(statisticsFile), statisticsType);
 
         for(GameStatistics statistics : gameStatistics){
-            if(statistics.playerScore == null || statistics.playerScore.isEmpty()) {
-                statistics.playerScore = new HashMap<>();
+            if(statistics.playerScores == null || statistics.playerScores.isEmpty()) {
+                statistics.playerScores = new HashMap<>();
                 for(UUID uuid : statistics.getPlayers()){
                     statistics.calculatePlayerScore(uuid);
                 }
@@ -72,7 +72,7 @@ public class GameStatistics {
     private long gameEnd;
     private final Map<StatisticKey, Map<UUID, Integer>> values;
     private final Map<UUID, Team.TeamColor> playerTeam;
-    private Map<UUID, Double> playerScore = new HashMap<>();
+    private Map<UUID, Double> playerScores = new HashMap<>();
 
     private Team.TeamColor winner = null;
 
@@ -148,7 +148,11 @@ public class GameStatistics {
     }
 
     public double getPlayerScore(UUID playerUUID){
-        return this.playerScore.getOrDefault(playerUUID, 0d);
+        return this.playerScores.getOrDefault(playerUUID, 0d);
+    }
+
+    public Map<UUID, Double> getPlayerScores() {
+        return playerScores;
     }
 
     private void calculatePlayerScore(UUID playerUUID){
@@ -164,7 +168,7 @@ public class GameStatistics {
         score += GameParameters.PERSONAL_SCORE_POINTS_COEFF.get() * pointsWon;
 
         score *= 1 + bannersRatio / 2;
-        this.playerScore.put(playerUUID, score);
+        this.playerScores.put(playerUUID, score);
         addPlayerGameScore(playerUUID, score);
     }
 

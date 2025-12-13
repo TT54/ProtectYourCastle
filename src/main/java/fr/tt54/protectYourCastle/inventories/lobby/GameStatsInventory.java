@@ -1,5 +1,6 @@
 package fr.tt54.protectYourCastle.inventories.lobby;
 
+import fr.tt54.protectYourCastle.game.GameParameters;
 import fr.tt54.protectYourCastle.game.GameStatistics;
 import fr.tt54.protectYourCastle.game.Team;
 import fr.tt54.protectYourCastle.inventories.CorePersonalInventory;
@@ -17,9 +18,8 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.text.DecimalFormat;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class GameStatsInventory extends CorePersonalInventory {
@@ -34,6 +34,10 @@ public class GameStatsInventory extends CorePersonalInventory {
     @Override
     public @NotNull Inventory getInventory() {
         Inventory inv = createBaseInventory(5);
+
+        if(GameParameters.DISPLAY_SCORE.get()){
+            inv.setItem(4, this.getPlayersScoreItem());
+        }
 
         Team.TeamColor winner = gameStats.getWinner();
         inv.setItem(9 + 4,
@@ -60,6 +64,14 @@ public class GameStatsInventory extends CorePersonalInventory {
         inv.setItem(9 * 4, DefaultItems.BACK.build());
 
         return inv;
+    }
+
+    private ItemStack getPlayersScoreItem() {
+        DecimalFormat format = new DecimalFormat("#");
+        List<Map.Entry<UUID, Double>> sortedScores = this.gameStats.getPlayerScores().entrySet().stream().sorted(Comparator.comparingDouble(value -> -value.getValue())).toList();
+        return new ItemBuilder(Material.PLAYER_HEAD, "§bMVP : §6§l" + Bukkit.getOfflinePlayer(sortedScores.get(0).getKey()).getName())
+                .addLoreLine(sortedScores.stream().map(entry -> "§7 - §e" + Bukkit.getOfflinePlayer(entry.getKey()).getName() + " : §f" + format.format(entry.getValue())).toList())
+                .build();
     }
 
     public ItemStack getTeamInfoItem(Team.TeamColor teamColor){
