@@ -306,6 +306,27 @@ public class CmdCastle extends CoreCommand {
                         team.leaveTeam(target.getUniqueId());
                         Bukkit.broadcastMessage("§a" + target.getName() + " a quitté l'équipe " + team.getColor().getChatColor() + team.getColor().name());
                         return true;
+                    } else if(args[1].equalsIgnoreCase("fill")){
+                        boolean clearBefore = args.length == 3 && args[2].equalsIgnoreCase("withClear");
+                        if(clearBefore){
+                            for(Team team : Team.getTeams()){
+                                for(UUID uuid : new ArrayList<>(team.getMembers())){
+                                    team.leaveTeam(uuid);
+                                }
+                            }
+                        }
+
+                        Team.fillWithScores();
+                        player.sendMessage("§aLes équipes ont bien été remplies");
+                        return true;
+                    } else if(args[1].equalsIgnoreCase("clear")){
+                        for(Team team : Team.getTeams()){
+                            for(UUID uuid : new ArrayList<>(team.getMembers())){
+                                team.leaveTeam(uuid);
+                            }
+                        }
+                        player.sendMessage("§aLes équipes ont bien été vidées");
+                        return true;
                     }
                 }
             } else if(args[0].equalsIgnoreCase("trader")){
@@ -451,7 +472,7 @@ public class CmdCastle extends CoreCommand {
             if(args[0].equalsIgnoreCase("generator")){
                 return tabComplete(args[1], "add");
             } else if(args[0].equalsIgnoreCase("team")){
-                return tabComplete(args[1], "spawn", "base", "banner", "join", "leave", "protected", "rollback", "drawbridge");
+                return tabComplete(args[1], "spawn", "base", "banner", "join", "leave", "protected", "rollback", "drawbridge", "fill", "clear");
             } else if(args[0].equalsIgnoreCase("trader")){
                 return tabComplete(args[1], "spawn", "remove");
             } else if(args[0].equalsIgnoreCase("parameter")){
@@ -465,6 +486,8 @@ public class CmdCastle extends CoreCommand {
             } else if(args[0].equalsIgnoreCase("team")){
                 if(args[1].equalsIgnoreCase("spawn") || args[1].equalsIgnoreCase("drawbridge") || args[1].equalsIgnoreCase("rollback") || args[1].equalsIgnoreCase("protected") || args[1].equalsIgnoreCase("base") || args[1].equalsIgnoreCase("banner") || args[1].equalsIgnoreCase("join")){
                     return tabComplete(args[2], Arrays.stream(Team.TeamColor.values()).map(teamColor -> teamColor.name().toLowerCase()).toList());
+                } else if(args[1].equalsIgnoreCase("fill")){
+                    return tabComplete(args[2], "withClear");
                 }
             } else if(args[0].equalsIgnoreCase("parameter")){
                 if(args[1].equalsIgnoreCase("set") || args[1].equalsIgnoreCase("get")){

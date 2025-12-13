@@ -71,6 +71,31 @@ public class Team {
         return teams.get(teamColor);
     }
 
+    public static void fillWithScores() {
+        Team team1 = getTeam(TeamColor.RED);
+        double score1 = team1.getMembersScoreSum();
+        Team team2 = getTeam(TeamColor.YELLOW);
+        double score2 = team2.getMembersScoreSum();
+
+        final int membersLimit = (Bukkit.getOnlinePlayers().size() + 1) / 2;
+
+        List<UUID> toAdd = new ArrayList<>(Bukkit.getOnlinePlayers().stream().map(Player::getUniqueId).filter(uuid -> !team1.getMembers().contains(uuid) && !team2.getMembers().contains(uuid)).sorted(Comparator.comparingDouble(GameStatistics::getPlayerTotalScore)).toList());
+        while(!toAdd.isEmpty()){
+            UUID player = toAdd.remove(toAdd.size() - 1);
+            double score = GameStatistics.getPlayerTotalScore(player);
+            if(score1 <= score2 && team1.getMembers().size() < membersLimit){
+                score1 += score;
+                team1.joinTeam(player);
+            } else if(team2.getMembers().size() < membersLimit){
+                score2 += score;
+                team2.joinTeam(player);
+            } else {
+                score1 += score;
+                team1.joinTeam(player);
+            }
+        }
+    }
+
     private final TeamColor color;
     private SavedLocation spawnLocation;
     private SavedLocation bannerLocation;
@@ -210,6 +235,14 @@ public class Team {
 
     public void setVoiceChatGroupUUID(UUID voiceChatGroupUUID) {
         this.voiceChatGroupUUID = voiceChatGroupUUID;
+    }
+
+    public double getMembersScoreSum(){
+        double score = 0;
+        for(UUID member : this.getMembers()){
+            score += GameStatistics.getPlayerTotalScore(member);
+        }
+        return score;
     }
 
     public enum TeamColor{
