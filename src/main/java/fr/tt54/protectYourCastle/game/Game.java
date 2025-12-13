@@ -324,7 +324,7 @@ public class Game {
     }
 
     public void addDeath(Player player){
-        this.deaths.put(player.getUniqueId(), this.getDeaths(player.getUniqueId()));
+        this.deaths.put(player.getUniqueId(), 1 + this.getDeaths(player.getUniqueId()));
     }
 
     public enum Status{
