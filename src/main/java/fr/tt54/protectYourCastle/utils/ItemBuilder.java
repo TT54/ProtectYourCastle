@@ -92,6 +92,7 @@ public class ItemBuilder {
         if (lore == null) lore = new ArrayList<>();
 
         lore.addAll(Arrays.asList(lines));
+        meta.setLore(lore);
         this.is.setItemMeta(meta);
 
         return this;
@@ -104,6 +105,7 @@ public class ItemBuilder {
         if (lore == null) lore = new ArrayList<>();
 
         lore.addAll(lines);
+        meta.setLore(lore);
         this.is.setItemMeta(meta);
 
         return this;

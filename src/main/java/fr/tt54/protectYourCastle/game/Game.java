@@ -2,6 +2,7 @@ package fr.tt54.protectYourCastle.game;
 
 import com.google.gson.*;
 import fr.tt54.protectYourCastle.ProtectYourCastleMain;
+import fr.tt54.protectYourCastle.inventories.lobby.GameStatsInventory;
 import fr.tt54.protectYourCastle.mod_bridges.CuriosBridge;
 import fr.tt54.protectYourCastle.runnable.GameRunnable;
 import fr.tt54.protectYourCastle.scoreboard.GameScoreboard;
@@ -46,6 +47,7 @@ public class Game {
 
     private Status gameStatus;
     public int time;
+    private long beginTime;
     public Map<Team.TeamColor, Integer> points = new HashMap<>();
     public Map<Team.TeamColor, UUID> bannerHolder = new HashMap<>();
     public Map<UUID, Integer> kills = new HashMap<>();
@@ -70,11 +72,6 @@ public class Game {
 
     public void prepare(){
         this.gameStatus = Status.PREPARING;
-
-        for(Team team : Team.getTeams()){
-            this.points.put(team.getColor(), 0);
-            ProtectYourCastleMain.voiceChatBridge.createTeamGroup(team);
-        }
 
         File sourceGameWorldFolder = new File(ProtectYourCastleMain.getInstance().getDataFolder(), "game_world");
         File gameWorldFolder = new File(ProtectYourCastleMain.getInstance().getDataFolder().getParentFile().getParentFile(), "game_world");
@@ -142,6 +139,7 @@ public class Game {
             }
 
             this.gameStatus = Status.RUNNING;
+            this.beginTime = System.currentTimeMillis();
         }
     }
 
@@ -165,6 +163,9 @@ public class Game {
                 CuriosBridge.clearPlayerCuriosInventory(player);
                 player.teleport(new Location(Bukkit.getWorlds().get(0), GameParameters.LOBBY_X.get() + .5d, GameParameters.LOBBY_Y.get(), GameParameters.LOBBY_Z.get() + .5d));
                 player.setGameMode(GameMode.SURVIVAL);
+
+                GameStatsInventory inv = new GameStatsInventory(player, statistics);
+                inv.openInventory();
             }
 
             Bukkit.getScheduler().runTaskLater(ProtectYourCastleMain.getInstance(), () -> Bukkit.unloadWorld(gameWorld, false), 10L);
@@ -186,7 +187,7 @@ public class Game {
             scores.put(team.getColor(), this.getPoints(team.getColor()));
         }
 
-        return new GameStatistics(playersTeam, scores, new HashMap<>(this.kills), new HashMap<>(this.deaths), new HashMap<>(this.pointsPerPlayer), new HashMap<>(this.bannerBrokenPerPlayer));
+        return new GameStatistics(this.beginTime, System.currentTimeMillis(), playersTeam, scores, new HashMap<>(this.kills), new HashMap<>(this.deaths), new HashMap<>(this.pointsPerPlayer), new HashMap<>(this.bannerBrokenPerPlayer));
     }
 
     public void finish() {
