@@ -99,13 +99,6 @@ public class Game {
 
     public void launch(){
         if(gameStatus == Status.PREPARING){
-            this.runnable = new GameRunnable(this);
-            this.runnable.runTaskTimer(ProtectYourCastleMain.getInstance(), 20, 20);
-
-            for(ResourceGenerator generator : this.getGenerators()){
-                generator.getLocation().getChunk().setForceLoaded(true);
-            }
-
             for(Team team : Team.getTeams()){
                 this.points.put(team.getColor(), 0);
                 ProtectYourCastleMain.voiceChatBridge.createTeamGroup(team);
@@ -114,6 +107,13 @@ public class Game {
                         team.leaveTeam(member);
                     }
                 }
+            }
+
+            this.runnable = new GameRunnable(this);
+            this.runnable.runTaskTimer(ProtectYourCastleMain.getInstance(), 20, 20);
+
+            for(ResourceGenerator generator : this.getGenerators()){
+                generator.getLocation().getChunk().setForceLoaded(true);
             }
 
             scoreboard = new GameScoreboard();
