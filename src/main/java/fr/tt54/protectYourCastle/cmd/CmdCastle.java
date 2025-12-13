@@ -512,6 +512,7 @@ public class CmdCastle extends CoreCommand {
 
                         for(Player p : new ArrayList<>(Bukkit.getOnlinePlayers())){
                             p.teleport(new Location(Bukkit.getWorlds().get(0), GameParameters.LOBBY_X.get(), GameParameters.LOBBY_Y.get(), GameParameters.LOBBY_Z.get()));
+                            p.sendMessage("§aSauvegarde du monde d'édition, vous avez été renvoyé au lobby");
                         }
 
                         Bukkit.unloadWorld(world, true);
