@@ -1,12 +1,12 @@
 package fr.tt54.protectYourCastle.cmd;
 
+import fr.tt54.protectYourCastle.ProtectYourCastleMain;
 import fr.tt54.protectYourCastle.game.*;
+import fr.tt54.protectYourCastle.inventories.ConfirmationInventory;
 import fr.tt54.protectYourCastle.utils.Area;
+import fr.tt54.protectYourCastle.utils.FileManager;
 import fr.tt54.protectYourCastle.utils.SavedLocation;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
+import org.bukkit.*;
 import org.bukkit.block.Banner;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
@@ -15,11 +15,13 @@ import org.bukkit.entity.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Stream;
 
 public class CmdCastle extends CoreCommand {
     @Override
@@ -454,6 +456,83 @@ public class CmdCastle extends CoreCommand {
                     player.sendMessage("§6" + p.getName() + " : §f" + format.format(GameStatistics.getPlayerTotalScore(p.getUniqueId())) + " points");
                 }
                 return true;
+            } else if(args[0].equalsIgnoreCase("edit")){
+                if(args.length >= 2){
+                    if(args[1].equalsIgnoreCase("join")){
+                        World world = Bukkit.getWorld("game_world");
+
+                        if(world == null){
+                            File sourceGameWorldFolder = new File(ProtectYourCastleMain.getInstance().getDataFolder(), "game_world");
+                            File gameWorldFolder = new File(ProtectYourCastleMain.getInstance().getDataFolder().getParentFile().getParentFile(), "game_world");
+                            if(gameWorldFolder.exists()) {
+                                try (Stream<Path> paths = Files.walk(gameWorldFolder.toPath())) {
+                                    paths.sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+
+                            FileManager.copy(sourceGameWorldFolder, gameWorldFolder);
+
+                            WorldCreator creator = new WorldCreator("game_world");
+                            world = creator.createWorld();
+                        }
+
+                        player.setGameMode(GameMode.CREATIVE);
+                        player.teleport(world.getHighestBlockAt(0, 0).getLocation().clone().add(0, 1, 0));
+                        player.sendMessage("§aVous avez été envoyé dans le monde d'édition");
+                        return true;
+                    } else if(args[1].equalsIgnoreCase("leave")){
+                        World world = Bukkit.getWorld("game_world");
+                        if(world == null){
+                            player.sendMessage("§cLe monde d'édition n'est pas chargé");
+                            return false;
+                        }
+
+                        ConfirmationInventory inv = new ConfirmationInventory("Quitter", player, List.of("§aQuitter SANS SAUVEGARDER", "§7Faites /castle edit save pour quitter en sauvegardant"), List.of("§cRetour"), () -> {
+                            player.teleport(new Location(Bukkit.getWorlds().get(0), GameParameters.LOBBY_X.get(), GameParameters.LOBBY_Y.get(), GameParameters.LOBBY_Z.get()));
+                            player.sendMessage("§aVous avez quitté le monde d'édition sans le sauvegarder");
+
+                            for(Player p : Bukkit.getOnlinePlayers()){
+                                if(p.getWorld() == world) return;
+                            }
+
+                            Bukkit.getScheduler().runTaskLater(ProtectYourCastleMain.getInstance(), () -> Bukkit.unloadWorld(world, false), 10L);
+                        }, () -> {});
+                        inv.openInventory();
+
+                        return true;
+                    } else if(args[1].equalsIgnoreCase("save")){
+                        World world = Bukkit.getWorld("game_world");
+
+                        if(world == null){
+                            player.sendMessage("§cLe monde d'édition n'est pas chargé");
+                            return false;
+                        }
+
+                        for(Player p : new ArrayList<>(Bukkit.getOnlinePlayers())){
+                            p.teleport(new Location(Bukkit.getWorlds().get(0), GameParameters.LOBBY_X.get(), GameParameters.LOBBY_Y.get(), GameParameters.LOBBY_Z.get()));
+                        }
+
+                        Bukkit.unloadWorld(world, true);
+
+                        File sourceGameWorldFolder = new File(ProtectYourCastleMain.getInstance().getDataFolder(), "game_world");
+                        File gameWorldFolder = new File(ProtectYourCastleMain.getInstance().getDataFolder().getParentFile().getParentFile(), "game_world");
+
+                        if(sourceGameWorldFolder.exists()) {
+                            try (Stream<Path> paths = Files.walk(sourceGameWorldFolder.toPath())) {
+                                paths.sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+
+                        FileManager.copy(gameWorldFolder, sourceGameWorldFolder);
+                        player.sendMessage("§aLe monde a bien été sauvegardé");
+
+                        return true;
+                    }
+                }
             }
         }
 
@@ -467,7 +546,7 @@ public class CmdCastle extends CoreCommand {
         }
 
         if(args.length == 1){
-            return tabComplete(args[0], "generator", "start", "team", "trader", "parameter", "stop", "scores");
+            return tabComplete(args[0], "generator", "start", "team", "trader", "parameter", "stop", "scores", "edit");
         } else if(args.length == 2){
             if(args[0].equalsIgnoreCase("generator")){
                 return tabComplete(args[1], "add");
@@ -477,6 +556,8 @@ public class CmdCastle extends CoreCommand {
                 return tabComplete(args[1], "spawn", "remove");
             } else if(args[0].equalsIgnoreCase("parameter")){
                 return tabComplete(args[1], "set", "get", "list");
+            } else if(args[0].equalsIgnoreCase("edit")){
+                return tabComplete(args[1], "join", "leave", "save");
             }
         } else if(args.length == 3){
             if(args[0].equalsIgnoreCase("generator")){
