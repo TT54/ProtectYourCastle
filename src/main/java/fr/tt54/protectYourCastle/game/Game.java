@@ -145,8 +145,16 @@ public class Game {
             this.runnable = null;
             currentGame = null;
 
+            for(Player player : Bukkit.getOnlinePlayers()){
+                System.out.println(player.getName() + " old score : " + GameStatistics.getPlayerTotalScore(player.getUniqueId()));
+            }
+
             this.gameStatistics.setGameEnd(System.currentTimeMillis());
             GameStatistics.gameStatistics.add(this.gameStatistics);
+
+            for(Player player : Bukkit.getOnlinePlayers()){
+                System.out.println(player.getName() + " new score : " + GameStatistics.getPlayerTotalScore(player.getUniqueId()));
+            }
 
             for(ResourceGenerator generator : this.getGenerators()){
                 generator.getLocation().getChunk().setForceLoaded(false);

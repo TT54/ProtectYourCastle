@@ -15,9 +15,11 @@ import org.bukkit.entity.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 public class CmdCastle extends CoreCommand {
     @Override
@@ -424,6 +426,13 @@ public class CmdCastle extends CoreCommand {
                         return true;
                     }
                 }
+            } else if(args[0].equalsIgnoreCase("scores")){
+                player.sendMessage("§7----- §eScores §7-----");
+                DecimalFormat format = new DecimalFormat("#");
+                for(Player p : Bukkit.getOnlinePlayers()){
+                    player.sendMessage("§6" + p.getName() + " : §f" + format.format(GameStatistics.getPlayerTotalScore(p.getUniqueId())) + " points");
+                }
+                return true;
             }
         }
 
@@ -437,7 +446,7 @@ public class CmdCastle extends CoreCommand {
         }
 
         if(args.length == 1){
-            return tabComplete(args[0], "generator", "start", "team", "trader", "parameter", "stop");
+            return tabComplete(args[0], "generator", "start", "team", "trader", "parameter", "stop", "scores");
         } else if(args.length == 2){
             if(args[0].equalsIgnoreCase("generator")){
                 return tabComplete(args[1], "add");

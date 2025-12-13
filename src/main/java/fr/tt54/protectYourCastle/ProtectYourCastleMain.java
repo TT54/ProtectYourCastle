@@ -18,11 +18,11 @@ public final class ProtectYourCastleMain extends JavaPlugin {
     public void onEnable() {
         instance = this;
 
+        GameParameters.load();
         ResourceGenerator.load();
         Team.load();
         Trader.load();
         GameStatistics.load();
-        GameParameters.load();
 
         this.getCommand("drawbridge").setExecutor(new CmdDrawbridge());
         this.getCommand("stats").setExecutor(new CmdStats());

@@ -27,6 +27,12 @@ public class GameParameters {
     public static Parameter<Boolean> KEEP_ARMOR = new Parameter<>("keep_armor", true);
     public static Parameter<Boolean> INCREASED_RESOURCES = new Parameter<>("increased_resources", true);
 
+    public static Parameter<Double> PERSONAL_SCORE_WIN = new Parameter<>("personal_score_win", 50d);
+    public static Parameter<Double> PERSONAL_SCORE_KILLS_COEFF = new Parameter<>("personal_score_kills_coeff", 80d);
+    public static Parameter<Double> PERSONAL_SCORE_DEATHS_COEFF = new Parameter<>("personal_score_deaths_coeff", 20d);
+    public static Parameter<Double> PERSONAL_SCORE_POINTS_COEFF = new Parameter<>("personal_score_points_coeff", 20d);
+    public static Parameter<Integer> SCORES_USED = new Parameter<>("scores_used", 5);
+
     private final Map<Parameter<?>, Object> parametersMap;
 
     public GameParameters() {

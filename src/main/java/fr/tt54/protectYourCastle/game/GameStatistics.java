@@ -13,6 +13,9 @@ public class GameStatistics {
     public static List<GameStatistics> gameStatistics = new ArrayList<>();
     private static final Type statisticsType = new TypeToken<List<GameStatistics>>() {}.getType();
 
+    private static final Map<UUID, List<Double>> playerGamesScore = new HashMap<>();
+    private static final Map<UUID, Double> playerCurrentScore = new HashMap<>();
+
     public static void load(){
         File statisticsFile = FileManager.getFileWithoutCreating("statistics.json", ProtectYourCastleMain.getInstance());
 
@@ -21,6 +24,19 @@ public class GameStatistics {
         }
 
         gameStatistics = Game.gson.fromJson(FileManager.read(statisticsFile), statisticsType);
+
+        for(GameStatistics statistics : gameStatistics){
+            if(statistics.playerScore == null || statistics.playerScore.isEmpty()) {
+                statistics.playerScore = new HashMap<>();
+                for(UUID uuid : statistics.getPlayers()){
+                    statistics.calculatePlayerScore(uuid);
+                }
+            }
+
+            for(UUID uuid : statistics.getPlayers()){
+                addPlayerGameScore(uuid, statistics.getPlayerScore(uuid));
+            }
+        }
     }
 
     public static void save(){
@@ -28,10 +44,35 @@ public class GameStatistics {
         FileManager.write(Game.gson.toJson(gameStatistics), statisticsFile);
     }
 
+    public static List<Double> getPlayerGamesScore(UUID playerUUID){
+        return playerGamesScore.getOrDefault(playerUUID, new ArrayList<>());
+    }
+
+    private static void addPlayerGameScore(UUID playerUUID, double score){
+        List<Double> scores = getPlayerGamesScore(playerUUID);
+        scores.add(score);
+        playerGamesScore.put(playerUUID, scores);
+        recalculatePlayerScore(playerUUID);
+    }
+
+    private static void recalculatePlayerScore(UUID playerUUID){
+        List<Double> scores = getPlayerGamesScore(playerUUID);
+        double score = 0;
+        for(int i = 0; i < Math.min(scores.size(), GameParameters.SCORES_USED.get()); i++){
+            score += scores.get(scores.size() - 1 - i);
+        }
+        playerCurrentScore.put(playerUUID, score);
+    }
+
+    public static double getPlayerTotalScore(UUID playerUUID){
+        return playerCurrentScore.getOrDefault(playerUUID, 0d);
+    }
+
     private final long gameBegin;
     private long gameEnd;
     private final Map<StatisticKey, Map<UUID, Integer>> values;
     private final Map<UUID, Team.TeamColor> playerTeam;
+    private Map<UUID, Double> playerScore = new HashMap<>();
 
     private Team.TeamColor winner = null;
 
@@ -44,6 +85,14 @@ public class GameStatistics {
 
     public int getPlayerStatistic(UUID playerUUID, StatisticKey key){
         return this.values.getOrDefault(key, new HashMap<>()).getOrDefault(playerUUID, 0);
+    }
+
+    public double getPlayerStatisticsRatio(UUID playerUUID, StatisticKey key){
+        double total = 0;
+        for(UUID uuid : this.getPlayers()){
+            total += this.getPlayerStatistic(uuid, key);
+        }
+        return total == 0 ? 0 : this.getPlayerStatistic(playerUUID, key) / total;
     }
 
     public void setPlayerStatistic(UUID playerUUID, StatisticKey key, int value){
@@ -93,6 +142,30 @@ public class GameStatistics {
     public void setGameEnd(long gameEnd) {
         this.gameEnd = gameEnd;
         this.winner = this.getBestTeam(StatisticKey.POINTS_WON);
+        for(UUID player : this.getPlayers()){
+            this.calculatePlayerScore(player);
+        }
+    }
+
+    public double getPlayerScore(UUID playerUUID){
+        return this.playerScore.getOrDefault(playerUUID, 0d);
+    }
+
+    private void calculatePlayerScore(UUID playerUUID){
+        double score = this.getPlayerTeam(playerUUID) == this.getWinner() ? GameParameters.PERSONAL_SCORE_WIN.get() : 0;
+        int pointsWon = this.getPlayerStatistic(playerUUID, StatisticKey.POINTS_WON);
+        double bannersRatio = this.getPlayerStatisticsRatio(playerUUID, StatisticKey.BANNERS_BROKEN);
+
+        double expectedKills = 1d / this.getPlayers().size() + this.getPlayerStatisticsRatio(playerUUID, StatisticKey.KILLS);
+        double expectedDeaths = 1d / this.getPlayers().size() + this.getPlayerStatisticsRatio(playerUUID, StatisticKey.DEATHS);
+
+        score += GameParameters.PERSONAL_SCORE_KILLS_COEFF.get() * (.2 + expectedKills);
+        score -= GameParameters.PERSONAL_SCORE_DEATHS_COEFF.get() * Math.max(0, expectedDeaths);
+        score += GameParameters.PERSONAL_SCORE_POINTS_COEFF.get() * pointsWon;
+
+        score *= 1 + bannersRatio / 2;
+        this.playerScore.put(playerUUID, score);
+        addPlayerGameScore(playerUUID, score);
     }
 
     public Team.TeamColor getWinner() {
