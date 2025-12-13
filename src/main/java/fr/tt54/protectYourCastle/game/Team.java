@@ -63,6 +63,10 @@ public class Team {
         return teams.get(playerTeam.get(player));
     }
 
+    public static Map<UUID, TeamColor> getPlayerTeamMapCopy(){
+        return new HashMap<>(playerTeam);
+    }
+
     public static Team getTeam(TeamColor teamColor) {
         return teams.get(teamColor);
     }

@@ -47,13 +47,9 @@ public class Game {
 
     private Status gameStatus;
     public int time;
-    private long beginTime;
     public Map<Team.TeamColor, Integer> points = new HashMap<>();
     public Map<Team.TeamColor, UUID> bannerHolder = new HashMap<>();
-    public Map<UUID, Integer> kills = new HashMap<>();
-    public Map<UUID, Integer> deaths = new HashMap<>();
-    public Map<UUID, Integer> pointsPerPlayer = new HashMap<>();
-    public Map<UUID, Integer> bannerBrokenPerPlayer = new HashMap<>();
+    public GameStatistics gameStatistics;
 
     private transient GameRunnable runnable;
     public transient World gameWorld;
@@ -139,7 +135,7 @@ public class Game {
             }
 
             this.gameStatus = Status.RUNNING;
-            this.beginTime = System.currentTimeMillis();
+            this.gameStatistics = new GameStatistics(System.currentTimeMillis(), -1, new HashMap<>(), Team.getPlayerTeamMapCopy());
         }
     }
 
@@ -149,8 +145,8 @@ public class Game {
             this.runnable = null;
             currentGame = null;
 
-            GameStatistics statistics = this.getStatistics();
-            GameStatistics.gameStatistics.add(statistics);
+            this.gameStatistics.setGameEnd(System.currentTimeMillis());
+            GameStatistics.gameStatistics.add(this.gameStatistics);
 
             for(ResourceGenerator generator : this.getGenerators()){
                 generator.getLocation().getChunk().setForceLoaded(false);
@@ -164,7 +160,7 @@ public class Game {
                 player.teleport(new Location(Bukkit.getWorlds().get(0), GameParameters.LOBBY_X.get() + .5d, GameParameters.LOBBY_Y.get(), GameParameters.LOBBY_Z.get() + .5d));
                 player.setGameMode(GameMode.SURVIVAL);
 
-                GameStatsInventory inv = new GameStatsInventory(player, statistics);
+                GameStatsInventory inv = new GameStatsInventory(player, this.gameStatistics);
                 inv.openInventory();
             }
 
@@ -172,22 +168,13 @@ public class Game {
 
             this.scoreboard = null;
             this.gameStatus = Status.STOPPED;
-            return statistics;
+            return this.gameStatistics;
         }
         return null;
     }
 
-    public GameStatistics getStatistics(){
-        Map<UUID, Team.TeamColor> playersTeam = new HashMap<>();
-        Map<Team.TeamColor, Integer> scores = new HashMap<>();
-        for(Team team : Team.getTeams()){
-            for(UUID player : team.getMembers()){
-                playersTeam.put(player, team.getColor());
-            }
-            scores.put(team.getColor(), this.getPoints(team.getColor()));
-        }
-
-        return new GameStatistics(this.beginTime, System.currentTimeMillis(), playersTeam, scores, new HashMap<>(this.kills), new HashMap<>(this.deaths), new HashMap<>(this.pointsPerPlayer), new HashMap<>(this.bannerBrokenPerPlayer));
+    public GameStatistics getGameStatistics() {
+        return gameStatistics;
     }
 
     public void finish() {
@@ -216,7 +203,7 @@ public class Game {
 
     public void addPoint(Team.TeamColor teamColor, Player placer, int amount){
         this.points.put(teamColor, this.getPoints(teamColor) + 1);
-        this.pointsPerPlayer.put(placer.getUniqueId(), this.getPlayerPointsCollected(placer.getUniqueId()) + 1);
+        this.gameStatistics.increaseStatistic(placer.getUniqueId(), GameStatistics.StatisticKey.POINTS_WON);
         Bukkit.broadcastMessage("§6[Castle] §aL'équipe " + teamColor.getChatColor() + teamColor.name() + "§a vient de gagner " + amount + " point grâce à " + placer.getName() + " !");
     }
 
@@ -300,31 +287,15 @@ public class Game {
     }
 
     public void addKill(@NotNull Player killer) {
-        this.kills.put(killer.getUniqueId(), 1 + this.getPlayerKills(killer.getUniqueId()));
-    }
-
-    public int getPlayerKills(UUID playerUUID){
-        return this.kills.getOrDefault(playerUUID, 0);
-    }
-
-    public int getPlayerPointsCollected(UUID playerUUID){
-        return this.pointsPerPlayer.getOrDefault(playerUUID, 0);
-    }
-
-    public int getBannerBroken(UUID playerUUID){
-        return this.bannerBrokenPerPlayer.getOrDefault(playerUUID, 0);
+        this.gameStatistics.increaseStatistic(killer.getUniqueId(), GameStatistics.StatisticKey.KILLS);
     }
 
     public void addBannerBroken(Player player) {
-        this.bannerBrokenPerPlayer.put(player.getUniqueId(), 1 + this.getBannerBroken(player.getUniqueId()));
-    }
-
-    public int getDeaths(UUID playerUUID){
-        return this.deaths.getOrDefault(playerUUID, 0);
+        this.gameStatistics.increaseStatistic(player.getUniqueId(), GameStatistics.StatisticKey.BANNERS_BROKEN);
     }
 
     public void addDeath(Player player){
-        this.deaths.put(player.getUniqueId(), 1 + this.getDeaths(player.getUniqueId()));
+        this.gameStatistics.increaseStatistic(player.getUniqueId(), GameStatistics.StatisticKey.DEATHS);
     }
 
     public enum Status{

@@ -6,12 +6,9 @@ import fr.tt54.protectYourCastle.utils.FileManager;
 
 import java.io.File;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
-public record GameStatistics(long beginTime, long endTime, Map<UUID, Team.TeamColor> players, Map<Team.TeamColor, Integer> scores, Map<UUID, Integer> kills, Map<UUID, Integer> deaths, Map<UUID, Integer> pointsPerPlayer, Map<UUID, Integer> bannerBrokenPerPlayer) {
+public class GameStatistics {
 
     public static List<GameStatistics> gameStatistics = new ArrayList<>();
     private static final Type statisticsType = new TypeToken<List<GameStatistics>>() {}.getType();
@@ -31,92 +28,101 @@ public record GameStatistics(long beginTime, long endTime, Map<UUID, Team.TeamCo
         FileManager.write(Game.gson.toJson(gameStatistics), statisticsFile);
     }
 
-    public int getKills(UUID playerUUID){
-        return this.kills.getOrDefault(playerUUID, 0);
+    private final long gameBegin;
+    private long gameEnd;
+    private final Map<StatisticKey, Map<UUID, Integer>> values;
+    private final Map<UUID, Team.TeamColor> playerTeam;
+
+    private Team.TeamColor winner = null;
+
+    public GameStatistics(long gameBegin, long gameEnd, Map<StatisticKey, Map<UUID, Integer>> values, Map<UUID, Team.TeamColor> playerTeam) {
+        this.gameBegin = gameBegin;
+        this.gameEnd = gameEnd;
+        this.values = values;
+        this.playerTeam = playerTeam;
     }
 
-    public int getDeaths(UUID playerUUID){
-        return this.deaths.getOrDefault(playerUUID, 0);
+    public int getPlayerStatistic(UUID playerUUID, StatisticKey key){
+        return this.values.getOrDefault(key, new HashMap<>()).getOrDefault(playerUUID, 0);
     }
 
-    public int getPointsPerPlayer(UUID playerUUID){
-        return this.pointsPerPlayer.getOrDefault(playerUUID, 0);
+    public void setPlayerStatistic(UUID playerUUID, StatisticKey key, int value){
+        Map<UUID, Integer> keyMap = this.values.getOrDefault(key, new HashMap<>());
+        keyMap.put(playerUUID, value);
+        this.values.put(key, keyMap);
     }
 
-    public int getBannersBroken(UUID playerUUID){
-        return this.bannerBrokenPerPlayer.getOrDefault(playerUUID, 0);
+    public void increaseStatistic(UUID playerUUID, StatisticKey key){
+        this.setPlayerStatistic(playerUUID, key, this.getPlayerStatistic(playerUUID, key) + 1);
     }
 
-    public int getKills(Team.TeamColor team){
-        return this.getTeamScore(team, this.kills);
-    }
-
-    public int getDeaths(Team.TeamColor team){
-        return this.getTeamScore(team, this.deaths);
-    }
-
-    public int getBannersBroken(Team.TeamColor team){
-        return this.getTeamScore(team, this.bannerBrokenPerPlayer);
-    }
-
-    public int getTeamScore(Team.TeamColor team, Map<UUID, Integer> map){
-        int score = 0;
-        for(UUID uuid : this.players.keySet()){
-            if(this.players.get(uuid) == team) score += map.getOrDefault(uuid, 0);
+    public int getTeamStatistic(Team.TeamColor color, StatisticKey key){
+        int value = 0;
+        for(UUID playerUUID : this.playerTeam.keySet()){
+            if(this.playerTeam.get(playerUUID) == color){
+                value += this.getPlayerStatistic(playerUUID, key);
+            }
         }
-        return score;
+        return value;
     }
 
-    public UUID getBestKiller(){
-        return getBest(this.kills);
-    }
-
-    public UUID getMoreDeaths(){
-        return getBest(this.deaths);
-    }
-
-    public UUID getBestScorer(){
-        return getBest(this.pointsPerPlayer);
-    }
-
-    public UUID getBestBannerBreaker(){
-        return getBest(this.bannerBrokenPerPlayer);
-    }
-
-    private UUID getBest(Map<UUID, Integer> map){
+    public UUID getBestPlayer(StatisticKey key){
         UUID best = null;
-        for(UUID uuid : this.players.keySet()){
-            if(best == null || map.getOrDefault(uuid, 0) > map.getOrDefault(best, 0)){
-                best = uuid;
-            }
+        for(UUID uuid : this.playerTeam.keySet()){
+            if(best == null || this.getPlayerStatistic(uuid, key) > this.getPlayerStatistic(best, key)) best = uuid;
         }
         return best;
     }
 
-    public Team.TeamColor getWinner(){
+    public Team.TeamColor getBestTeam(StatisticKey key){
         Team.TeamColor best = Team.TeamColor.RED;
-        for(Team.TeamColor teamColor : this.scores.keySet()){
-            if(this.scores.getOrDefault(teamColor, 0) > this.scores.getOrDefault(best, 0)){
-                best = teamColor;
-            }
+        for(Team.TeamColor color : Team.TeamColor.values()){
+            if(getTeamStatistic(color, key) > getTeamStatistic(best, key)) best = color;
         }
         return best;
     }
 
-    private Team.TeamColor getBestTeam(Map<UUID, Integer> map){
-        Team.TeamColor best = Team.TeamColor.RED;
-        int bestScore = 0;
-        for(Team.TeamColor teamColor : Team.TeamColor.values()){
-            int score = getTeamScore(teamColor, map);
-            if(score > bestScore){
-                best = teamColor;
-                bestScore = score;
-            }
-        }
-        return best;
+    public long getGameBegin() {
+        return gameBegin;
     }
 
-    public int getPoints(Team.TeamColor winner) {
-        return this.scores.getOrDefault(winner, 0);
+    public long getGameEnd() {
+        return gameEnd;
     }
+
+    public void setGameEnd(long gameEnd) {
+        this.gameEnd = gameEnd;
+        this.winner = this.getBestTeam(StatisticKey.POINTS_WON);
+    }
+
+    public Team.TeamColor getWinner() {
+        return this.winner;
+    }
+
+    public Set<UUID> getPlayers() {
+        return this.playerTeam.keySet();
+    }
+
+    public Team.TeamColor getPlayerTeam(UUID playerUUID) {
+        return this.playerTeam.get(playerUUID);
+    }
+
+    public enum StatisticKey {
+
+        KILLS("Kills"),
+        DEATHS("Morts"),
+        BANNERS_BROKEN("Bannières cassées"),
+        POINTS_WON("Points gagnés");
+
+        private final String displayName;
+
+        StatisticKey(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+    }
+
 }
