@@ -28,7 +28,9 @@ public class GameStatistics {
         for(GameStatistics statistics : gameStatistics){
             if(statistics.playerScores == null || statistics.playerScores.isEmpty()) {
                 statistics.playerScores = new HashMap<>();
-                for(UUID uuid : statistics.getPlayers()){
+            }
+            for(UUID uuid : statistics.getPlayers()){
+                if(!statistics.getPlayerScores().containsKey(uuid)){
                     statistics.calculatePlayerScore(uuid);
                 }
             }
