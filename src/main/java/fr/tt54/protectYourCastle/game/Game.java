@@ -129,6 +129,7 @@ public class Game {
             for(Player player : new ArrayList<>(Bukkit.getOnlinePlayers())){
                 ScoreboardManager.showScoreboard(player, scoreboard);
                 Team team = Team.getPlayerTeam(player.getUniqueId());
+                player.getEnderChest().clear();
                 if(team != null) {
                     spawnPlayer(player, team, true);
                 }
@@ -163,6 +164,7 @@ public class Game {
             for(Player player : new ArrayList<>(Bukkit.getOnlinePlayers())){
                 ScoreboardManager.removeScoreboard(player);
 
+                player.getEnderChest().clear();
                 player.getInventory().clear();
                 CuriosBridge.clearPlayerCuriosInventory(player);
                 player.teleport(new Location(Bukkit.getWorlds().get(0), GameParameters.LOBBY_X.get() + .5d, GameParameters.LOBBY_Y.get(), GameParameters.LOBBY_Z.get() + .5d));
