@@ -62,14 +62,7 @@ public class CmdCastle extends CoreCommand {
                         }
 
                         Location location = player.getLocation().getBlock().getLocation().clone().add(.5, .5, .5);
-
-                        TextDisplay textDisplay = (TextDisplay) location.getWorld().spawnEntity(location.clone().add(0, 1.5, 0), EntityType.TEXT_DISPLAY);
-                        textDisplay.setBillboard(Display.Billboard.CENTER);
-                        textDisplay.setSeeThrough(true);
-                        textDisplay.setText("§eGénérateur de " + material.name().toLowerCase());
-
-                        ResourceGenerator generator = new ResourceGenerator(material, delay, delay, SavedLocation.fromLocation(location));
-                        ResourceGenerator.addGenerator(generator);
+                        ResourceGenerator.spawnResourceGenerator(material, delay, delay, location);
                         player.sendMessage("§aUn générateur a été ajouté sur votre position");
                         return true;
                     }

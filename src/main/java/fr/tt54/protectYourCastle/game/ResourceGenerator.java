@@ -6,6 +6,9 @@ import fr.tt54.protectYourCastle.utils.FileManager;
 import fr.tt54.protectYourCastle.utils.SavedLocation;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.Display;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.TextDisplay;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
@@ -57,6 +60,16 @@ public class ResourceGenerator {
         this.location = location;
     }
 
+    public static void spawnResourceGenerator(Material material, long cooldown, long timeBeforeNextDrop, Location location) {
+        TextDisplay textDisplay = (TextDisplay) location.getWorld().spawnEntity(location.clone().add(0, 1.5, 0), EntityType.TEXT_DISPLAY);
+        textDisplay.setBillboard(Display.Billboard.CENTER);
+        textDisplay.setSeeThrough(true);
+        textDisplay.setText("§eGénérateur de " + material.name().toLowerCase() + "\n" + "§aProchain spawn dans : §b" + timeBeforeNextDrop + "s");
+
+        ResourceGenerator generator = new ResourceGenerator(material, cooldown, timeBeforeNextDrop, SavedLocation.fromLocation(location));
+        addGenerator(generator);
+    }
+
     public Material getMaterial() {
         return material;
     }
@@ -94,6 +107,13 @@ public class ResourceGenerator {
         if(this.timeBeforeNextDrop == 0){
             this.timeBeforeNextDrop = this.cooldown;
             this.getLocation().getWorld().dropItem(this.getLocation(), new ItemStack(this.material, amount));
+        }
+        this.updateName();
+    }
+
+    public void updateName(){
+        for(TextDisplay display : this.getLocation().getWorld().getNearbyEntities(this.getLocation().add(0, 1.5, 0), .1, .1, .1, e -> e instanceof TextDisplay).stream().map(e -> (TextDisplay) e).toList()){
+            display.setText("§eGénérateur de " + material.name().toLowerCase() + "\n" + "§aProchain spawn dans : §b" + timeBeforeNextDrop + "s");
         }
     }
 }
