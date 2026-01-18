@@ -7,6 +7,7 @@ import fr.tt54.protectYourCastle.utils.SavedLocation;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Display;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.inventory.ItemStack;
@@ -68,6 +69,14 @@ public class ResourceGenerator {
 
         ResourceGenerator generator = new ResourceGenerator(material, cooldown, timeBeforeNextDrop, SavedLocation.fromLocation(location));
         addGenerator(generator);
+    }
+
+    public static boolean removeResourceGenerator(ResourceGenerator generator) {
+        Entity textDisplay = generator.getLocation().getWorld().getNearbyEntities(
+                generator.getLocation().add(0, 1.5, 0),
+                .1, .1, .1, e -> e instanceof TextDisplay).stream().toList().getFirst();
+        textDisplay.remove();
+        return resourceGenerators.remove(generator);
     }
 
     public Material getMaterial() {

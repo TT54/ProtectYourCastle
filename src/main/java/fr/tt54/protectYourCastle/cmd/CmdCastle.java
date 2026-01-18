@@ -5,13 +5,14 @@ import fr.tt54.protectYourCastle.game.*;
 import fr.tt54.protectYourCastle.inventories.ConfirmationInventory;
 import fr.tt54.protectYourCastle.utils.Area;
 import fr.tt54.protectYourCastle.utils.FileManager;
-import fr.tt54.protectYourCastle.utils.SavedLocation;
 import org.bukkit.*;
 import org.bukkit.block.Banner;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Villager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -64,6 +65,26 @@ public class CmdCastle extends CoreCommand {
                         Location location = player.getLocation().getBlock().getLocation().clone().add(.5, .5, .5);
                         ResourceGenerator.spawnResourceGenerator(material, delay, delay, location);
                         player.sendMessage("§aUn générateur a été ajouté sur votre position");
+                        return true;
+                    } else if(args[1].equalsIgnoreCase("remove")){
+                        ResourceGenerator targetGenerator = null;
+                        for(ResourceGenerator gen : ResourceGenerator.getResourceGenerators()){
+                            if(gen.getLocation().getWorld() == player.getWorld() && player.getLocation().distanceSquared(gen.getLocation()) <= 1){
+                                targetGenerator = gen;
+                                break;
+                            }
+                        }
+
+                        if(targetGenerator == null){
+                            player.sendMessage("§cIl n'y a aucun générateur situé à moins d'un bloc de vous");
+                            return false;
+                        }
+
+                        if(ResourceGenerator.removeResourceGenerator(targetGenerator)){
+                            player.sendMessage("§aLe générateur de " + targetGenerator.getMaterial().name().toLowerCase() + " a été supprimé");
+                        } else{
+                            player.sendMessage("§cUne erreur est survenue lors de la suppression d'un générateur de " + targetGenerator.getMaterial().name().toLowerCase());
+                        }
                         return true;
                     }
                 }
@@ -543,7 +564,7 @@ public class CmdCastle extends CoreCommand {
             return tabComplete(args[0], "generator", "start", "team", "trader", "parameter", "stop", "scores", "edit");
         } else if(args.length == 2){
             if(args[0].equalsIgnoreCase("generator")){
-                return tabComplete(args[1], "add");
+                return tabComplete(args[1], "add", "remove");
             } else if(args[0].equalsIgnoreCase("team")){
                 return tabComplete(args[1], "spawn", "base", "banner", "join", "leave", "protected", "rollback", "drawbridge", "fill", "clear");
             } else if(args[0].equalsIgnoreCase("trader")){
