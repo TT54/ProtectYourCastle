@@ -86,6 +86,39 @@ public class CmdCastle extends CoreCommand {
                             player.sendMessage("§cUne erreur est survenue lors de la suppression d'un générateur de " + targetGenerator.getMaterial().name().toLowerCase());
                         }
                         return true;
+                    } else if(args[1].equalsIgnoreCase("edit_all")){
+                        if(args.length != 4){
+                            player.sendMessage("§cLe bon usage est '/castle generator edit_all <material to edit> <delay>'");
+                            return false;
+                        }
+
+                        Material material;
+                        try {
+                            material = Material.valueOf(args[2].toUpperCase());
+                        } catch (IllegalArgumentException e){
+                            player.sendMessage("§cLe material " + args[2].toUpperCase() + " n'existe pas");
+                            return false;
+                        }
+
+                        int delay;
+                        try{
+                            delay = Integer.parseInt(args[3]);
+                        } catch (NumberFormatException e){
+                            player.sendMessage("§cLe bon usage est '/castle generator edit_all <material to edit> <delay>'");
+                            return false;
+                        }
+
+                        List<ResourceGenerator> toEdit = ResourceGenerator.getResourceGenerators().stream().filter(r -> r.getMaterial() == material).toList();
+                        if(toEdit.isEmpty()){
+                            player.sendMessage("§cIl n'y a aucun générateur de ce type");
+                            return false;
+                        }
+
+                        for(ResourceGenerator generator : toEdit){
+                            generator.setCooldown(delay);
+                        }
+                        player.sendMessage("§aLes générateurs de " + material.name().toLowerCase() + " ont un délais de " + delay + " secondes");
+                        return true;
                     }
                 }
             } else if(args[0].equalsIgnoreCase("start")){
@@ -564,7 +597,7 @@ public class CmdCastle extends CoreCommand {
             return tabComplete(args[0], "generator", "start", "team", "trader", "parameter", "stop", "scores", "edit");
         } else if(args.length == 2){
             if(args[0].equalsIgnoreCase("generator")){
-                return tabComplete(args[1], "add", "remove");
+                return tabComplete(args[1], "add", "remove", "edit_all");
             } else if(args[0].equalsIgnoreCase("team")){
                 return tabComplete(args[1], "spawn", "base", "banner", "join", "leave", "protected", "rollback", "drawbridge", "fill", "clear");
             } else if(args[0].equalsIgnoreCase("trader")){
@@ -576,7 +609,7 @@ public class CmdCastle extends CoreCommand {
             }
         } else if(args.length == 3){
             if(args[0].equalsIgnoreCase("generator")){
-                if(args[1].equalsIgnoreCase("add")){
+                if(args[1].equalsIgnoreCase("add") || args[1].equalsIgnoreCase("edit_all")){
                     return tabComplete(args[2], Arrays.stream(Material.values()).map(mat -> mat.name().toLowerCase()));
                 }
             } else if(args[0].equalsIgnoreCase("team")){
@@ -592,7 +625,7 @@ public class CmdCastle extends CoreCommand {
             }
         } else if(args.length == 4){
             if(args[0].equalsIgnoreCase("generator")){
-                if(args[1].equalsIgnoreCase("add")){
+                if(args[1].equalsIgnoreCase("add") || args[1].equalsIgnoreCase("edit_all")){
                     return tabComplete(args[3], "1", "10", "20", "30", "60");
                 }
             } else if(args[0].equalsIgnoreCase("team")){
