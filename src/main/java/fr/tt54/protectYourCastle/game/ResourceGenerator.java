@@ -74,7 +74,7 @@ public class ResourceGenerator {
     public static boolean removeResourceGenerator(ResourceGenerator generator) {
         Entity textDisplay = generator.getLocation().getWorld().getNearbyEntities(
                 generator.getLocation().add(0, 1.5, 0),
-                .1, .1, .1, e -> e instanceof TextDisplay).stream().toList().getFirst();
+                .1, .1, .1, e -> e instanceof TextDisplay).stream().toList().get(0);
         textDisplay.remove();
         return resourceGenerators.remove(generator);
     }
