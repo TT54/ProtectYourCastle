@@ -412,17 +412,12 @@ public class CmdCastle extends CoreCommand {
                         player.sendMessage("§aVous avez fait apparaître un marchant");
                         return true;
                     } else if(args[1].equalsIgnoreCase("remove")){
-                        Trader removed = null;
-                        for(Entity entity : player.getWorld().getNearbyEntities(player.getLocation(), 2, 2, 2)){
-                            if(entity instanceof Villager villager && Trader.isTrader(villager.getUniqueId())){
-                                removed = Trader.getTrader(villager.getUniqueId());
-                                Trader.removeTrader(villager.getUniqueId());
-                                villager.remove();
-                                break;
-                            }
-                        }
+                        Villager villager = (Villager) player.getWorld().getNearbyEntities(player.getLocation(), 2, 2, 2, entity -> entity instanceof Villager).stream().min(Comparator.comparingDouble(entity -> entity.getLocation().distanceSquared(player.getLocation()))).orElse(null);
+                        Trader removed = villager != null ? Trader.getTrader(villager.getUniqueId()) : null;
 
                         if(removed != null){
+                            Trader.removeTrader(villager.getUniqueId());
+                            villager.remove();
                             player.sendMessage("§aLe marchant " + removed.getName() + " a bien été supprimé");
                             return true;
                         } else {
