@@ -3,6 +3,7 @@ package fr.tt54.protectYourCastle.cmd;
 import fr.tt54.protectYourCastle.ProtectYourCastleMain;
 import fr.tt54.protectYourCastle.game.*;
 import fr.tt54.protectYourCastle.inventories.ConfirmationInventory;
+import fr.tt54.protectYourCastle.inventories.trades.weapons.WeaponsListInventory;
 import fr.tt54.protectYourCastle.utils.Area;
 import fr.tt54.protectYourCastle.utils.FileManager;
 import org.bukkit.*;
@@ -404,9 +405,9 @@ public class CmdCastle extends CoreCommand {
                             for(Trader.NPCTrade trade : sameExisting.getTrades()){
                                 trades.add(trade.clone());
                             }
-                            trader = new Trader(name, trades);
+                            trader = new Trader(name, trades, false);
                         } else {
-                            trader = new Trader(name);
+                            trader = new Trader(name, false);
                         }
                         trader.spawn(player.getLocation());
                         player.sendMessage("§aVous avez fait apparaître un marchant");
@@ -576,6 +577,10 @@ public class CmdCastle extends CoreCommand {
                         return true;
                     }
                 }
+            } else if(args[0].equalsIgnoreCase("weapons")){
+                WeaponsListInventory inv = new WeaponsListInventory(player, 1);
+                inv.openInventory();
+                return true;
             }
         }
 
@@ -589,7 +594,7 @@ public class CmdCastle extends CoreCommand {
         }
 
         if(args.length == 1){
-            return tabComplete(args[0], "generator", "start", "team", "trader", "parameter", "stop", "scores", "edit");
+            return tabComplete(args[0], "generator", "start", "team", "trader", "parameter", "stop", "scores", "edit", "weapons");
         } else if(args.length == 2){
             if(args[0].equalsIgnoreCase("generator")){
                 return tabComplete(args[1], "add", "remove", "edit_all");

@@ -22,24 +22,34 @@ import java.util.*;
 public class Trader {
 
     private static final Type traderType = new TypeToken<Map<UUID, Trader>>() {}.getType();
+    private static final Type weaponsType = new TypeToken<List<GameWeapon>>() {}.getType();
 
     public static Map<UUID, Trader> traders = new HashMap<>();
+    public static List<GameWeapon> weapons = new ArrayList<>();
 
     public static void load(){
         traders.clear();
+        weapons.clear();
 
         File tradersFile = FileManager.getFileWithoutCreating("traders.json", ProtectYourCastleMain.getInstance());
-
         if (!tradersFile.exists()) {
             ProtectYourCastleMain.getInstance().saveResource("traders.json", false);
         }
-
         traders = Game.gson.fromJson(FileManager.read(tradersFile), traderType);
+
+        File weaponsFile = FileManager.getFileWithoutCreating("weapons.json", ProtectYourCastleMain.getInstance());
+        if (!weaponsFile.exists()) {
+            ProtectYourCastleMain.getInstance().saveResource("weapons.json", false);
+        }
+        weapons = Game.gson.fromJson(FileManager.read(weaponsFile), weaponsType);
     }
 
     public static void save(){
         File tradersFile = FileManager.getFile("traders.json", ProtectYourCastleMain.getInstance());
         FileManager.write(Game.gson.toJson(traders), tradersFile);
+
+        File weaponsFile = FileManager.getFileWithoutCreating("weapons.json", ProtectYourCastleMain.getInstance());
+        FileManager.write(Game.gson.toJson(weapons), weaponsFile);
     }
 
     public static boolean isTrader(UUID entityUUID) {
@@ -65,16 +75,19 @@ public class Trader {
 
     private final List<NPCTrade> trades;
     private final String name;
+    private boolean weaponTrader;
     private SavedLocation savedLocation;
 
-    public Trader(String name) {
+    public Trader(String name, boolean weaponTrader) {
+        this.weaponTrader = weaponTrader;
         this.trades = new ArrayList<>();
         this.name = name;
     }
 
-    public Trader(String name, List<NPCTrade> trades) {
+    public Trader(String name, List<NPCTrade> trades, boolean weaponTrader) {
         this.trades = trades;
         this.name = name;
+        this.weaponTrader = weaponTrader;
     }
 
     public void respawn(){
@@ -107,6 +120,8 @@ public class Trader {
 
         traders.put(villager.getUniqueId(), this);
     }
+
+
 
     public void addTrade(NPCTrade trade){
         this.trades.add(trade);
@@ -176,6 +191,25 @@ public class Trader {
                 clonedInput.add(is.clone());
             }
             return new NPCTrade(clonedInput, this.reward.clone());
+        }
+    }
+
+    public static class GameWeapon{
+
+        private final NPCTrade gunTrade;
+        private final NPCTrade ammoTrade;
+
+        public GameWeapon(NPCTrade gunTrade, NPCTrade ammoTrade) {
+            this.gunTrade = gunTrade;
+            this.ammoTrade = ammoTrade;
+        }
+
+        public NPCTrade getGunTrade() {
+            return gunTrade;
+        }
+
+        public NPCTrade getAmmoTrade() {
+            return ammoTrade;
         }
     }
 
