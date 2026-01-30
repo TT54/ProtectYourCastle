@@ -134,7 +134,16 @@ public class Trader {
     public Merchant buildMerchantMenu(){
         Merchant merchantMenu = Bukkit.createMerchant(this.name);
         List<MerchantRecipe> recipes = new ArrayList<>();
-        for(NPCTrade trade : trades){
+        final List<NPCTrade> merchantTrades = new ArrayList<>();
+        if(this.weaponTrader && Game.currentGame != null && !Game.currentGame.selectedWeapons.isEmpty()){
+            Game.currentGame.selectedWeapons.forEach(gameWeapon -> {
+                merchantTrades.add(gameWeapon.gunTrade);
+                merchantTrades.add(gameWeapon.ammoTrade);
+            });
+        } else{
+            merchantTrades.addAll(trades);
+        }
+        for(NPCTrade trade : merchantTrades){
             MerchantRecipe recipe = new MerchantRecipe(trade.reward.clone(), Integer.MAX_VALUE);
             for(ItemStack is : trade.input){
                 recipe.addIngredient(is.clone());

@@ -50,6 +50,7 @@ public class Game {
     public Map<Team.TeamColor, Integer> points = new HashMap<>();
     public Map<Team.TeamColor, UUID> bannerHolder = new HashMap<>();
     public GameStatistics gameStatistics;
+    public List<Trader.GameWeapon> selectedWeapons = new ArrayList<>();
 
     private transient GameRunnable runnable;
     public transient World gameWorld;
@@ -86,6 +87,11 @@ public class Game {
 
         for(Trader trader : new ArrayList<>(Trader.traders.values())){
             trader.respawn();
+        }
+
+        if(GameParameters.ENABLE_RANDOM_WEAPONS.get()){
+            List<Trader.GameWeapon> weapons = new ArrayList<>(Trader.weapons);
+            this.selectedWeapons = weapons.subList(0, GameParameters.WEAPONS_TO_SELECT.get());
         }
 
         for(Player player : Bukkit.getOnlinePlayers()){
