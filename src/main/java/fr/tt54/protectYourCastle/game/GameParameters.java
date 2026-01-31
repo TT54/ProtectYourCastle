@@ -38,6 +38,8 @@ public class GameParameters {
     public static Parameter<Boolean> ENABLE_RANDOM_WEAPONS = new Parameter<>("enable_random_weapons", true);
     public static Parameter<Integer> WEAPONS_TO_SELECT = new Parameter<>("weapons_to_select", 4);
 
+    public static Parameter<Boolean> ENABLE_DAMAGE_INDICATOR = new Parameter<>("enable_damage_indicator", true);
+
     private final Map<Parameter<?>, Object> parametersMap;
 
     public GameParameters() {

@@ -13,15 +13,17 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -29,8 +31,10 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 public class GameListener implements Listener {
@@ -270,6 +274,25 @@ public class GameListener implements Listener {
 
                 return false;
             });
+        }
+    }
+
+    @EventHandler
+    public void onPlayerDamaged(EntityDamageByEntityEvent event){
+        if(event.getEntity() instanceof Player player && GameParameters.ENABLE_DAMAGE_INDICATOR.get()){
+            final Random random = new Random();
+            final Location damageIndicatorLocation = player.getLocation().clone().add(
+                    (random.nextBoolean() ? 1 : -1) * (.5 + random.nextDouble()),
+                    2.4,
+                    (random.nextBoolean() ? 1 : -1) * (.5 + random.nextDouble())
+            );
+            final TextDisplay textDisplay = (TextDisplay) player.getWorld().spawnEntity(damageIndicatorLocation, EntityType.TEXT_DISPLAY);
+            textDisplay.setBillboard(Display.Billboard.CENTER);
+            textDisplay.setSeeThrough(true);
+            DecimalFormat format = new DecimalFormat("0.0");
+            textDisplay.setText("§b" + format.format(event.getFinalDamage()));
+
+            Bukkit.getScheduler().runTaskLater(ProtectYourCastleMain.getInstance(), textDisplay::remove, 15L);
         }
     }
 
