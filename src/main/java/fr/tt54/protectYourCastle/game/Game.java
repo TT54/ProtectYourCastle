@@ -12,6 +12,9 @@ import fr.tt54.protectYourCastle.utils.FileManager;
 import fr.tt54.protectYourCastle.utils.ItemBuilder;
 import fr.tt54.protectYourCastle.utils.ItemSerialization;
 import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
@@ -283,6 +286,18 @@ public class Game {
         player.setHealth(20);
         player.setSaturation(20);
         player.setFoodLevel(20);
+
+        AttributeInstance attributeInstance = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+        if(attributeInstance != null){
+            for(AttributeModifier modifier : attributeInstance.getModifiers()){
+                attributeInstance.removeModifier(modifier);
+            }
+            int teamSize = team.getMembers().size();
+            int maxTeamSize = Team.getTeams().stream().map(t -> t.getMembers().size()).max(Comparator.comparingInt(value -> value)).orElse(teamSize);
+            if(teamSize < maxTeamSize && GameParameters.ENABLE_BOOST_FOR_SMALL_TEAM.get()){
+                attributeInstance.addModifier(new AttributeModifier("boost_for_smaller_team", (double) maxTeamSize / teamSize - 1d, AttributeModifier.Operation.MULTIPLY_SCALAR_1));
+            }
+        }
 
         if(player.getInventory().getHelmet() == null || player.getInventory().getHelmet().getType() == Material.AIR) player.getInventory().setHelmet(new ItemStack(Material.IRON_HELMET));
         if(player.getInventory().getChestplate() == null || player.getInventory().getChestplate().getType() == Material.AIR) player.getInventory().setChestplate(new ItemStack(Material.IRON_CHESTPLATE));
