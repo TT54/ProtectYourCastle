@@ -183,6 +183,8 @@ public class Game {
                 player.teleport(new Location(Bukkit.getWorlds().get(0), GameParameters.LOBBY_X.get() + .5d, GameParameters.LOBBY_Y.get(), GameParameters.LOBBY_Z.get() + .5d));
                 player.setGameMode(GameMode.SURVIVAL);
 
+                ProtectYourCastleMain.voiceChatBridge.joinGlobalGroup(player);
+
                 GameStatsInventory inv = new GameStatsInventory(player, this.gameStatistics);
                 inv.openInventory();
             }

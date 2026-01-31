@@ -42,12 +42,12 @@ public class GameListener implements Listener {
 
         if(team != null){
             player.setPlayerListName(team.getColor().getChatColor() + "[" + team.getColor().name() + "] " + player.getName());
-            ProtectYourCastleMain.voiceChatBridge.joinTeamGroup(player, team);
         }
 
         if(Game.currentGame != null) {
-            if (team != null && player.getGameMode() == GameMode.SPECTATOR) {
-                beginRespawn(player, team, Game.currentGame);
+            if (team != null) {
+                if(player.getGameMode() == GameMode.SPECTATOR) beginRespawn(player, team, Game.currentGame);
+                ProtectYourCastleMain.voiceChatBridge.joinTeamGroup(player, team);
             }
 
             if(Game.currentGame.isRunning() && Game.currentGame.scoreboard != null){
@@ -61,6 +61,7 @@ public class GameListener implements Listener {
         } else{
             player.teleport(new Location(Bukkit.getWorlds().get(0), GameParameters.LOBBY_X.get() + .5d, GameParameters.LOBBY_Y.get(), GameParameters.LOBBY_Z.get() + .5d));
             player.setGameMode(GameMode.SURVIVAL);
+            ProtectYourCastleMain.voiceChatBridge.joinGlobalGroup(player);
         }
     }
 
