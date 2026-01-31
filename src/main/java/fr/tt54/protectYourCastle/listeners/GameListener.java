@@ -282,9 +282,9 @@ public class GameListener implements Listener {
         if(event.getEntity() instanceof Player player && GameParameters.ENABLE_DAMAGE_INDICATOR.get()){
             final Random random = new Random();
             final Location damageIndicatorLocation = player.getLocation().clone().add(
-                    (random.nextBoolean() ? 1 : -1) * (.5 + random.nextDouble()),
-                    2.4,
-                    (random.nextBoolean() ? 1 : -1) * (.5 + random.nextDouble())
+                    (random.nextBoolean() ? .2 : -.2) * (.5 + random.nextDouble()),
+                    3,
+                    (random.nextBoolean() ? .2 : -.2) * (.5 + random.nextDouble())
             );
             final TextDisplay textDisplay = (TextDisplay) player.getWorld().spawnEntity(damageIndicatorLocation, EntityType.TEXT_DISPLAY);
             textDisplay.setBillboard(Display.Billboard.CENTER);
