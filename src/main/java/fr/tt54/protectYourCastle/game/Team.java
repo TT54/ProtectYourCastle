@@ -79,10 +79,10 @@ public class Team {
 
         final int membersLimit = (Bukkit.getOnlinePlayers().size() + 1) / 2;
 
-        List<UUID> toAdd = new ArrayList<>(Bukkit.getOnlinePlayers().stream().map(Player::getUniqueId).filter(uuid -> !team1.getMembers().contains(uuid) && !team2.getMembers().contains(uuid)).sorted(Comparator.comparingDouble(GameStatistics::getPlayerTotalScore)).toList());
+        List<UUID> toAdd = new ArrayList<>(Bukkit.getOnlinePlayers().stream().map(Player::getUniqueId).filter(uuid -> !team1.getMembers().contains(uuid) && !team2.getMembers().contains(uuid)).sorted(Comparator.comparingDouble(GameStatistics::getPlayerCurrentScore)).toList());
         while(!toAdd.isEmpty()){
             UUID player = toAdd.remove(toAdd.size() - 1);
-            double score = GameStatistics.getPlayerTotalScore(player);
+            double score = GameStatistics.getPlayerCurrentScore(player);
             if(score1 <= score2 && team1.getMembers().size() < membersLimit){
                 score1 += score;
                 team1.joinTeam(player);
@@ -240,7 +240,7 @@ public class Team {
     public double getMembersScoreSum(){
         double score = 0;
         for(UUID member : this.getMembers()){
-            score += GameStatistics.getPlayerTotalScore(member);
+            score += GameStatistics.getPlayerCurrentScore(member);
         }
         return score;
     }

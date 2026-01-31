@@ -11,7 +11,6 @@ import org.bukkit.block.Banner;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.jetbrains.annotations.NotNull;
@@ -504,8 +503,11 @@ public class CmdCastle extends CoreCommand {
             } else if(args[0].equalsIgnoreCase("scores")){
                 player.sendMessage("§7----- §eScores §7-----");
                 DecimalFormat format = new DecimalFormat("#");
-                for(Player p : Bukkit.getOnlinePlayers()){
-                    player.sendMessage("§6" + p.getName() + " : §f" + format.format(GameStatistics.getPlayerTotalScore(p.getUniqueId())) + " points");
+                int rank = 1;
+                for(UUID uuid : GameStatistics.getRegisteredPlayers()){
+                    OfflinePlayer p = Bukkit.getOfflinePlayer(uuid);
+                    player.sendMessage("§b" + rank + "- §6" + p.getName() + " : §f" + format.format(GameStatistics.getPlayerCurrentScore(uuid)) + " points §7(Total : " + format.format(GameStatistics.getPlayerTotalScore(uuid)) + ")");
+                    rank++;
                 }
                 return true;
             } else if(args[0].equalsIgnoreCase("edit")){

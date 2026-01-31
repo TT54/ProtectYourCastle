@@ -15,6 +15,7 @@ public class GameStatistics {
 
     private static final Map<UUID, List<Double>> playerGamesScore = new HashMap<>();
     private static final Map<UUID, Double> playerCurrentScore = new HashMap<>();
+    private static final Map<UUID, Double> playerTotalScore = new HashMap<>();
 
     public static void load(){
         File statisticsFile = FileManager.getFileWithoutCreating("statistics.json", ProtectYourCastleMain.getInstance());
@@ -41,6 +42,10 @@ public class GameStatistics {
         }
     }
 
+    public static List<UUID> getRegisteredPlayers(){
+        return playerCurrentScore.keySet().stream().sorted(Comparator.comparingDouble(uuid -> -getPlayerCurrentScore(uuid))).toList();
+    }
+
     public static void save(){
         File statisticsFile = FileManager.getFile("statistics.json", ProtectYourCastleMain.getInstance());
         FileManager.write(Game.gson.toJson(gameStatistics), statisticsFile);
@@ -64,10 +69,15 @@ public class GameStatistics {
             score += scores.get(scores.size() - 1 - i);
         }
         playerCurrentScore.put(playerUUID, score);
+        playerTotalScore.put(playerUUID, scores.stream().reduce(0d, Double::sum));
+    }
+
+    public static double getPlayerCurrentScore(UUID playerUUID){
+        return playerCurrentScore.getOrDefault(playerUUID, 0d);
     }
 
     public static double getPlayerTotalScore(UUID playerUUID){
-        return playerCurrentScore.getOrDefault(playerUUID, 0d);
+        return playerTotalScore.getOrDefault(playerUUID, 0d);
     }
 
     private final long gameBegin;
