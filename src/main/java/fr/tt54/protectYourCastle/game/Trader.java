@@ -98,9 +98,16 @@ public class Trader {
                 for(Entity entity : location.getWorld().getNearbyEntities(location, 1, 1, 1, entity -> entity instanceof Villager && entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(this.name))){
                     entity.remove();
                 }
+                for(Map.Entry<UUID, Trader> entry : new ArrayList<>(traders.entrySet())){
+                    if(entry.getValue() == this) traders.remove(entry.getKey());
+                }
                 this.spawn(location);
             }
         }
+    }
+
+    public SavedLocation getSavedLocation() {
+        return savedLocation;
     }
 
     public void spawn(Location location){

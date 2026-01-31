@@ -85,10 +85,6 @@ public class Game {
         WorldCreator creator = new WorldCreator("game_world");
         this.gameWorld = creator.createWorld();
 
-        for(Trader trader : new ArrayList<>(Trader.traders.values())){
-            trader.respawn();
-        }
-
         if(GameParameters.ENABLE_RANDOM_WEAPONS.get()){
             List<Trader.GameWeapon> weapons = new ArrayList<>(Trader.weapons);
             Collections.shuffle(weapons);

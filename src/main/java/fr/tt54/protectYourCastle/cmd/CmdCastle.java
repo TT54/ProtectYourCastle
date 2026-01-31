@@ -425,6 +425,15 @@ public class CmdCastle extends CoreCommand {
                             player.sendMessage("§cAucun marchant trouvé autour de vous");
                             return false;
                         }
+                    } else if(args[1].equalsIgnoreCase("respawn")){
+                        for(Trader trader : new ArrayList<>(Trader.traders.values())){
+                            if(trader.getSavedLocation() != null){
+                                Location loc = trader.getSavedLocation().toLocation();
+                                if(loc.getWorld() == player.getWorld() && loc.distance(player.getLocation()) < 64){
+                                    trader.respawn();
+                                }
+                            }
+                        }
                     }
                 }
             } else if(args[0].equalsIgnoreCase("set_duration")){
@@ -601,7 +610,7 @@ public class CmdCastle extends CoreCommand {
             } else if(args[0].equalsIgnoreCase("team")){
                 return tabComplete(args[1], "spawn", "base", "banner", "join", "leave", "protected", "rollback", "drawbridge", "fill", "clear");
             } else if(args[0].equalsIgnoreCase("trader")){
-                return tabComplete(args[1], "spawn", "remove");
+                return tabComplete(args[1], "spawn", "remove", "respawn");
             } else if(args[0].equalsIgnoreCase("parameter")){
                 return tabComplete(args[1], "set", "get", "list");
             } else if(args[0].equalsIgnoreCase("edit")){
