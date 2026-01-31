@@ -49,7 +49,7 @@ public class WeaponInventory extends CorePersonalInventory {
         inv.setItem(3 * 9 + 7, this.displayedWeapon.getAmmoTrade().getReward() == null ? DefaultItems.AIR.build() : this.displayedWeapon.getAmmoTrade().getReward().clone());
 
         inv.setItem(9 * 4 + 8, new ItemBuilder(Material.LIME_WOOL, "§aValider").build());
-        inv.setItem(9 * 4, new ItemBuilder(Material.RED_WOOL, "§cAnnuler").build());
+        inv.setItem(9 * 4, DefaultItems.BACK.build());
 
         return inv;
     }
@@ -91,16 +91,18 @@ public class WeaponInventory extends CorePersonalInventory {
                     ammoInputs.add(ammoInput2.clone());
 
                 if(gunInputs.isEmpty()){
-                    player.sendMessage("§cVous devez définir au moins un item d'entrée pour l'arme !");
+                    player.sendMessage("§cVous devez définir un prix pour l'arme !");
                     return;
                 } else if(gunReward == null || gunReward.getType().isAir()){
-                    player.sendMessage("§cVous devez définir une récompense pour l'arme !");
+                    Trader.weapons.remove(this.displayedWeapon);
+                    this.previousInventory.openInventory();
+                    player.sendMessage("§aL'arme a bien été retirée");
                     return;
                 } else if(ammoInputs.isEmpty()){
-                    player.sendMessage("§cVous devez définir au moins un item d'entrée pour les munitions !");
+                    player.sendMessage("§cVous devez définir un prix pour les munitions !");
                     return;
                 } else if(ammoReward == null || ammoReward.getType().isAir()){
-                    player.sendMessage("§cVous devez définir une récompense pour les munitions !");
+                    player.sendMessage("§cVous devez définir une munition !");
                     return;
                 }
 
@@ -117,10 +119,9 @@ public class WeaponInventory extends CorePersonalInventory {
                             new Trader.NPCTrade(ammoInputs, ammoReward.clone())
                     ));
                     player.sendMessage("§aL'arme a bien été ajoutée !");
-                    this.previousInventory.openInventory();
+                    this.openInventory();
                 }
             } else if(slot == 9 * 4) {
-                player.sendMessage("§cOpération annulée.");
                 this.previousInventory.openInventory();
             }
         }
