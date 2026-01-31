@@ -70,7 +70,7 @@ public class GameStatsInventory extends CorePersonalInventory {
         DecimalFormat format = new DecimalFormat("#");
         List<Map.Entry<UUID, Double>> sortedScores = this.gameStats.getPlayerScores().entrySet().stream().sorted(Comparator.comparingDouble(value -> -value.getValue())).toList();
         return new ItemBuilder(Material.DIAMOND, "§bMVP : §6§l" + Bukkit.getOfflinePlayer(sortedScores.get(0).getKey()).getName())
-                .addLoreLine(sortedScores.stream().map(entry -> "§7 - §e" + Bukkit.getOfflinePlayer(entry.getKey()).getName() + " : §f" + format.format(entry.getValue())).toList())
+                .addLoreLine(sortedScores.stream().map(entry -> "§7 - " + this.gameStats.getPlayerTeam(entry.getKey()).getChatColor() + Bukkit.getOfflinePlayer(entry.getKey()).getName() + "§7 : §f" + format.format(entry.getValue())).toList())
                 .build();
     }
 
@@ -82,11 +82,14 @@ public class GameStatsInventory extends CorePersonalInventory {
     }
 
     public ItemStack drawBestPlayerStats(GameStatistics.StatisticKey key){
-        UUID bestUUID = this.gameStats.getBestPlayer(key);
+        List<Map.Entry<UUID, Integer>> results = this.gameStats.getStatistics(key).entrySet().stream().sorted(Comparator.comparingInt(entry -> -entry.getValue())).toList();
+        UUID bestUUID = results.get(0).getKey();
         OfflinePlayer p = Bukkit.getOfflinePlayer(bestUUID);
         return new ItemBuilder(Material.PLAYER_HEAD, "§eTop §6" + key.getDisplayName() + "§e : §6§l" + p.getName())
                 .setHeadOwner(p)
-                .setLore("§6" + key.getDisplayName() + " §e--> §f" + this.gameStats.getPlayerStatistic(bestUUID, key), "§7----------", "§f" + this.player.getName(), "§7" + key.getDisplayName() + " --> §f" + this.gameStats.getPlayerStatistic(this.player.getUniqueId(), key))
+                .setLore(results.stream()
+                        .map(entry -> this.gameStats.getPlayerTeam(entry.getKey()).getChatColor() + Bukkit.getOfflinePlayer(entry.getKey()).getName() + " §e--> §f" + entry.getValue())
+                        .toList())
                 .build();
     }
 

@@ -128,11 +128,7 @@ public class GameStatistics {
     }
 
     public UUID getBestPlayer(StatisticKey key){
-        UUID best = null;
-        for(UUID uuid : this.playerTeam.keySet()){
-            if(best == null || this.getPlayerStatistic(uuid, key) > this.getPlayerStatistic(best, key)) best = uuid;
-        }
-        return best;
+        return this.getStatistics(key).entrySet().stream().sorted(Comparator.comparingInt(entry -> -entry.getValue())).toList().get(0).getKey();
     }
 
     public Team.TeamColor getBestTeam(StatisticKey key){
@@ -194,6 +190,10 @@ public class GameStatistics {
 
     public Team.TeamColor getPlayerTeam(UUID playerUUID) {
         return this.playerTeam.get(playerUUID);
+    }
+
+    public Map<UUID, Integer> getStatistics(StatisticKey key) {
+        return this.values.getOrDefault(key, new HashMap<>());
     }
 
     public enum StatisticKey {
