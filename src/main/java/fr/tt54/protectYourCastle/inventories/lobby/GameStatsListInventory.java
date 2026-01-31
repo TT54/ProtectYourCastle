@@ -35,7 +35,7 @@ public class GameStatsListInventory extends PageableInventory<GameStatistics> {
         LocalTime localTime = LocalTime.ofInstant(instant, ZoneId.systemDefault());
         return new ItemBuilder(gameStatistics.getWinner() == null ? Material.PAPER : gameStatistics.getWinner().getBanner(), "§ePartie " + localDate.getDayOfMonth() + "/" + localDate.getMonthValue() + "/" + localDate.getYear() + " " + localTime.getHour() + ":" + localTime.getMinute())
                 .addLoreLine("§eDurée : §f" + TimeUnit.getShortFormattedTimeLeft((int) (gameStatistics.getGameEnd() - gameStatistics.getGameBegin()) / 1000, TimeUnit.HOURS), "§7----------")
-                .addLoreLine(gameStatistics.getPlayers().stream().map(uuid -> "§f - " + gameStatistics.getPlayerTeam(uuid).getChatColor() + Bukkit.getOfflinePlayer(uuid).getName()).toList())
+                .addLoreLine(gameStatistics.getPlayers().stream().sorted(Comparator.comparingDouble(uuid -> -gameStatistics.getPlayerScore(uuid))).map(uuid -> "§f - " + gameStatistics.getPlayerTeam(uuid).getChatColor() + Bukkit.getOfflinePlayer(uuid).getName()).toList())
                 .build();
     }
 

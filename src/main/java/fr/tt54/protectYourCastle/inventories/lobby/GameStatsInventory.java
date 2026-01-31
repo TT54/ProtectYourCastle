@@ -69,7 +69,7 @@ public class GameStatsInventory extends CorePersonalInventory {
     private ItemStack getPlayersScoreItem() {
         DecimalFormat format = new DecimalFormat("#");
         List<Map.Entry<UUID, Double>> sortedScores = this.gameStats.getPlayerScores().entrySet().stream().sorted(Comparator.comparingDouble(value -> -value.getValue())).toList();
-        return new ItemBuilder(Material.PLAYER_HEAD, "§bMVP : §6§l" + Bukkit.getOfflinePlayer(sortedScores.get(0).getKey()).getName())
+        return new ItemBuilder(Material.DIAMOND, "§bMVP : §6§l" + Bukkit.getOfflinePlayer(sortedScores.get(0).getKey()).getName())
                 .addLoreLine(sortedScores.stream().map(entry -> "§7 - §e" + Bukkit.getOfflinePlayer(entry.getKey()).getName() + " : §f" + format.format(entry.getValue())).toList())
                 .build();
     }
