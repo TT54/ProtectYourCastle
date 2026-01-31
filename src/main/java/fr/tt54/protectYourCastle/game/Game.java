@@ -170,6 +170,13 @@ public class Game {
             for(Player player : new ArrayList<>(Bukkit.getOnlinePlayers())){
                 ScoreboardManager.removeScoreboard(player);
 
+                AttributeInstance attributeInstance = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+                if(attributeInstance != null){
+                    for(AttributeModifier modifier : attributeInstance.getModifiers()){
+                        attributeInstance.removeModifier(modifier);
+                    }
+                }
+
                 player.getEnderChest().clear();
                 player.getInventory().clear();
                 CuriosBridge.clearPlayerCuriosInventory(player);
