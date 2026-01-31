@@ -82,13 +82,13 @@ public class GameStatsInventory extends CorePersonalInventory {
     }
 
     public ItemStack drawBestPlayerStats(GameStatistics.StatisticKey key){
-        List<Map.Entry<UUID, Integer>> results = this.gameStats.getStatistics(key).entrySet().stream().sorted(Comparator.comparingInt(entry -> -entry.getValue())).toList();
-        UUID bestUUID = results.get(0).getKey();
+        List<UUID> results = this.gameStats.getPlayers().stream().sorted(Comparator.comparingInt(uuid -> -this.gameStats.getPlayerStatistic(uuid, key))).toList();
+        UUID bestUUID = results.get(0);
         OfflinePlayer p = Bukkit.getOfflinePlayer(bestUUID);
         return new ItemBuilder(Material.PLAYER_HEAD, "§eTop §6" + key.getDisplayName() + "§e : §6§l" + p.getName())
                 .setHeadOwner(p)
                 .setLore(results.stream()
-                        .map(entry -> this.gameStats.getPlayerTeam(entry.getKey()).getChatColor() + Bukkit.getOfflinePlayer(entry.getKey()).getName() + " §e--> §f" + entry.getValue())
+                        .map(uuid -> this.gameStats.getPlayerTeam(uuid).getChatColor() + Bukkit.getOfflinePlayer(uuid).getName() + " §e--> §f" + this.gameStats.getPlayerStatistic(uuid, key))
                         .toList())
                 .build();
     }
