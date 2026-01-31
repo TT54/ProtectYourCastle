@@ -4,10 +4,13 @@ import fr.tt54.protectYourCastle.cmd.CmdCastle;
 import fr.tt54.protectYourCastle.cmd.CmdDrawbridge;
 import fr.tt54.protectYourCastle.cmd.CmdStats;
 import fr.tt54.protectYourCastle.game.*;
+import fr.tt54.protectYourCastle.game.Team;
 import fr.tt54.protectYourCastle.listeners.BannerListener;
 import fr.tt54.protectYourCastle.listeners.GameListener;
 import fr.tt54.protectYourCastle.mod_bridges.VoiceChatBridge;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scoreboard.*;
 
 public final class ProtectYourCastleMain extends JavaPlugin {
 
@@ -31,6 +34,13 @@ public final class ProtectYourCastleMain extends JavaPlugin {
 
         this.getServer().getPluginManager().registerEvents(new GameListener(), this);
         this.getServer().getPluginManager().registerEvents(new BannerListener(), this);
+
+        Scoreboard scoreboard = Bukkit.getServer().getScoreboardManager().getMainScoreboard();
+        if(scoreboard.getObjective("health") == null){
+            Objective objective = scoreboard.registerNewObjective("health", Criteria.HEALTH, "§c❤");
+            objective.setDisplaySlot(DisplaySlot.BELOW_NAME);
+            objective.setRenderType(RenderType.INTEGER);
+        }
 
         try {
             voiceChatBridge.enable();
