@@ -35,6 +35,11 @@ public class TradeListInventory extends PageableInventory<Trader.NPCTrade> {
     @Override
     protected void generateOverlayInv(Inventory inv) {
         inv.setItem(9 * 5 + 8, new ItemBuilder(Material.DIAMOND, "§aCréer un trade").build());
+        inv.setItem(9 * 5 + 4, (trader.isWeaponTrader() ?
+                new ItemBuilder(Material.LIME_STAINED_GLASS_PANE, "§aNPC vendeur d'armes") :
+                new ItemBuilder(Material.RED_STAINED_GLASS_PANE, "§cNPC normal"))
+                .build()
+        );
     }
 
     @Override
@@ -45,9 +50,14 @@ public class TradeListInventory extends PageableInventory<Trader.NPCTrade> {
 
     @Override
     protected void onInvClick(InventoryClickEvent event) {
-        if(event.getInventory() == event.getClickedInventory() && event.getSlot() == 9 * 5 + 8){
-            AddTradeInventory inv = new AddTradeInventory(player, this.trader, this);
-            inv.openInventory();
+        if(event.getInventory() == event.getClickedInventory()){
+            if(event.getSlot() == 9 * 5 + 8) {
+                AddTradeInventory inv = new AddTradeInventory(player, this.trader, this);
+                inv.openInventory();
+            } else if(event.getSlot() == 9 * 5 + 4){
+                this.trader.setWeaponTrader(!this.trader.isWeaponTrader());
+                this.openInventory();
+            }
         }
     }
 

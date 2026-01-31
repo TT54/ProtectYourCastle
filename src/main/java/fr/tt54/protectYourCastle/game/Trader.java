@@ -166,6 +166,13 @@ public class Trader {
         this.trades.remove(trade);
     }
 
+    public boolean isWeaponTrader() {
+        return weaponTrader;
+    }
+
+    public void setWeaponTrader(boolean weaponTrader) {
+        this.weaponTrader = weaponTrader;
+    }
 
     public static class NPCTrade{
 

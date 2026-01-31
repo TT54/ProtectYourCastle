@@ -91,6 +91,7 @@ public class Game {
 
         if(GameParameters.ENABLE_RANDOM_WEAPONS.get()){
             List<Trader.GameWeapon> weapons = new ArrayList<>(Trader.weapons);
+            Collections.shuffle(weapons);
             this.selectedWeapons = weapons.subList(0, GameParameters.WEAPONS_TO_SELECT.get());
         }
 
