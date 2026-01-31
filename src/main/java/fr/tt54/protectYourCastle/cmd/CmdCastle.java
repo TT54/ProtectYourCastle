@@ -590,6 +590,18 @@ public class CmdCastle extends CoreCommand {
                 WeaponsListInventory inv = new WeaponsListInventory(player, 1);
                 inv.openInventory();
                 return true;
+            } else if(args[0].equalsIgnoreCase("save")){
+                ResourceGenerator.save();
+                Team.save();
+                Trader.save();
+                GameStatistics.save();
+                GameParameters.save();
+            } else if(args[0].equalsIgnoreCase("load")){
+                GameParameters.load();
+                ResourceGenerator.load();
+                Team.load();
+                Trader.load();
+                GameStatistics.load();
             }
         }
 
@@ -603,7 +615,7 @@ public class CmdCastle extends CoreCommand {
         }
 
         if(args.length == 1){
-            return tabComplete(args[0], "generator", "start", "team", "trader", "parameter", "stop", "scores", "edit", "weapons");
+            return tabComplete(args[0], "generator", "start", "team", "trader", "parameter", "stop", "scores", "edit", "weapons", "save", "load");
         } else if(args.length == 2){
             if(args[0].equalsIgnoreCase("generator")){
                 return tabComplete(args[1], "add", "remove", "edit_all");
