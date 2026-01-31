@@ -189,6 +189,10 @@ public class Game {
                 inv.openInventory();
             }
 
+            for(Team team : Team.getTeams()){
+                ProtectYourCastleMain.voiceChatBridge.deleteTeamGroup(team);
+            }
+
             Bukkit.getScheduler().runTaskLater(ProtectYourCastleMain.getInstance(), () -> Bukkit.unloadWorld(gameWorld, false), 10L);
 
             this.scoreboard = null;

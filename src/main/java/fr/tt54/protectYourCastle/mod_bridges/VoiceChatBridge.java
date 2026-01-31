@@ -36,6 +36,12 @@ public class VoiceChatBridge {
         }
     }
 
+    public void deleteTeamGroup(Team team){
+        if(!this.enabled) return;
+        PYCVoiceChatPlugin.deleteGroup(team.getVoiceChatGroupUUID());
+        team.setVoiceChatGroupUUID(null);
+    }
+
     public void joinTeamGroup(Player player, Team team){
         if(!this.enabled || team.getVoiceChatGroupUUID() == null) return;
         PYCVoiceChatPlugin.joinGroup(team.getVoiceChatGroupUUID(), player.getUniqueId());
