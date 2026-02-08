@@ -158,6 +158,7 @@ public class Game {
 
             this.gameStatistics.setGameEnd(System.currentTimeMillis());
             GameStatistics.gameStatistics.add(this.gameStatistics);
+            RankingDisplay.updateDisplays();
 
             for(Player player : Bukkit.getOnlinePlayers()){
                 System.out.println(player.getName() + " new score : " + GameStatistics.getPlayerCurrentScore(player.getUniqueId()));
