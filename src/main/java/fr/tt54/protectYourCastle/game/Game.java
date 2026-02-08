@@ -294,6 +294,7 @@ public class Game {
         if(isFirstSpawn) {
             player.getInventory().clear();
             CuriosBridge.clearPlayerCuriosInventory(player);
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "advancement revoke " + player.getName() + " everything");
         }
         player.teleport(team.getSpawnLocation());
         player.setGameMode(GameMode.SURVIVAL);
