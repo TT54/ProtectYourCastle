@@ -4,6 +4,7 @@ import fr.tt54.protectYourCastle.ProtectYourCastleMain;
 import fr.tt54.protectYourCastle.game.*;
 import fr.tt54.protectYourCastle.inventories.ConfirmationInventory;
 import fr.tt54.protectYourCastle.inventories.trades.weapons.WeaponsListInventory;
+import fr.tt54.protectYourCastle.scoreboard.ScoreboardManager;
 import fr.tt54.protectYourCastle.utils.Area;
 import fr.tt54.protectYourCastle.utils.FileManager;
 import org.bukkit.*;
@@ -126,6 +127,22 @@ public class CmdCastle extends CoreCommand {
                     player.sendMessage("§cUne partie est déjà en cours");
                     return false;
                 }
+
+                boolean empty = true;
+                for(Player p : Bukkit.getOnlinePlayers()){
+                    Team team = Team.getPlayerTeam(player.getUniqueId());
+                    if(team != null) {
+                        empty = false;
+                        break;
+                    }
+                }
+
+                if(empty) {
+                    Game.currentGame = null;
+                    player.sendMessage("§cImpossible de lancer la partie, aucune équipe n'a de joueur");
+                    return false;
+                }
+
                 Game.currentGame.prepare();
                 Game.currentGame.launch();
                 player.sendMessage("§aLa partie a bien été lancée");
