@@ -26,6 +26,7 @@ public final class ProtectYourCastleMain extends JavaPlugin {
         Team.load();
         Trader.load();
         GameStatistics.load();
+        RankingDisplay.load();
 
         this.getCommand("drawbridge").setExecutor(new CmdDrawbridge());
         this.getCommand("stats").setExecutor(new CmdStats());
@@ -52,6 +53,7 @@ public final class ProtectYourCastleMain extends JavaPlugin {
     @Override
     public void onDisable() {
         ResourceGenerator.save();
+        RankingDisplay.save();
         Team.save();
         Trader.save();
         GameStatistics.save();

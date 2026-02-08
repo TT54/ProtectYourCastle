@@ -80,6 +80,24 @@ public class GameStatistics {
         return playerTotalScore.getOrDefault(playerUUID, 0d);
     }
 
+    public static Map<UUID, Double> getPlayersCurrentScores(){
+        return playerCurrentScore;
+    }
+
+    public static Map<UUID, Double> getPlayersTotalScores() {
+        return playerTotalScore;
+    }
+
+    public static Map<UUID, Double> getPLayersTotalStatistic(StatisticKey key){
+        Map<UUID, Double> totalStatistic = new HashMap<>();
+        for(GameStatistics statistics : gameStatistics){
+            for(UUID player : statistics.getPlayers()){
+                totalStatistic.put(player, totalStatistic.getOrDefault(player, 0d) + statistics.getPlayerStatistic(player, key));
+            }
+        }
+        return totalStatistic;
+    }
+
     private final long gameBegin;
     private long gameEnd;
     private final Map<StatisticKey, Map<UUID, Integer>> values;

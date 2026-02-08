@@ -604,6 +604,27 @@ public class CmdCastle extends CoreCommand {
                 Team.load();
                 Trader.load();
                 GameStatistics.load();
+            } else if (args[0].equalsIgnoreCase("ranking")) {
+                if(args.length >= 2){
+                    if(args[1].equalsIgnoreCase("place")){
+                        if(args.length != 3){
+                            player.sendMessage("§cBon usage : '/castle ranking place <type>'");
+                            return false;
+                        }
+
+                        try {
+                            RankingDisplay.RankingDisplayType type = RankingDisplay.RankingDisplayType.valueOf(args[2].toUpperCase());
+                            RankingDisplay.spawnDisplay(type, player.getLocation().clone().add(0, 1.5, 0));
+                            player.sendMessage("§aUn affichage de classement " + type.getDisplayName() + " a été créé à votre position");
+                            return true;
+                        } catch (IllegalArgumentException e) {
+                            player.sendMessage("§cLe type de classement " + args[1] + " n'existe pas");
+                            return false;
+                        }
+                    } else if(args[1].equalsIgnoreCase("update")){
+                        RankingDisplay.updateDisplays();
+                    }
+                }
             }
         }
 
@@ -617,7 +638,7 @@ public class CmdCastle extends CoreCommand {
         }
 
         if(args.length == 1){
-            return tabComplete(args[0], "generator", "start", "team", "trader", "parameter", "stop", "scores", "edit", "weapons", "save", "load");
+            return tabComplete(args[0], "generator", "start", "team", "trader", "parameter", "stop", "scores", "edit", "weapons", "save", "load", "ranking");
         } else if(args.length == 2){
             if(args[0].equalsIgnoreCase("generator")){
                 return tabComplete(args[1], "add", "remove", "edit_all");
@@ -629,6 +650,8 @@ public class CmdCastle extends CoreCommand {
                 return tabComplete(args[1], "set", "get", "list");
             } else if(args[0].equalsIgnoreCase("edit")){
                 return tabComplete(args[1], "join", "leave", "save");
+            } else if (args[0].equalsIgnoreCase("ranking")) {
+                return tabComplete(args[1], "place", "update");
             }
         } else if(args.length == 3){
             if(args[0].equalsIgnoreCase("generator")){
@@ -644,6 +667,10 @@ public class CmdCastle extends CoreCommand {
             } else if(args[0].equalsIgnoreCase("parameter")){
                 if(args[1].equalsIgnoreCase("set") || args[1].equalsIgnoreCase("get")){
                     return GameParameters.Parameter.existingParameters.stream().map(GameParameters.Parameter::getName).filter(s -> s.contains(args[2])).toList();
+                }
+            } else if (args[0].equalsIgnoreCase("ranking")) {
+                if(args[1].equalsIgnoreCase("place")){
+                    return tabComplete(args[2], Stream.of(RankingDisplay.RankingDisplayType.values()).map(type -> type.name().toLowerCase()));
                 }
             }
         } else if(args.length == 4){
