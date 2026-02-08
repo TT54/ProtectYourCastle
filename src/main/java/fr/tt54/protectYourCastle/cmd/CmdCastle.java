@@ -13,6 +13,7 @@ import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.TextDisplay;
 import org.bukkit.entity.Villager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -631,7 +632,7 @@ public class CmdCastle extends CoreCommand {
 
                         try {
                             RankingDisplay.RankingDisplayType type = RankingDisplay.RankingDisplayType.valueOf(args[2].toUpperCase());
-                            RankingDisplay.spawnDisplay(type, player.getLocation().clone().add(0, 1.5, 0));
+                            RankingDisplay.spawnDisplay(type, player.getLocation().clone().add(0, .5, 0));
                             player.sendMessage("§aUn affichage de classement " + type.getDisplayName() + " a été créé à votre position");
                             return true;
                         } catch (IllegalArgumentException e) {
@@ -640,6 +641,15 @@ public class CmdCastle extends CoreCommand {
                         }
                     } else if(args[1].equalsIgnoreCase("update")){
                         RankingDisplay.updateDisplays();
+                    } else if(args[1].equalsIgnoreCase("remove")) {
+                        TextDisplay display = (TextDisplay) player.getWorld().getNearbyEntities(player.getLocation(), 2, 2, 2, entity -> entity instanceof TextDisplay).stream().min(Comparator.comparingDouble(entity -> entity.getLocation().distanceSquared(player.getLocation()))).orElse(null);
+                        if(display != null){
+                            if(RankingDisplay.removeDisplay(display)){
+                                player.sendMessage("§aAffichage de classement supprimé");
+                            } else {
+                                player.sendMessage("§cAucun affichage de classement trouvé autour de vous");
+                            }
+                        }
                     }
                 }
             }
@@ -668,7 +678,7 @@ public class CmdCastle extends CoreCommand {
             } else if(args[0].equalsIgnoreCase("edit")){
                 return tabComplete(args[1], "join", "leave", "save");
             } else if (args[0].equalsIgnoreCase("ranking")) {
-                return tabComplete(args[1], "place", "update");
+                return tabComplete(args[1], "place", "update", "remove");
             }
         } else if(args.length == 3){
             if(args[0].equalsIgnoreCase("generator")){

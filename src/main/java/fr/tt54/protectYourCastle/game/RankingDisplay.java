@@ -55,6 +55,15 @@ public class RankingDisplay {
         }
     }
 
+    public static boolean removeDisplay(TextDisplay textDisplay) {
+        RankingDisplay display = displays.remove(textDisplay.getUniqueId());
+        if(display != null) {
+            textDisplay.remove();
+            return true;
+        }
+        return false;
+    }
+
     private final UUID displayTextUUID;
     private final RankingDisplayType rankingDisplayType;
 
@@ -70,7 +79,7 @@ public class RankingDisplay {
             return;
         }
 
-        textDisplay.setBillboard(Display.Billboard.CENTER);
+        textDisplay.setBillboard(Display.Billboard.VERTICAL);
         textDisplay.setSeeThrough(false);
 
         Map<UUID, Double> scores = rankingDisplayType.getScoresSupplier().get();
@@ -79,7 +88,7 @@ public class RankingDisplay {
         for(int i = 0; i < Math.min(10, players.size()); i++){
             UUID playerUUID = players.get(i);
             text.append("§")
-                    .append(i == 0 ? "6" : i == 1 ? "7" : i == 2 ? "8" : "f")
+                    .append(i == 0 ? "6" : i == 1 ? "a" : i == 2 ? "a" : "f")
                     .append(i + 1)
                     .append(". ")
                     .append(Bukkit.getOfflinePlayer(playerUUID).getName())
