@@ -308,7 +308,7 @@ public class Game {
             int teamSize = team.getMembers().size();
             int maxTeamSize = Team.getTeams().stream().map(t -> t.getMembers().size()).max(Comparator.comparingInt(value -> value)).orElse(teamSize);
             if(teamSize < maxTeamSize && GameParameters.ENABLE_BOOST_FOR_SMALL_TEAM.get()){
-                attributeInstance.addModifier(new AttributeModifier("boost_for_smaller_team", (double) maxTeamSize / teamSize - 1d, AttributeModifier.Operation.MULTIPLY_SCALAR_1));
+                attributeInstance.addModifier(new AttributeModifier("boost_for_smaller_team", GameParameters.HEALTH_BOOST_FOR_SMALL_TEAM.get(), AttributeModifier.Operation.ADD_NUMBER));
             }
         }
 

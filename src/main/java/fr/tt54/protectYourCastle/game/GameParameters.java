@@ -35,6 +35,7 @@ public class GameParameters {
     public static Parameter<Integer> SCORES_USED = new Parameter<>("scores_used", 5);
 
     public static Parameter<Boolean> ENABLE_BOOST_FOR_SMALL_TEAM = new Parameter<>("enable_boost_for_small_team", true);
+    public static Parameter<Double> HEALTH_BOOST_FOR_SMALL_TEAM = new Parameter<>("health_boost_for_small_team", 10d);
     public static Parameter<Boolean> ENABLE_RANDOM_WEAPONS = new Parameter<>("enable_random_weapons", true);
     public static Parameter<Integer> WEAPONS_TO_SELECT = new Parameter<>("weapons_to_select", 4);
 
