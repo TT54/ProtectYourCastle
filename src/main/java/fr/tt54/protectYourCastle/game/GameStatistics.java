@@ -18,6 +18,9 @@ public class GameStatistics {
     private static final Map<UUID, Double> playerTotalScore = new HashMap<>();
 
     public static void load(){
+        playerGamesScore.clear();
+        playerCurrentScore.clear();
+        playerTotalScore.clear();
         File statisticsFile = FileManager.getFileWithoutCreating("statistics.json", ProtectYourCastleMain.getInstance());
 
         if (!statisticsFile.exists()) {
