@@ -13,7 +13,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Display;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.TextDisplay;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -23,7 +26,6 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -178,7 +180,7 @@ public class GameListener implements Listener {
                 Bukkit.broadcastMessage("§6[Castle] " + team.getColor().getChatColor() + player.getName() + "§c a perdu la bannière ennemi qu'il transportait");
             }
 
-            if(player.getKiller() != null) {
+            if(player.getKiller() != null && player.getKiller() != player) {
                 Game.currentGame.addKill(player.getKiller());
             }
 
