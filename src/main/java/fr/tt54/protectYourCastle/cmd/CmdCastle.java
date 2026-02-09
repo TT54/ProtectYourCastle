@@ -4,7 +4,6 @@ import fr.tt54.protectYourCastle.ProtectYourCastleMain;
 import fr.tt54.protectYourCastle.game.*;
 import fr.tt54.protectYourCastle.inventories.ConfirmationInventory;
 import fr.tt54.protectYourCastle.inventories.trades.weapons.WeaponsListInventory;
-import fr.tt54.protectYourCastle.scoreboard.ScoreboardManager;
 import fr.tt54.protectYourCastle.utils.Area;
 import fr.tt54.protectYourCastle.utils.FileManager;
 import org.bukkit.*;
@@ -129,6 +128,16 @@ public class CmdCastle extends CoreCommand {
                     return false;
                 }
 
+                if(args.length != 2){
+                    player.sendMessage("§cLe bon usage est '/castle start <map>'");
+                    return false;
+                }
+
+                if(Game.loadedWorld != null){
+                    player.sendMessage("§cLe monde de jeu est déjà chargé, impossible de lancer une nouvelle partie");
+                    return false;
+                }
+
                 boolean empty = true;
                 for(Player p : Bukkit.getOnlinePlayers()){
                     Team team = Team.getPlayerTeam(player.getUniqueId());
@@ -144,7 +153,7 @@ public class CmdCastle extends CoreCommand {
                     return false;
                 }
 
-                Game.currentGame.prepare();
+                Game.currentGame.prepare(args[1]);
                 Game.currentGame.launch();
                 player.sendMessage("§aLa partie a bien été lancée");
                 return true;
@@ -537,23 +546,21 @@ public class CmdCastle extends CoreCommand {
             } else if(args[0].equalsIgnoreCase("edit")){
                 if(args.length >= 2){
                     if(args[1].equalsIgnoreCase("join")){
-                        World world = Bukkit.getWorld("game_world");
+                        if(args.length != 3){
+                            player.sendMessage("§cBon usage : '/castle edit join <world>'");
+                            return false;
+                        }
+
+                        String worldName = args[2];
+                        World world = Bukkit.getWorld(worldName);
 
                         if(world == null){
-                            File sourceGameWorldFolder = new File(ProtectYourCastleMain.getInstance().getDataFolder(), "game_world");
-                            File gameWorldFolder = new File(ProtectYourCastleMain.getInstance().getDataFolder().getParentFile().getParentFile(), "game_world");
-                            if(gameWorldFolder.exists()) {
-                                try (Stream<Path> paths = Files.walk(gameWorldFolder.toPath())) {
-                                    paths.sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
-                                }
-                            }
+                            world = Game.loadWorld(worldName);
+                        }
 
-                            FileManager.copy(sourceGameWorldFolder, gameWorldFolder);
-
-                            WorldCreator creator = new WorldCreator("game_world");
-                            world = creator.createWorld();
+                        if(world == null){
+                            player.sendMessage("§cLe monde d'édition n'existe pas et n'a pas pu être chargé");
+                            return false;
                         }
 
                         player.setGameMode(GameMode.CREATIVE);
@@ -561,7 +568,12 @@ public class CmdCastle extends CoreCommand {
                         player.sendMessage("§aVous avez été envoyé dans le monde d'édition");
                         return true;
                     } else if(args[1].equalsIgnoreCase("leave")){
-                        World world = Bukkit.getWorld("game_world");
+                        if(Game.loadedWorld == null){
+                            player.sendMessage("§cAucun monde d'édition n'est chargé");
+                            return false;
+                        }
+
+                        World world = Bukkit.getWorld(Game.loadedWorld);
                         if(world == null){
                             player.sendMessage("§cLe monde d'édition n'est pas chargé");
                             return false;
@@ -575,13 +587,18 @@ public class CmdCastle extends CoreCommand {
                                 if(p.getWorld() == world) return;
                             }
 
-                            Bukkit.getScheduler().runTaskLater(ProtectYourCastleMain.getInstance(), () -> Bukkit.unloadWorld(world, false), 10L);
+                            Bukkit.getScheduler().runTaskLater(ProtectYourCastleMain.getInstance(), () -> Game.unloadWorld(world, false), 10L);
                         }, () -> {});
                         inv.openInventory();
 
                         return true;
                     } else if(args[1].equalsIgnoreCase("save")){
-                        World world = Bukkit.getWorld("game_world");
+                        if(Game.loadedWorld == null){
+                            player.sendMessage("§cAucun monde d'édition n'est chargé");
+                            return false;
+                        }
+
+                        World world = Bukkit.getWorld(Game.loadedWorld);
 
                         if(world == null){
                             player.sendMessage("§cLe monde d'édition n'est pas chargé");
@@ -593,22 +610,32 @@ public class CmdCastle extends CoreCommand {
                             p.sendMessage("§aSauvegarde du monde d'édition, vous avez été renvoyé au lobby");
                         }
 
-                        Bukkit.unloadWorld(world, true);
-
-                        File sourceGameWorldFolder = new File(ProtectYourCastleMain.getInstance().getDataFolder(), "game_world");
-                        File gameWorldFolder = new File(ProtectYourCastleMain.getInstance().getDataFolder().getParentFile().getParentFile(), "game_world");
-
-                        if(sourceGameWorldFolder.exists()) {
-                            try (Stream<Path> paths = Files.walk(sourceGameWorldFolder.toPath())) {
-                                paths.sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-
-                        FileManager.copy(gameWorldFolder, sourceGameWorldFolder);
+                        Game.unloadWorld(world, true);
                         player.sendMessage("§aLe monde a bien été sauvegardé");
 
+                        return true;
+                    } else if(args[1].equalsIgnoreCase("create")){
+                        if(args.length != 3){
+                            player.sendMessage("§cBon usage : '/castle edit create <world>'");
+                            return false;
+                        }
+
+                        String worldName = args[2];
+                        if(Bukkit.getWorld(worldName) != null || Game.loadWorld(worldName) != null){
+                            player.sendMessage("§cUn monde avec ce nom existe déjà");
+                            return false;
+                        }
+
+                        World world = Game.createWorld(worldName);
+
+                        if(world == null){
+                            player.sendMessage("§cUne erreur est survenue lors de la création du monde");
+                            return false;
+                        }
+
+                        player.setGameMode(GameMode.CREATIVE);
+                        player.teleport(world.getHighestBlockAt(0, 0).getLocation().clone().add(0, 1, 0));
+                        player.sendMessage("§aLe monde d'édition a été créé et vous avez été téléporté à l'intérieur");
                         return true;
                     }
                 }
@@ -682,11 +709,13 @@ public class CmdCastle extends CoreCommand {
             } else if(args[0].equalsIgnoreCase("parameter")){
                 return tabComplete(args[1], "set", "get", "list");
             } else if(args[0].equalsIgnoreCase("edit")){
-                return tabComplete(args[1], "join", "leave", "save");
+                return tabComplete(args[1], "join", "leave", "save", "create");
             } else if (args[0].equalsIgnoreCase("ranking")) {
                 return tabComplete(args[1], "place", "update", "remove");
             } else if(args[0].equalsIgnoreCase("scores")){
                 return tabComplete(args[1], "refresh");
+            } else if(args[0].equalsIgnoreCase("start")){
+                return tabComplete(args[1], Arrays.stream(new File(ProtectYourCastleMain.getInstance().getDataFolder(), "worlds/").listFiles()).map(File::getName).toList());
             }
         } else if(args.length == 3){
             if(args[0].equalsIgnoreCase("generator")){
@@ -706,6 +735,10 @@ public class CmdCastle extends CoreCommand {
             } else if (args[0].equalsIgnoreCase("ranking")) {
                 if(args[1].equalsIgnoreCase("place")){
                     return tabComplete(args[2], Stream.of(RankingDisplay.RankingDisplayType.values()).map(type -> type.name().toLowerCase()));
+                }
+            } else if(args[0].equalsIgnoreCase("edit")){
+                if(args[1].equalsIgnoreCase("join")){
+                    return tabComplete(args[2], Arrays.stream(new File(ProtectYourCastleMain.getInstance().getDataFolder(), "worlds/").listFiles()).map(File::getName).toList());
                 }
             }
         } else if(args.length == 4){

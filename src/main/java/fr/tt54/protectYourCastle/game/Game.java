@@ -47,6 +47,7 @@ public class Game {
             .create();
 
     public static Game currentGame;
+    public static String loadedWorld = null;
 
     private Status gameStatus;
     public int time;
@@ -70,11 +71,14 @@ public class Game {
         return false;
     }
 
-    public void prepare(){
-        this.gameStatus = Status.PREPARING;
+    public static World loadWorld(String worldName){
+        if(loadedWorld != null){
+            System.err.println("Un monde est déjà chargé, impossible d'en charger un autre tant que la partie n'est pas terminée !");
+            return null;
+        }
 
-        File sourceGameWorldFolder = new File(ProtectYourCastleMain.getInstance().getDataFolder(), "game_world");
-        File gameWorldFolder = new File(ProtectYourCastleMain.getInstance().getDataFolder().getParentFile().getParentFile(), "game_world");
+        File sourceGameWorldFolder = new File(ProtectYourCastleMain.getInstance().getDataFolder(), "worlds/" + worldName);
+        File gameWorldFolder = new File(ProtectYourCastleMain.getInstance().getDataFolder().getParentFile().getParentFile(), worldName);
         if(gameWorldFolder.exists()) {
             try (Stream<Path> paths = Files.walk(gameWorldFolder.toPath())) {
                 paths.sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
@@ -82,11 +86,78 @@ public class Game {
                 throw new RuntimeException(e);
             }
         }
+        if(!sourceGameWorldFolder.exists()){
+            return null;
+        }
 
         FileManager.copy(sourceGameWorldFolder, gameWorldFolder);
+        FileManager.copy(new File(sourceGameWorldFolder, "generators.json"), new File(ProtectYourCastleMain.getInstance().getDataFolder(), "generators.json"));
+        FileManager.copy(new File(sourceGameWorldFolder, "teams.json"), new File(ProtectYourCastleMain.getInstance().getDataFolder(), "teams.json"));
+        FileManager.copy(new File(sourceGameWorldFolder, "traders.json"), new File(ProtectYourCastleMain.getInstance().getDataFolder(), "traders.json"));
+        FileManager.copy(new File(sourceGameWorldFolder, "weapons.json"), new File(ProtectYourCastleMain.getInstance().getDataFolder(), "weapons.json"));
 
-        WorldCreator creator = new WorldCreator("game_world");
-        this.gameWorld = creator.createWorld();
+        ProtectYourCastleMain.getInstance().loadGame();
+        loadedWorld = worldName;
+
+        WorldCreator creator = new WorldCreator(loadedWorld);
+        return creator.createWorld();
+    }
+
+    public static void unloadWorld(World world, boolean save) {
+        Bukkit.unloadWorld(world, save);
+
+        if(save) {
+            File sourceGameWorldFolder = new File(ProtectYourCastleMain.getInstance().getDataFolder(), "worlds/" + loadedWorld);
+            File gameWorldFolder = new File(ProtectYourCastleMain.getInstance().getDataFolder().getParentFile().getParentFile(), loadedWorld);
+
+            if(sourceGameWorldFolder.exists()) {
+                try (Stream<Path> paths = Files.walk(sourceGameWorldFolder.toPath())) {
+                    paths.sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            FileManager.copy(gameWorldFolder, sourceGameWorldFolder);
+            ProtectYourCastleMain.getInstance().saveGame();
+
+            FileManager.copy(new File(ProtectYourCastleMain.getInstance().getDataFolder(), "generators.json"), new File(sourceGameWorldFolder, "generators.json"));
+            FileManager.copy(new File(ProtectYourCastleMain.getInstance().getDataFolder(), "teams.json"), new File(sourceGameWorldFolder, "teams.json"));
+            FileManager.copy(new File(ProtectYourCastleMain.getInstance().getDataFolder(), "traders.json"), new File(sourceGameWorldFolder, "traders.json"));
+            FileManager.copy(new File(ProtectYourCastleMain.getInstance().getDataFolder(), "weapons.json"), new File(sourceGameWorldFolder, "weapons.json"));
+        }
+
+        loadedWorld = null;
+        System.out.println("Monde " + world.getName() + " déchargé !");
+    }
+
+    public static World createWorld(String worldName) {
+        System.out.println(loadedWorld);
+        if(loadedWorld != null){
+            System.err.println("Un monde est déjà chargé, impossible d'en charger un autre tant que la partie n'est pas terminée !");
+            return null;
+        }
+        loadedWorld = worldName;
+
+        WorldCreator creator = new WorldCreator(worldName);
+        creator.environment(World.Environment.NORMAL);
+
+        return creator.createWorld();
+    }
+
+    public void prepare(String worldName){
+        if(loadedWorld != null){
+            System.err.println("Un monde est déjà chargé, impossible d'en charger un autre tant que la partie n'est pas terminée !");
+            return;
+        }
+
+        this.gameWorld = loadWorld(worldName);
+        if(this.gameWorld == null){
+            System.err.println("Le monde source " + loadedWorld + " n'existe pas !");
+            return;
+        }
+
+        this.gameStatus = Status.PREPARING;
 
         if(GameParameters.ENABLE_RANDOM_WEAPONS.get()){
             List<Trader.GameWeapon> weapons = new ArrayList<>(Trader.weapons);
@@ -151,6 +222,7 @@ public class Game {
             this.runnable.cancel();
             this.runnable = null;
             currentGame = null;
+            loadedWorld = null;
 
             for(Player player : Bukkit.getOnlinePlayers()){
                 System.out.println(player.getName() + " old score : " + GameStatistics.getPlayerCurrentScore(player.getUniqueId()));
