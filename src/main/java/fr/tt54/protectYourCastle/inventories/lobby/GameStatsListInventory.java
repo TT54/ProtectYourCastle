@@ -13,6 +13,7 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -33,9 +34,10 @@ public class GameStatsListInventory extends PageableInventory<GameStatistics> {
         Instant instant = Instant.ofEpochMilli(gameStatistics.getGameBegin());
         LocalDate localDate = LocalDate.ofInstant(instant, ZoneId.systemDefault());
         LocalTime localTime = LocalTime.ofInstant(instant, ZoneId.systemDefault());
+        DecimalFormat format = new DecimalFormat("#");
         return new ItemBuilder(gameStatistics.getWinner() == null ? Material.PAPER : gameStatistics.getWinner().getBanner(), "§ePartie " + localDate.getDayOfMonth() + "/" + localDate.getMonthValue() + "/" + localDate.getYear() + " " + localTime.getHour() + ":" + localTime.getMinute())
                 .addLoreLine("§eDurée : §f" + TimeUnit.getShortFormattedTimeLeft((int) (gameStatistics.getGameEnd() - gameStatistics.getGameBegin()) / 1000, TimeUnit.HOURS), "§7----------")
-                .addLoreLine(gameStatistics.getPlayers().stream().sorted(Comparator.comparingDouble(uuid -> -gameStatistics.getPlayerScore(uuid))).map(uuid -> "§f - " + gameStatistics.getPlayerTeam(uuid).getChatColor() + Bukkit.getOfflinePlayer(uuid).getName()).toList())
+                .addLoreLine(gameStatistics.getPlayers().stream().sorted(Comparator.comparingDouble(uuid -> -gameStatistics.getPlayerScore(uuid))).map(uuid -> "§f - " + gameStatistics.getPlayerTeam(uuid).getChatColor() + Bukkit.getOfflinePlayer(uuid).getName() + " §8 (" + format.format(gameStatistics.getPlayerScore(uuid)) + ")").toList())
                 .build();
     }
 
