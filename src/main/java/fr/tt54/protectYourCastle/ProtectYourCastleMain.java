@@ -21,12 +21,8 @@ public final class ProtectYourCastleMain extends JavaPlugin {
     public void onEnable() {
         instance = this;
 
-        GameParameters.load();
-        ResourceGenerator.load();
-        Team.load();
-        Trader.load();
-        GameStatistics.load();
-        RankingDisplay.load();
+        this.loadCommon();
+        this.loadGame();
 
         this.getCommand("drawbridge").setExecutor(new CmdDrawbridge());
         this.getCommand("stats").setExecutor(new CmdStats());
@@ -50,14 +46,34 @@ public final class ProtectYourCastleMain extends JavaPlugin {
         }
     }
 
+    public void loadCommon(){
+        GameParameters.load();
+        GameStatistics.load();
+        RankingDisplay.load();
+    }
+
+    public void loadGame(){
+        ResourceGenerator.load();
+        Team.load();
+        Trader.load();
+    }
+
     @Override
     public void onDisable() {
-        ResourceGenerator.save();
+        this.saveCommon();
+        this.saveGame();
+    }
+
+    public void saveCommon(){
+        GameParameters.save();
+        GameStatistics.save();
         RankingDisplay.save();
+    }
+
+    public void saveGame(){
+        ResourceGenerator.save();
         Team.save();
         Trader.save();
-        GameStatistics.save();
-        GameParameters.save();
     }
 
     public static ProtectYourCastleMain getInstance() {
