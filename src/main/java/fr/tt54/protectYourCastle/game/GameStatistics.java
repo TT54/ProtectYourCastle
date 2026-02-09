@@ -3,6 +3,7 @@ package fr.tt54.protectYourCastle.game;
 import com.google.common.reflect.TypeToken;
 import fr.tt54.protectYourCastle.ProtectYourCastleMain;
 import fr.tt54.protectYourCastle.utils.FileManager;
+import org.bukkit.Bukkit;
 
 import java.io.File;
 import java.lang.reflect.Type;
@@ -31,13 +32,7 @@ public class GameStatistics {
                 statistics.playerScores = new HashMap<>();
             }
             for(UUID uuid : statistics.getPlayers()){
-                if(!statistics.getPlayerScores().containsKey(uuid)){
-                    statistics.calculatePlayerScore(uuid);
-                }
-            }
-
-            for(UUID uuid : statistics.getPlayers()){
-                addPlayerGameScore(uuid, statistics.getPlayerScore(uuid));
+                statistics.calculatePlayerScore(uuid);
             }
         }
     }
@@ -67,7 +62,9 @@ public class GameStatistics {
         double score = 0;
         for(int i = 0; i < Math.min(scores.size(), GameParameters.SCORES_USED.get()); i++){
             score += scores.get(scores.size() - 1 - i);
+            System.out.println(scores.get(scores.size() - 1 - i));
         }
+        System.out.println("Recalcul du score de " + Bukkit.getOfflinePlayer(playerUUID).getName() + " : " + score + "(size : " + scores.size() + ")");
         playerCurrentScore.put(playerUUID, score);
         playerTotalScore.put(playerUUID, scores.stream().reduce(0d, Double::sum));
     }
@@ -184,16 +181,17 @@ public class GameStatistics {
     private void calculatePlayerScore(UUID playerUUID){
         double score = this.getPlayerTeam(playerUUID) == this.getWinner() ? GameParameters.PERSONAL_SCORE_WIN.get() : 0;
         int pointsWon = this.getPlayerStatistic(playerUUID, StatisticKey.POINTS_WON);
+        int teamPoints = this.getTeamStatistic(this.getPlayerTeam(playerUUID), StatisticKey.POINTS_WON);
         double bannersRatio = this.getPlayerStatisticsRatio(playerUUID, StatisticKey.BANNERS_BROKEN);
 
-        double expectedKills = 1d / this.getPlayers().size() + this.getPlayerStatisticsRatio(playerUUID, StatisticKey.KILLS);
-        double expectedDeaths = 1d / this.getPlayers().size() + this.getPlayerStatisticsRatio(playerUUID, StatisticKey.DEATHS);
+        double expectedDeaths = Math.max(0, this.getPlayerStatisticsRatio(playerUUID, StatisticKey.DEATHS) - 1d / this.getPlayers().size());
 
-        score += GameParameters.PERSONAL_SCORE_KILLS_COEFF.get() * (.2 + expectedKills);
-        score -= GameParameters.PERSONAL_SCORE_DEATHS_COEFF.get() * Math.max(0, expectedDeaths);
-        score += GameParameters.PERSONAL_SCORE_POINTS_COEFF.get() * pointsWon;
+        score += GameParameters.PERSONAL_SCORE_KILLS_COEFF.get() * (.2 + this.getPlayerStatisticsRatio(playerUUID, StatisticKey.KILLS));
+        score -= GameParameters.PERSONAL_SCORE_DEATHS_COEFF.get() * expectedDeaths;
+        score += GameParameters.TEAM_BANNERS_BROKEN_COEFF.get() * this.getTeamStatistic(this.getPlayerTeam(playerUUID), StatisticKey.BANNERS_BROKEN);
+        score *= 1 + bannersRatio / 4d;
+        score *= 1d + (pointsWon + teamPoints) / 6d;
 
-        score *= 1 + bannersRatio / 2;
         this.playerScores.put(playerUUID, score);
         addPlayerGameScore(playerUUID, score);
     }

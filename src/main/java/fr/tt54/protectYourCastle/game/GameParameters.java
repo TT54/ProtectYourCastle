@@ -32,6 +32,7 @@ public class GameParameters {
     public static Parameter<Double> PERSONAL_SCORE_KILLS_COEFF = new Parameter<>("personal_score_kills_coeff", 80d);
     public static Parameter<Double> PERSONAL_SCORE_DEATHS_COEFF = new Parameter<>("personal_score_deaths_coeff", 20d);
     public static Parameter<Double> PERSONAL_SCORE_POINTS_COEFF = new Parameter<>("personal_score_points_coeff", 20d);
+    public static Parameter<Double> TEAM_BANNERS_BROKEN_COEFF = new Parameter<>("team_banners_broken_coeff", 20d);
     public static Parameter<Integer> SCORES_USED = new Parameter<>("scores_used", 5);
 
     public static Parameter<Boolean> ENABLE_BOOST_FOR_SMALL_TEAM = new Parameter<>("enable_boost_for_small_team", true);
