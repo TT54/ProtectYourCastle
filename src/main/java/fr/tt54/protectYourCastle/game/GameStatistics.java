@@ -101,6 +101,17 @@ public class GameStatistics {
         return totalStatistic;
     }
 
+    public static Map<UUID, Double> getPlayersWins() {
+        Map<UUID, Double> wins = new HashMap<>();
+        for(GameStatistics statistics : gameStatistics){
+            if(statistics.getWinner() == null) continue;
+            for(UUID player : statistics.getPlayers()){
+                wins.put(player, wins.getOrDefault(player, 0d) + (statistics.getPlayerTeam(player) == statistics.getWinner() ? 1 : 0));
+            }
+        }
+        return wins;
+    }
+
     private final long gameBegin;
     private long gameEnd;
     private final Map<StatisticKey, Map<UUID, Integer>> values;

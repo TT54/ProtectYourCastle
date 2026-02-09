@@ -100,6 +100,7 @@ public class RankingDisplay {
     }
 
     public enum RankingDisplayType {
+        TOP_WINS("Victoires", GameStatistics::getPlayersWins),
         TOP_KILLS("Kills", () -> GameStatistics.getPLayersTotalStatistic(GameStatistics.StatisticKey.KILLS)),
         TOP_POINTS("Points Gagnés", () -> GameStatistics.getPLayersTotalStatistic(GameStatistics.StatisticKey.POINTS_WON)),
         TOP_BANNERS("Bannières Cassées", () -> GameStatistics.getPLayersTotalStatistic(GameStatistics.StatisticKey.BANNERS_BROKEN)),
