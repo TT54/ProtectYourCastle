@@ -621,7 +621,7 @@ public class CmdCastle extends CoreCommand {
                         }
 
                         String worldName = args[2];
-                        if(Bukkit.getWorld(worldName) != null || Game.loadWorld(worldName) != null){
+                        if(Bukkit.getWorld(worldName) != null || new File(ProtectYourCastleMain.getInstance().getDataFolder(), "worlds/" + worldName).exists()){
                             player.sendMessage("§cUn monde avec ce nom existe déjà");
                             return false;
                         }
