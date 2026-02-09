@@ -3,7 +3,6 @@ package fr.tt54.protectYourCastle.game;
 import com.google.common.reflect.TypeToken;
 import fr.tt54.protectYourCastle.ProtectYourCastleMain;
 import fr.tt54.protectYourCastle.utils.FileManager;
-import org.bukkit.Bukkit;
 
 import java.io.File;
 import java.lang.reflect.Type;
@@ -26,7 +25,11 @@ public class GameStatistics {
         }
 
         gameStatistics = Game.gson.fromJson(FileManager.read(statisticsFile), statisticsType);
+        recalculateAllPlayersScores();
+    }
 
+    public static void recalculateAllPlayersScores(){
+        playerGamesScore.clear();
         for(GameStatistics statistics : gameStatistics){
             if(statistics.playerScores == null || statistics.playerScores.isEmpty()) {
                 statistics.playerScores = new HashMap<>();
@@ -60,11 +63,14 @@ public class GameStatistics {
     private static void recalculatePlayerScore(UUID playerUUID){
         List<Double> scores = getPlayerGamesScore(playerUUID);
         double score = 0;
+        double bestGame = 0;
+        double worstGame = Double.MAX_VALUE;
         for(int i = 0; i < Math.min(scores.size(), GameParameters.SCORES_USED.get()); i++){
             score += scores.get(scores.size() - 1 - i);
-            System.out.println(scores.get(scores.size() - 1 - i));
+            if(scores.get(scores.size() - 1 - i) > bestGame) bestGame = scores.get(scores.size() - 1 - i);
+            if(scores.get(scores.size() - 1 - i) < worstGame) worstGame = scores.get(scores.size() - 1 - i);
         }
-        System.out.println("Recalcul du score de " + Bukkit.getOfflinePlayer(playerUUID).getName() + " : " + score + "(size : " + scores.size() + ")");
+        score -= (1 - GameParameters.BEST_GAME_FACTOR.get()) * bestGame + (1 - GameParameters.WORST_GAME_FACTOR.get()) * worstGame;
         playerCurrentScore.put(playerUUID, score);
         playerTotalScore.put(playerUUID, scores.stream().reduce(0d, Double::sum));
     }
@@ -186,11 +192,11 @@ public class GameStatistics {
 
         double expectedDeaths = Math.max(0, this.getPlayerStatisticsRatio(playerUUID, StatisticKey.DEATHS) - 1d / this.getPlayers().size());
 
-        score += GameParameters.PERSONAL_SCORE_KILLS_COEFF.get() * (.2 + this.getPlayerStatisticsRatio(playerUUID, StatisticKey.KILLS));
+        score += GameParameters.PERSONAL_SCORE_KILLS_COEFF.get() * (GameParameters.PERSONAL_SCORE_KILLS_BASE.get() + this.getPlayerStatisticsRatio(playerUUID, StatisticKey.KILLS));
         score -= GameParameters.PERSONAL_SCORE_DEATHS_COEFF.get() * expectedDeaths;
         score += GameParameters.TEAM_BANNERS_BROKEN_COEFF.get() * this.getTeamStatistic(this.getPlayerTeam(playerUUID), StatisticKey.BANNERS_BROKEN);
-        score *= 1 + bannersRatio / 4d;
-        score *= 1d + (pointsWon + teamPoints) / 6d;
+        score *= 1d + bannersRatio / GameParameters.BANNER_RATIO_POINTS_REDUCTION.get();
+        score *= 1d + (pointsWon + teamPoints) / GameParameters.SCORE_POINTS_REDUCTION.get();
 
         this.playerScores.put(playerUUID, score);
         addPlayerGameScore(playerUUID, score);

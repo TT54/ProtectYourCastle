@@ -30,9 +30,13 @@ public class GameParameters {
     public static Parameter<Boolean> DISPLAY_SCORE = new Parameter<>("display_score", true);
     public static Parameter<Double> PERSONAL_SCORE_WIN = new Parameter<>("personal_score_win", 50d);
     public static Parameter<Double> PERSONAL_SCORE_KILLS_COEFF = new Parameter<>("personal_score_kills_coeff", 80d);
+    public static Parameter<Double> PERSONAL_SCORE_KILLS_BASE = new Parameter<>("personal_score_kills_base", 0.2d);
     public static Parameter<Double> PERSONAL_SCORE_DEATHS_COEFF = new Parameter<>("personal_score_deaths_coeff", 20d);
-    public static Parameter<Double> PERSONAL_SCORE_POINTS_COEFF = new Parameter<>("personal_score_points_coeff", 20d);
+    public static Parameter<Double> SCORE_POINTS_REDUCTION = new Parameter<>("score_points_reduction", 6d);
+    public static Parameter<Double> BANNER_RATIO_POINTS_REDUCTION = new Parameter<>("banner_ratio_points_reduction", 4d);
     public static Parameter<Double> TEAM_BANNERS_BROKEN_COEFF = new Parameter<>("team_banners_broken_coeff", 20d);
+    public static Parameter<Double> BEST_GAME_FACTOR = new Parameter<>("best_game_factor", 0.6d);
+    public static Parameter<Double> WORST_GAME_FACTOR = new Parameter<>("worst_game_factor", 0.4d);
     public static Parameter<Integer> SCORES_USED = new Parameter<>("scores_used", 5);
 
     public static Parameter<Boolean> ENABLE_BOOST_FOR_SMALL_TEAM = new Parameter<>("enable_boost_for_small_team", true);

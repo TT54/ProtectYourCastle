@@ -519,6 +519,12 @@ public class CmdCastle extends CoreCommand {
                     }
                 }
             } else if(args[0].equalsIgnoreCase("scores")){
+                if(args.length == 2 && args[1].equalsIgnoreCase("refresh")){
+                    GameStatistics.recalculateAllPlayersScores();
+                    player.sendMessage("§aScores rafraîchis");
+                    return true;
+                }
+
                 player.sendMessage("§7----- §eScores §7-----");
                 DecimalFormat format = new DecimalFormat("#");
                 int rank = 1;
@@ -679,6 +685,8 @@ public class CmdCastle extends CoreCommand {
                 return tabComplete(args[1], "join", "leave", "save");
             } else if (args[0].equalsIgnoreCase("ranking")) {
                 return tabComplete(args[1], "place", "update", "remove");
+            } else if(args[0].equalsIgnoreCase("scores")){
+                return tabComplete(args[1], "refresh");
             }
         } else if(args.length == 3){
             if(args[0].equalsIgnoreCase("generator")){
