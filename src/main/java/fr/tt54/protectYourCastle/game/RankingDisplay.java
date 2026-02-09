@@ -101,8 +101,10 @@ public class RankingDisplay {
 
     public enum RankingDisplayType {
         TOP_KILLS("Kills", () -> GameStatistics.getPLayersTotalStatistic(GameStatistics.StatisticKey.KILLS)),
-        TOP_TOTAL_SCORE("Score global", GameStatistics::getPlayersTotalScores),
-        TOP_SCORE("Score", GameStatistics::getPlayersCurrentScores);
+        TOP_POINTS("Points Gagnés", () -> GameStatistics.getPLayersTotalStatistic(GameStatistics.StatisticKey.POINTS_WON)),
+        TOP_BANNERS("Bannières Cassées", () -> GameStatistics.getPLayersTotalStatistic(GameStatistics.StatisticKey.BANNERS_BROKEN)),
+        TOP_TOTAL_SCORE("Score Total", GameStatistics::getPlayersTotalScores),
+        TOP_SCORE("Elo", GameStatistics::getPlayersCurrentScores);
 
         private final String displayName;
         private final Supplier<Map<UUID, Double>> scoresSupplier;
