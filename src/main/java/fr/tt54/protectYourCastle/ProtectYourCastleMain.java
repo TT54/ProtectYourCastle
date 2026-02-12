@@ -12,6 +12,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.*;
 
+import java.util.HashMap;
+
 public final class ProtectYourCastleMain extends JavaPlugin {
 
     private static ProtectYourCastleMain instance;
@@ -54,7 +56,7 @@ public final class ProtectYourCastleMain extends JavaPlugin {
 
     public void loadGame(){
         ResourceGenerator.load();
-        Team.load();
+        Team.load(Team.getPlayerTeamMapCopy());
         Trader.load();
     }
 

@@ -25,7 +25,7 @@ public class Team {
 
     private static final Type teamsType = new TypeToken<Map<TeamColor, Team>>() {}.getType();
 
-    public static void load(){
+    public static void load(Map<UUID, TeamColor> oldPlayerTeams){
         teams.clear();
         playerTeam.clear();
 
@@ -36,6 +36,15 @@ public class Team {
         }
 
         teams = Game.gson.fromJson(FileManager.read(teamsFile), teamsType);
+
+        if(!oldPlayerTeams.isEmpty()) {
+            for(Team team : teams.values()){
+                team.members.clear();
+            }
+            for (Map.Entry<UUID, TeamColor> entry : oldPlayerTeams.entrySet()) {
+                getTeam(entry.getValue()).joinTeam(entry.getKey());
+            }
+        }
 
         for(Team team : teams.values()){
             for(UUID player : team.members){
