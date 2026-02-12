@@ -218,23 +218,17 @@ public class Game {
     }
 
     public GameStatistics stop(){
-        if(this.runnable != null && gameStatus != Status.STOPPED) {
-            this.runnable.cancel();
-            this.runnable = null;
+        if(gameStatus != Status.STOPPED) {
+            if(this.runnable != null) {
+                this.runnable.cancel();
+                this.runnable = null;
+            }
             currentGame = null;
             loadedWorld = null;
-
-            for(Player player : Bukkit.getOnlinePlayers()){
-                System.out.println(player.getName() + " old score : " + GameStatistics.getPlayerCurrentScore(player.getUniqueId()));
-            }
 
             this.gameStatistics.setGameEnd(System.currentTimeMillis());
             GameStatistics.gameStatistics.add(this.gameStatistics);
             RankingDisplay.updateDisplays();
-
-            for(Player player : Bukkit.getOnlinePlayers()){
-                System.out.println(player.getName() + " new score : " + GameStatistics.getPlayerCurrentScore(player.getUniqueId()));
-            }
 
             for(ResourceGenerator generator : this.getGenerators()){
                 generator.getLocation().getChunk().setForceLoaded(false);
