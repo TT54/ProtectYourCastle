@@ -239,6 +239,7 @@ public class Game {
 
                 AttributeInstance attributeInstance = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
                 if(attributeInstance != null){
+                    attributeInstance.setBaseValue(attributeInstance.getDefaultValue());
                     for(AttributeModifier modifier : attributeInstance.getModifiers()){
                         attributeInstance.removeModifier(modifier);
                     }
