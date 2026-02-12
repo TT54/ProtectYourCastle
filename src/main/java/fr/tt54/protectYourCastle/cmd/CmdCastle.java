@@ -644,17 +644,11 @@ public class CmdCastle extends CoreCommand {
                 inv.openInventory();
                 return true;
             } else if(args[0].equalsIgnoreCase("save")){
-                ResourceGenerator.save();
-                Team.save();
-                Trader.save();
-                GameStatistics.save();
-                GameParameters.save();
+                ProtectYourCastleMain.getInstance().saveCommon();
+                ProtectYourCastleMain.getInstance().saveGame();
             } else if(args[0].equalsIgnoreCase("load")){
-                GameParameters.load();
-                ResourceGenerator.load();
-                Team.load();
-                Trader.load();
-                GameStatistics.load();
+                ProtectYourCastleMain.getInstance().loadCommon();
+                ProtectYourCastleMain.getInstance().loadGame();
             } else if (args[0].equalsIgnoreCase("ranking")) {
                 if(args.length >= 2){
                     if(args[1].equalsIgnoreCase("place")){
