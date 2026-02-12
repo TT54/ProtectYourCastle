@@ -14,12 +14,12 @@ public class GameStatistics {
     private static final Type statisticsType = new TypeToken<List<GameStatistics>>() {}.getType();
 
     private static final Map<UUID, List<Double>> playerGamesScore = new HashMap<>();
-    private static final Map<UUID, Double> playerCurrentScore = new HashMap<>();
+    private static final Map<UUID, Double> playerCurrentElo = new HashMap<>();
     private static final Map<UUID, Double> playerTotalScore = new HashMap<>();
 
     public static void load(){
         playerGamesScore.clear();
-        playerCurrentScore.clear();
+        playerCurrentElo.clear();
         playerTotalScore.clear();
         File statisticsFile = FileManager.getFileWithoutCreating("statistics.json", ProtectYourCastleMain.getInstance());
 
@@ -44,7 +44,7 @@ public class GameStatistics {
     }
 
     public static List<UUID> getRegisteredPlayers(){
-        return playerCurrentScore.keySet().stream().sorted(Comparator.comparingDouble(uuid -> -getPlayerCurrentScore(uuid))).toList();
+        return playerCurrentElo.keySet().stream().sorted(Comparator.comparingDouble(uuid -> -getPlayerCurrentScore(uuid))).toList();
     }
 
     public static void save(){
@@ -74,12 +74,12 @@ public class GameStatistics {
             if(scores.get(scores.size() - 1 - i) < worstGame) worstGame = scores.get(scores.size() - 1 - i);
         }
         score -= (1 - GameParameters.BEST_GAME_FACTOR.get()) * bestGame + (1 - GameParameters.WORST_GAME_FACTOR.get()) * worstGame;
-        playerCurrentScore.put(playerUUID, score);
+        playerCurrentElo.put(playerUUID, score);
         playerTotalScore.put(playerUUID, scores.stream().reduce(0d, Double::sum));
     }
 
     public static double getPlayerCurrentScore(UUID playerUUID){
-        return playerCurrentScore.getOrDefault(playerUUID, 0d);
+        return playerCurrentElo.getOrDefault(playerUUID, 0d);
     }
 
     public static double getPlayerTotalScore(UUID playerUUID){
@@ -87,7 +87,7 @@ public class GameStatistics {
     }
 
     public static Map<UUID, Double> getPlayersCurrentScores(){
-        return playerCurrentScore;
+        return playerCurrentElo;
     }
 
     public static Map<UUID, Double> getPlayersTotalScores() {
