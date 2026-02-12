@@ -16,6 +16,7 @@ public class GameStatistics {
     private static final Map<UUID, List<Double>> playerGamesScore = new HashMap<>();
     private static final Map<UUID, Double> playerCurrentElo = new HashMap<>();
     private static final Map<UUID, Double> playerTotalScore = new HashMap<>();
+    private static final Map<UUID, Double> playerBestElo = new HashMap<>();
 
     public static void load(){
         playerGamesScore.clear();
@@ -76,6 +77,7 @@ public class GameStatistics {
         score -= (1 - GameParameters.BEST_GAME_FACTOR.get()) * bestGame + (1 - GameParameters.WORST_GAME_FACTOR.get()) * worstGame;
         playerCurrentElo.put(playerUUID, score);
         playerTotalScore.put(playerUUID, scores.stream().reduce(0d, Double::sum));
+        playerBestElo.put(playerUUID, Math.max(playerBestElo.getOrDefault(playerUUID, 0d), score));
     }
 
     public static double getPlayerCurrentScore(UUID playerUUID){
@@ -92,6 +94,10 @@ public class GameStatistics {
 
     public static Map<UUID, Double> getPlayersTotalScores() {
         return playerTotalScore;
+    }
+
+    public static Map<UUID, Double> getPlayerBestElo() {
+        return playerBestElo;
     }
 
     public static Map<UUID, Double> getPLayersTotalStatistic(StatisticKey key){

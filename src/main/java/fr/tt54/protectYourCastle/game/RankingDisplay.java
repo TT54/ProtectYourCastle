@@ -105,6 +105,7 @@ public class RankingDisplay {
         TOP_POINTS("Points Gagnés", () -> GameStatistics.getPLayersTotalStatistic(GameStatistics.StatisticKey.POINTS_WON)),
         TOP_BANNERS("Bannières Cassées", () -> GameStatistics.getPLayersTotalStatistic(GameStatistics.StatisticKey.BANNERS_BROKEN)),
         TOP_TOTAL_SCORE("Score Total", GameStatistics::getPlayersTotalScores),
+        TOP_BEST_ELO("Meilleur Elo", GameStatistics::getPlayerBestElo),
         TOP_ELO("Elo", GameStatistics::getPlayersCurrentScores);
 
         private final String displayName;
