@@ -30,6 +30,7 @@ public class RankingDisplay {
         }
 
         displays = Game.gson.fromJson(FileManager.read(displaysFile), displaysType);
+        displays.values().removeIf(rankingDisplay -> rankingDisplay.rankingDisplayType == null);
 
         for(RankingDisplay display : displays.values()){
             display.update();
