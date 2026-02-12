@@ -123,11 +123,6 @@ public class CmdCastle extends CoreCommand {
                     }
                 }
             } else if(args[0].equalsIgnoreCase("start")){
-                if(!Game.createNew()){
-                    player.sendMessage("§cUne partie est déjà en cours");
-                    return false;
-                }
-
                 if(args.length != 2){
                     player.sendMessage("§cLe bon usage est '/castle start <map>'");
                     return false;
@@ -135,6 +130,11 @@ public class CmdCastle extends CoreCommand {
 
                 if(Game.loadedWorld != null){
                     player.sendMessage("§cLe monde de jeu est déjà chargé, impossible de lancer une nouvelle partie");
+                    return false;
+                }
+
+                if(!Game.createNew()){
+                    player.sendMessage("§cUne partie est déjà en cours");
                     return false;
                 }
 
