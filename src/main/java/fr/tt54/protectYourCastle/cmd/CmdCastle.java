@@ -140,7 +140,7 @@ public class CmdCastle extends CoreCommand {
 
                 boolean empty = true;
                 for(Player p : Bukkit.getOnlinePlayers()){
-                    Team team = Team.getPlayerTeam(player.getUniqueId());
+                    Team team = Team.getPlayerTeam(p.getUniqueId());
                     if(team != null) {
                         empty = false;
                         break;
