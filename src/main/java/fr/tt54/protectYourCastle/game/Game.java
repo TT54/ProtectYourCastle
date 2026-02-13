@@ -1,6 +1,7 @@
 package fr.tt54.protectYourCastle.game;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import fr.tt54.protectYourCastle.ProtectYourCastleMain;
 import fr.tt54.protectYourCastle.inventories.lobby.GameStatsInventory;
 import fr.tt54.protectYourCastle.mod_bridges.CuriosBridge;
@@ -10,7 +11,7 @@ import fr.tt54.protectYourCastle.scoreboard.ScoreboardManager;
 import fr.tt54.protectYourCastle.utils.Area;
 import fr.tt54.protectYourCastle.utils.FileManager;
 import fr.tt54.protectYourCastle.utils.ItemBuilder;
-import fr.tt54.protectYourCastle.utils.ItemSerialization;
+import fr.tt54.protectYourCastle.utils.SerializerUtils;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
@@ -22,7 +23,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -34,12 +34,12 @@ public class Game {
             .setPrettyPrinting()
             .serializeNulls()
             .disableHtmlEscaping()
-            .registerTypeAdapter(ItemStack.class, new ItemStackSerializer())
-            .registerTypeHierarchyAdapter(ItemStack.class, new ItemStackSerializer())
-            .registerTypeAdapter(ItemStack.class, new ItemStackDeserializer())
-            .registerTypeHierarchyAdapter(ItemStack.class, new ItemStackDeserializer())
-            .registerTypeAdapter(Location.class, new LocationSerializer())
-            .registerTypeAdapter(Location.class, new LocationDeserializer())
+            .registerTypeAdapter(ItemStack.class, new SerializerUtils.ItemStackSerializer())
+            .registerTypeHierarchyAdapter(ItemStack.class, new SerializerUtils.ItemStackSerializer())
+            .registerTypeAdapter(ItemStack.class, new SerializerUtils.ItemStackDeserializer())
+            .registerTypeHierarchyAdapter(ItemStack.class, new SerializerUtils.ItemStackDeserializer())
+            .registerTypeAdapter(Location.class, new SerializerUtils.LocationSerializer())
+            .registerTypeAdapter(Location.class, new SerializerUtils.LocationDeserializer())
             .registerTypeAdapter(Area.class, new Area.AreaSerializer())
             .registerTypeAdapter(Area.class, new Area.AreaDeserializer())
             .registerTypeAdapter(GameParameters.class, new GameParameters.GameParametersJsonSerializer())
@@ -415,53 +415,5 @@ public class Game {
         PAUSED,
         STOPPED;
 
-    }
-
-    public static class LocationSerializer implements JsonSerializer<Location>{
-
-        @Override
-        public JsonElement serialize(Location location, Type type, JsonSerializationContext jsonSerializationContext) {
-            JsonObject object = new JsonObject();
-            object.add("world", new JsonPrimitive(location.getWorld().getUID().toString()));
-            object.add("x", new JsonPrimitive(location.getX()));
-            object.add("y", new JsonPrimitive(location.getY()));
-            object.add("z", new JsonPrimitive(location.getZ()));
-            object.add("yaw", new JsonPrimitive(location.getYaw()));
-            object.add("pitch", new JsonPrimitive(location.getPitch()));
-            return object;
-        }
-    }
-
-    public static class LocationDeserializer implements JsonDeserializer<Location> {
-
-        @Override
-        public Location deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
-            JsonObject object = jsonElement.getAsJsonObject();
-            World world = Bukkit.getWorld(UUID.fromString(object.get("world").getAsString()));
-            double x = object.get("x").getAsDouble();
-            double y = object.get("y").getAsDouble();
-            double z = object.get("z").getAsDouble();
-            float yaw = object.get("yaw").getAsFloat();
-            float pitch = object.get("pitch").getAsFloat();
-            return new Location(world, x, y, z, yaw, pitch);
-        }
-    }
-
-    public static class ItemStackSerializer implements JsonSerializer<ItemStack>{
-
-        @Override
-        public JsonElement serialize(ItemStack itemStack, Type type, JsonSerializationContext jsonSerializationContext) {
-            String value = ItemSerialization.serialize(itemStack);
-            return new JsonPrimitive(value == null ? "" : value);
-        }
-    }
-
-    public static class ItemStackDeserializer implements JsonDeserializer<ItemStack>{
-
-        @Override
-        public ItemStack deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
-            String value = jsonElement.getAsString();
-            return value.isEmpty() ? null : ItemSerialization.deserialize(value);
-        }
     }
 }
