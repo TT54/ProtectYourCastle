@@ -18,8 +18,8 @@ public class BannerListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void itemPickup(EntityPickupItemEvent event){
-        if(Game.currentGame != null && Game.currentGame.isRunning() && event.getEntity() instanceof Player player){
-            final Game game = Game.currentGame;
+        if(Game.getCurrentGame() != null && Game.getCurrentGame().isRunning() && event.getEntity() instanceof Player player){
+            final Game game = Game.getCurrentGame();
             final Team team = Team.getPlayerTeam(player.getUniqueId());
             if(team != null && Team.isBannerItem(event.getItem().getItemStack())){
                 if(game.pickupBanner(player)){

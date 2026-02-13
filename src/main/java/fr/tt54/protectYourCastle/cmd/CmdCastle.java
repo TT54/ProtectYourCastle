@@ -5,7 +5,6 @@ import fr.tt54.protectYourCastle.game.*;
 import fr.tt54.protectYourCastle.inventories.ConfirmationInventory;
 import fr.tt54.protectYourCastle.inventories.trades.weapons.WeaponsListInventory;
 import fr.tt54.protectYourCastle.utils.Area;
-import fr.tt54.protectYourCastle.utils.FileManager;
 import org.bukkit.*;
 import org.bukkit.block.Banner;
 import org.bukkit.block.Block;
@@ -18,9 +17,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Stream;
@@ -128,13 +124,8 @@ public class CmdCastle extends CoreCommand {
                     return false;
                 }
 
-                if(Game.loadedWorld != null){
+                if(Game.getLoadedWorld() != null){
                     player.sendMessage("§cLe monde de jeu est déjà chargé, impossible de lancer une nouvelle partie");
-                    return false;
-                }
-
-                if(!Game.createNew()){
-                    player.sendMessage("§cUne partie est déjà en cours");
                     return false;
                 }
 
@@ -148,21 +139,25 @@ public class CmdCastle extends CoreCommand {
                 }
 
                 if(empty) {
-                    Game.currentGame = null;
                     player.sendMessage("§cImpossible de lancer la partie, aucune équipe n'a de joueur");
                     return false;
                 }
 
-                Game.currentGame.prepare(args[1]);
-                Game.currentGame.launch();
+                if(!Game.createNew()){
+                    player.sendMessage("§cUne partie est déjà en cours");
+                    return false;
+                }
+
+                Game.getCurrentGame().prepare(args[1]);
+                Game.getCurrentGame().launch();
                 player.sendMessage("§aLa partie a bien été lancée");
                 return true;
             } else if(args[0].equalsIgnoreCase("stop")){
-                if(Game.currentGame == null){
+                if(Game.getCurrentGame() == null){
                     player.sendMessage("§cIl n'y a aucune partie en cours");
                     return false;
                 }
-                Game.currentGame.stop();
+                Game.getCurrentGame().stop();
                 player.sendMessage("§aLa partie a bien été arrêtée");
                 Bukkit.broadcastMessage("§6[Castle] §cLa partie a été arrêtée");
                 return true;
@@ -568,12 +563,12 @@ public class CmdCastle extends CoreCommand {
                         player.sendMessage("§aVous avez été envoyé dans le monde d'édition");
                         return true;
                     } else if(args[1].equalsIgnoreCase("leave")){
-                        if(Game.loadedWorld == null){
+                        if(Game.getLoadedWorld() == null){
                             player.sendMessage("§cAucun monde d'édition n'est chargé");
                             return false;
                         }
 
-                        World world = Bukkit.getWorld(Game.loadedWorld);
+                        World world = Bukkit.getWorld(Game.getLoadedWorld());
                         if(world == null){
                             player.sendMessage("§cLe monde d'édition n'est pas chargé");
                             return false;
@@ -593,12 +588,12 @@ public class CmdCastle extends CoreCommand {
 
                         return true;
                     } else if(args[1].equalsIgnoreCase("save")){
-                        if(Game.loadedWorld == null){
+                        if(Game.getLoadedWorld() == null){
                             player.sendMessage("§cAucun monde d'édition n'est chargé");
                             return false;
                         }
 
-                        World world = Bukkit.getWorld(Game.loadedWorld);
+                        World world = Bukkit.getWorld(Game.getLoadedWorld());
 
                         if(world == null){
                             player.sendMessage("§cLe monde d'édition n'est pas chargé");

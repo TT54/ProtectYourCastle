@@ -45,19 +45,19 @@ public class Game {
             .registerTypeAdapter(GameParameters.class, new GameParameters.GameParametersJsonDeserializer())
             .create();
 
-    public static Game currentGame;
-    public static String loadedWorld = null;
+    private static Game currentGame;
+    private static String loadedWorld = null;
 
     private Status gameStatus;
-    public int time;
-    public Map<Team.TeamColor, Integer> points = new HashMap<>();
-    public Map<Team.TeamColor, UUID> bannerHolder = new HashMap<>();
-    public GameStatistics gameStatistics;
-    public List<Trader.GameWeapon> selectedWeapons = new ArrayList<>();
+    private int time;
+    private final Map<Team.TeamColor, Integer> points = new HashMap<>();
+    private final Map<Team.TeamColor, UUID> bannerHolder = new HashMap<>();
+    private GameStatistics gameStatistics;
+    private List<Trader.GameWeapon> selectedWeapons = new ArrayList<>();
 
-    private transient GameRunnable runnable;
-    public transient World gameWorld;
-    public transient GameScoreboard scoreboard;
+    private GameRunnable runnable;
+    private World world;
+    private GameScoreboard scoreboard;
 
     public Game() {
     }
@@ -150,8 +150,8 @@ public class Game {
             return;
         }
 
-        this.gameWorld = loadWorld(worldName);
-        if(this.gameWorld == null){
+        this.world = loadWorld(worldName);
+        if(this.world == null){
             System.err.println("Le monde source " + loadedWorld + " n'existe pas !");
             return;
         }
@@ -190,7 +190,7 @@ public class Game {
 
             scoreboard = new GameScoreboard();
 
-            World world = this.gameWorld;
+            World world = this.world;
             world.setTime(6000);
             world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, true);
             world.setGameRule(GameRule.DO_MOB_SPAWNING, false);
@@ -260,7 +260,7 @@ public class Game {
                 ProtectYourCastleMain.voiceChatBridge.deleteTeamGroup(team);
             }
 
-            Bukkit.getScheduler().runTaskLater(ProtectYourCastleMain.getInstance(), () -> Bukkit.unloadWorld(gameWorld, false), 10L);
+            Bukkit.getScheduler().runTaskLater(ProtectYourCastleMain.getInstance(), () -> Bukkit.unloadWorld(world, false), 10L);
 
             this.scoreboard = null;
             this.gameStatus = Status.STOPPED;
@@ -398,6 +398,50 @@ public class Game {
 
     public void addDeath(Player player){
         this.gameStatistics.increaseStatistic(player.getUniqueId(), GameStatistics.StatisticKey.DEATHS);
+    }
+
+    public int getTime() {
+        return time;
+    }
+
+    public static Game getCurrentGame() {
+        return currentGame;
+    }
+
+    public static String getLoadedWorld() {
+        return loadedWorld;
+    }
+
+    public Status getGameStatus() {
+        return gameStatus;
+    }
+
+    public Map<Team.TeamColor, Integer> getPoints() {
+        return points;
+    }
+
+    public Map<Team.TeamColor, UUID> getBannerHolder() {
+        return bannerHolder;
+    }
+
+    public List<Trader.GameWeapon> getSelectedWeapons() {
+        return selectedWeapons;
+    }
+
+    public GameRunnable getRunnable() {
+        return runnable;
+    }
+
+    public World getWorld() {
+        return world;
+    }
+
+    public GameScoreboard getScoreboard() {
+        return scoreboard;
+    }
+
+    public void increaseTime() {
+        this.time++;
     }
 
     public enum Status{

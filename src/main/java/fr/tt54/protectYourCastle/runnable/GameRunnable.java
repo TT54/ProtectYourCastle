@@ -1,8 +1,8 @@
 package fr.tt54.protectYourCastle.runnable;
 
+import fr.tt54.protectYourCastle.game.Game;
 import fr.tt54.protectYourCastle.game.GameParameters;
 import fr.tt54.protectYourCastle.game.ResourceGenerator;
-import fr.tt54.protectYourCastle.game.Game;
 import fr.tt54.protectYourCastle.game.Team;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -26,9 +26,9 @@ public class GameRunnable extends BukkitRunnable {
     public void run() {
         if(this.isCancelled()) return;
 
-        game.time++;
-        if(game.scoreboard != null) {
-            game.scoreboard.updatePlayersScoreboard();
+        game.increaseTime();
+        if(game.getScoreboard() != null) {
+            game.getScoreboard().updatePlayersScoreboard();
         }
 
         for(ResourceGenerator generator : game.getGenerators()){
@@ -36,11 +36,11 @@ public class GameRunnable extends BukkitRunnable {
                     ? resourcesToGenerate : 1);
         }
 
-        if(game.time >= GameParameters.GAME_DURATION.get()){
+        if(game.getTime() >= GameParameters.GAME_DURATION.get()){
             if(game.hasWinner()) {
                 game.finish();
                 this.cancel();
-            } else if(game.time == GameParameters.GAME_DURATION.get()){
+            } else if(game.getTime() == GameParameters.GAME_DURATION.get()){
                 for(Player player : Bukkit.getOnlinePlayers()){
                     player.playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_SHOOT, .5f, .5f);
                 }

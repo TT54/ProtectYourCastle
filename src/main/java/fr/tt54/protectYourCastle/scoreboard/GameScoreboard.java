@@ -4,7 +4,6 @@ import fr.mrmicky.fastboard.FastBoard;
 import fr.tt54.protectYourCastle.game.Game;
 import fr.tt54.protectYourCastle.game.GameParameters;
 import fr.tt54.protectYourCastle.game.Team;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
@@ -38,13 +37,13 @@ public class GameScoreboard extends ImpyriaScoreboard {
     }
 
     private void drawScoreboard(FastBoard fastBoard, Player player){
-        Game game = Game.currentGame;
+        Game game = Game.getCurrentGame();
         Team team = Team.getPlayerTeam(player.getUniqueId());
-        int minutes = (GameParameters.GAME_DURATION.get() - game.time) / 60;
-        int seconds = (GameParameters.GAME_DURATION.get() - game.time) % 60;
+        int minutes = (GameParameters.GAME_DURATION.get() - game.getTime()) / 60;
+        int seconds = (GameParameters.GAME_DURATION.get() - game.getTime()) % 60;
 
-        int extraMinutes = (game.time - GameParameters.GAME_DURATION.get()) / 60;
-        int extraSeconds = (game.time - GameParameters.GAME_DURATION.get()) % 60;
+        int extraMinutes = (game.getTime() - GameParameters.GAME_DURATION.get()) / 60;
+        int extraSeconds = (game.getTime() - GameParameters.GAME_DURATION.get()) % 60;
 
         String teamName = team != null ? team.getColor().getChatColor() + team.getColor().name() : "§cAucune";
 
@@ -65,7 +64,7 @@ public class GameScoreboard extends ImpyriaScoreboard {
 
         fastBoard.updateTitle("§6§lCastle Defender");
 
-        if(GameParameters.GAME_DURATION.get() - game.time > 0) {
+        if(GameParameters.GAME_DURATION.get() - game.getTime() > 0) {
             fastBoard.updateLine(i++, "§fTemps restant : " + "§7" + format.format(minutes) + ":" + format.format(seconds));
         } else{
             fastBoard.updateLine(i++, "§cTemps additionnel : " + "§7" + format.format(extraMinutes) + ":" + format.format(extraSeconds));

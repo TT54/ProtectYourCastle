@@ -50,14 +50,14 @@ public class GameListener implements Listener {
             player.setPlayerListName(team.getColor().getChatColor() + "[" + team.getColor().name() + "] " + player.getName());
         }
 
-        if(Game.currentGame != null) {
+        if(Game.getCurrentGame() != null) {
             if (team != null) {
-                if(player.getGameMode() == GameMode.SPECTATOR) beginRespawn(player, team, Game.currentGame);
+                if(player.getGameMode() == GameMode.SPECTATOR) beginRespawn(player, team, Game.getCurrentGame());
                 ProtectYourCastleMain.voiceChatBridge.joinTeamGroup(player, team);
             }
 
-            if(Game.currentGame.isRunning() && Game.currentGame.scoreboard != null){
-                ScoreboardManager.showScoreboard(player, Game.currentGame.scoreboard);
+            if(Game.getCurrentGame().isRunning() && Game.getCurrentGame().getScoreboard() != null){
+                ScoreboardManager.showScoreboard(player, Game.getCurrentGame().getScoreboard());
             }
 
             if(team == null){
@@ -73,7 +73,7 @@ public class GameListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event){
-        if(Game.currentGame == null || !Game.currentGame.isRunning()) return;
+        if(Game.getCurrentGame() == null || !Game.getCurrentGame().isRunning()) return;
 
         Player player = event.getPlayer();
         Team team = Team.getPlayerTeam(player.getUniqueId());
@@ -82,13 +82,13 @@ public class GameListener implements Listener {
                 if(t != team && t.getBase().contains(event.getBlock().getLocation())){
                     event.setCancelled(true);
                     if(event.getBlock().getLocation().distanceSquared(t.getBannerLocation()) < .1){
-                        if(Game.currentGame.bannerHolder.containsKey(team.getColor())){
+                        if(Game.getCurrentGame().getBannerHolder().containsKey(team.getColor())){
                             player.sendMessage("§cVotre équipe a déjà une bannière dans un inventaire");
                             return;
                         }
                         Bukkit.broadcastMessage("§6[Castle] " + t.getColor().getChatColor() + player.getName() + "§a a volé une bannière à la team " + t.getColor().getChatColor() + t.getColor().name());
                         player.getWorld().dropItem(player.getLocation().clone().add(0, .5, 0), t.getBannerItem());
-                        Game.currentGame.addBannerBroken(player);
+                        Game.getCurrentGame().addBannerBroken(player);
                     } else {
                         player.sendMessage("§cVous ne pouvez pas casser de blocs à la main dans la base ennemie");
                     }
@@ -99,7 +99,7 @@ public class GameListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event){
-        if(Game.currentGame == null || !Game.currentGame.isRunning()) return;
+        if(Game.getCurrentGame() == null || !Game.getCurrentGame().isRunning()) return;
 
         Player player = event.getPlayer();
         Team team = Team.getPlayerTeam(player.getUniqueId());
@@ -115,7 +115,7 @@ public class GameListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onRightClick(PlayerInteractEvent event){
-        if(Game.currentGame == null || !Game.currentGame.isRunning()) return;
+        if(Game.getCurrentGame() == null || !Game.getCurrentGame().isRunning()) return;
         Player player = event.getPlayer();
 
         if(event.getClickedBlock() != null){
@@ -124,7 +124,7 @@ public class GameListener implements Listener {
                 event.setCancelled(true);
                 ItemStack is = event.getItem();
                 if(Team.isBannerItem(is)){
-                    Game.currentGame.placeBanner(team, player, is);
+                    Game.getCurrentGame().placeBanner(team, player, is);
                     is.setAmount(0);
                     return;
                 } else if(event.getAction() == Action.LEFT_CLICK_BLOCK){
@@ -174,17 +174,17 @@ public class GameListener implements Listener {
             CuriosBridge.clearPlayerCuriosInventory(player);
         }
 
-        if(Game.currentGame != null && Game.currentGame.isRunning()){
-            if(team != null && player.getUniqueId().equals(Game.currentGame.bannerHolder.get(team.getColor()))){
-                Game.currentGame.bannerHolder.remove(team.getColor());
+        if(Game.getCurrentGame() != null && Game.getCurrentGame().isRunning()){
+            if(team != null && player.getUniqueId().equals(Game.getCurrentGame().getBannerHolder().get(team.getColor()))){
+                Game.getCurrentGame().getBannerHolder().remove(team.getColor());
                 Bukkit.broadcastMessage("§6[Castle] " + team.getColor().getChatColor() + player.getName() + "§c a perdu la bannière ennemi qu'il transportait");
             }
 
             if(player.getKiller() != null && player.getKiller() != player) {
-                Game.currentGame.addKill(player.getKiller());
+                Game.getCurrentGame().addKill(player.getKiller());
             }
 
-            Game.currentGame.addDeath(player);
+            Game.getCurrentGame().addDeath(player);
         }
 
         Bukkit.getScheduler().runTaskLater(ProtectYourCastleMain.getInstance(), () -> {
@@ -195,7 +195,7 @@ public class GameListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onPlayerRespawn(PlayerRespawnEvent event){
         final Team team = Team.getPlayerTeam(event.getPlayer().getUniqueId());
-        final Game game = Game.currentGame;
+        final Game game = Game.getCurrentGame();
         if(team != null && game != null){
             final Player player = event.getPlayer();
             beginRespawn(player, team, game);
@@ -221,7 +221,7 @@ public class GameListener implements Listener {
                     player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("§cRespawn dans " + timeLeft + "s"));
                 }
 
-                if(Game.currentGame == null || !Game.currentGame.isRunning()){
+                if(Game.getCurrentGame() == null || !Game.getCurrentGame().isRunning()){
                     this.cancel();
                     return;
                 }
@@ -245,7 +245,7 @@ public class GameListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void blockExplose(BlockExplodeEvent event){
-        if(Game.currentGame != null){
+        if(Game.getCurrentGame() != null){
             event.blockList().removeIf(block -> {
                 if(block == null) return false;
 
@@ -263,7 +263,7 @@ public class GameListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void entityExplose(EntityExplodeEvent event){
-        if(Game.currentGame != null){
+        if(Game.getCurrentGame() != null){
             event.blockList().removeIf(block -> {
                 if(block == null) return false;
 
