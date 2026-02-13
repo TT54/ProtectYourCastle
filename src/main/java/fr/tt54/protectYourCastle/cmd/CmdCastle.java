@@ -709,7 +709,7 @@ public class CmdCastle extends CoreCommand {
             } else if(args[0].equalsIgnoreCase("scores")){
                 return tabComplete(args[1], "refresh");
             } else if(args[0].equalsIgnoreCase("start")){
-                return tabComplete(args[1], Arrays.stream(new File(ProtectYourCastleMain.getInstance().getDataFolder(), "worlds/").listFiles()).map(File::getName).toList());
+                return tabComplete(args[1], Arrays.stream(new File(ProtectYourCastleMain.getInstance().getDataFolder(), "worlds/").listFiles()).filter(File::isDirectory).map(File::getName).toList());
             }
         } else if(args.length == 3){
             if(args[0].equalsIgnoreCase("generator")){
@@ -732,7 +732,7 @@ public class CmdCastle extends CoreCommand {
                 }
             } else if(args[0].equalsIgnoreCase("edit")){
                 if(args[1].equalsIgnoreCase("join")){
-                    return tabComplete(args[2], Arrays.stream(new File(ProtectYourCastleMain.getInstance().getDataFolder(), "worlds/").listFiles()).map(File::getName).toList());
+                    return tabComplete(args[2], Arrays.stream(new File(ProtectYourCastleMain.getInstance().getDataFolder(), "worlds/").listFiles()).filter(File::isDirectory).map(File::getName).toList());
                 }
             }
         } else if(args.length == 4){
