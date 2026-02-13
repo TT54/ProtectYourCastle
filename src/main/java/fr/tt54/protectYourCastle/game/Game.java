@@ -18,7 +18,6 @@ import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -387,13 +386,6 @@ public class Game {
         if(player.getInventory().getBoots() == null || player.getInventory().getBoots().getType() == Material.AIR) player.getInventory().setBoots(new ItemStack(Material.IRON_BOOTS));
 
         player.getInventory().addItem(new ItemBuilder(Material.IRON_SWORD).build(), new ItemBuilder(Material.BREAD, 4).build());
-    }
-
-    public static ItemStack colorArmor(ItemStack armor, Color color){
-        LeatherArmorMeta meta = (LeatherArmorMeta) armor.getItemMeta();
-        meta.setColor(color);
-        armor.setItemMeta(meta);
-        return armor;
     }
 
     public void addKill(@NotNull Player killer) {
