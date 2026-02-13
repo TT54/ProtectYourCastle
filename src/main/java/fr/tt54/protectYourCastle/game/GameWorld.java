@@ -23,6 +23,7 @@ public class GameWorld {
     public static final Type traderType = new TypeToken<Map<UUID, Trader>>() {}.getType();
     public static final Type weaponsType = new TypeToken<List<Trader.GameWeapon>>() {}.getType();
 
+    private static final Map<String, GameWorld> loadedWorlds = new HashMap<>();
 
     private final String worldName;
     private final Map<Team.TeamColor, Team> loadedTeams = new HashMap<>();
@@ -31,7 +32,43 @@ public class GameWorld {
     private final List<ResourceGenerator> resourceGenerators = new ArrayList<>();
     private World world;
 
-    public GameWorld(String worldName) {
+    /**
+     * Permet de récupérer une instance de monde de jeu qui n'est pas chargé **SANS** charger ses données
+     * @param worldName Le nom du monde
+     * @return Une instance du monde s'il existe et qu'il n'est pas déjà chargé, sinon null
+     */
+    public static GameWorld getNewGameWorld(String worldName){
+        if(loadedWorlds.containsKey(worldName)) {
+            return null;
+        }
+
+        File sourceGameWorldFolder = new File(ProtectYourCastleMain.getInstance().getDataFolder(), "worlds/" + worldName);
+        if(!sourceGameWorldFolder.exists() || !sourceGameWorldFolder.isDirectory()){
+            return null;
+        }
+
+        GameWorld gameWorld = new GameWorld(worldName);
+        loadedWorlds.put(worldName, gameWorld);
+        return gameWorld;
+    }
+
+    public static GameWorld getLoadedGameWorld(String worldName){
+        return loadedWorlds.get(worldName);
+    }
+
+    public static void unloadGameWorld(GameWorld gameWorld, boolean save){
+        gameWorld.unload(save);
+    }
+
+    public static boolean isWorldLoaded(String worldName){
+        return loadedWorlds.containsKey(worldName);
+    }
+
+    public static Set<String> getLoadedWorlds(){
+        return new HashSet<>(loadedWorlds.keySet());
+    }
+
+    protected GameWorld(String worldName) {
         this.worldName = worldName;
     }
 
@@ -58,6 +95,7 @@ public class GameWorld {
         if(save) {
             this.saveData();
         }
+        loadedWorlds.remove(this.getWorldName());
     }
 
     private File loadFile(@NotNull String fileName){
@@ -143,5 +181,29 @@ public class GameWorld {
             FileManager.copy(gameWorldFolder, sourceGameWorldFolder);
         }
         System.out.println("Monde " + this.world.getName() + " déchargé !");
+    }
+
+    public String getWorldName() {
+        return worldName;
+    }
+
+    public Map<Team.TeamColor, Team> getLoadedTeams() {
+        return loadedTeams;
+    }
+
+    public Map<UUID, Trader> getTraders() {
+        return traders;
+    }
+
+    public List<Trader.GameWeapon> getWeapons() {
+        return weapons;
+    }
+
+    public List<ResourceGenerator> getResourceGenerators() {
+        return resourceGenerators;
+    }
+
+    public World getWorld() {
+        return world;
     }
 }
