@@ -4,6 +4,7 @@ import fr.tt54.protectYourCastle.ProtectYourCastleMain;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 
@@ -232,6 +233,45 @@ public class FileManager {
         destinationFolder.mkdir();
         for(File file : initialFolder.listFiles()){
             copy(file, new File(destinationFolder, file.getName()));
+        }
+    }
+
+    public static void saveResource(@NotNull String sourcePath, @NotNull String targetPath, JavaPlugin plugin) {
+        if (sourcePath == null || sourcePath.equals("")) {
+            throw new IllegalArgumentException("ResourcePath cannot be null or empty");
+        }
+        if (targetPath == null || targetPath.equals("")) {
+            throw new IllegalArgumentException("ResourcePath cannot be null or empty");
+        }
+
+        sourcePath = sourcePath.replace('\\', '/');
+        targetPath = targetPath.replace('\\', '/');
+
+        InputStream in = plugin.getResource(sourcePath);
+        if (in == null) {
+            throw new IllegalArgumentException("The embedded resource '" + sourcePath + "' cannot be found in the plugin resources");
+        }
+
+        File outFile = new File(plugin.getDataFolder(), targetPath);
+        int lastIndex = targetPath.lastIndexOf('/');
+        File outDir = new File(plugin.getDataFolder(), targetPath.substring(0, Math.max(lastIndex, 0)));
+
+        if (!outDir.exists()) {
+            outDir.mkdirs();
+        }
+
+        try {
+            OutputStream out = new FileOutputStream(outFile);
+            byte[] buf = new byte[1024];
+            int len;
+            while ((len = in.read(buf)) > 0) {
+                out.write(buf, 0, len);
+            }
+            out.close();
+            in.close();
+        } catch (IOException ex) {
+            System.err.println("Could not save " + outFile.getName() + " to " + outFile);
+            ex.printStackTrace();
         }
     }
 
