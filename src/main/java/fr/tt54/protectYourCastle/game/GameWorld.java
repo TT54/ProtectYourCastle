@@ -180,7 +180,7 @@ public class GameWorld {
 
             FileManager.copy(gameWorldFolder, sourceGameWorldFolder);
         }
-        System.out.println("Monde " + this.world.getName() + " déchargé !");
+        System.out.println("Monde " + this.worldName + " déchargé !");
     }
 
     public String getWorldName() {
