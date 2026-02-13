@@ -4,6 +4,7 @@ import com.google.common.reflect.TypeToken;
 import fr.tt54.protectYourCastle.ProtectYourCastleMain;
 import fr.tt54.protectYourCastle.utils.FileManager;
 import org.bukkit.World;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.lang.reflect.Type;
@@ -40,14 +41,17 @@ public class GameWorld {
         this.saveResourceGenerators();
     }
 
+    private File loadFile(@NotNull String fileName){
+        File teamsFile = FileManager.getFileWithoutCreating("worlds/" + this.name + "/" + fileName, ProtectYourCastleMain.getInstance());
+        if (!teamsFile.exists()) {
+            FileManager.saveResource("teams.json", "worlds/" + this.name + "/" + fileName, ProtectYourCastleMain.getInstance());
+        }
+        return teamsFile;
+    }
+
     private void loadTeams(){
         this.loadedTeams.clear();
-
-        File teamsFile = FileManager.getFileWithoutCreating("worlds/" + this.name + "/teams.json", ProtectYourCastleMain.getInstance());
-        if (!teamsFile.exists()) {
-            FileManager.saveResource("teams.json", "worlds/" + this.name + "teams.json", ProtectYourCastleMain.getInstance());
-        }
-        this.loadedTeams.putAll(Game.gson.fromJson(FileManager.read(teamsFile), teamsType));
+        this.loadedTeams.putAll(Game.gson.fromJson(FileManager.read(loadFile("teams.json")), teamsType));
         // TODO Trouver une solution pour bien conserver les joueurs d'une team à l'autre (quand on les recharge)
         // Le plus simple serait de ne simplement pas stocker les joueurs d'une team dans l'objet Team
     }
@@ -56,44 +60,25 @@ public class GameWorld {
         this.traders.clear();
         this.weapons.clear();
 
-        File tradersFile = FileManager.getFileWithoutCreating("worlds/" + this.name + "/traders.json", ProtectYourCastleMain.getInstance());
-        if (!tradersFile.exists()) {
-            FileManager.saveResource("traders.json", "worlds/" + this.name + "traders.json", ProtectYourCastleMain.getInstance());
-        }
-        this.traders.putAll(Game.gson.fromJson(FileManager.read(tradersFile), traderType));
-
-        File weaponsFile = FileManager.getFileWithoutCreating("worlds/" + this.name + "/weapons.json", ProtectYourCastleMain.getInstance());
-        if (!weaponsFile.exists()) {
-            FileManager.saveResource("weapons.json", "worlds/" + this.name + "weapons.json", ProtectYourCastleMain.getInstance());
-        }
-        this.weapons.addAll(Game.gson.fromJson(FileManager.read(weaponsFile), weaponsType));
+        this.traders.putAll(Game.gson.fromJson(FileManager.read(loadFile("traders.json")), traderType));
+        this.weapons.addAll(Game.gson.fromJson(FileManager.read(loadFile("weapons.json")), weaponsType));
     }
 
     private void loadResourceGenerators(){
         this.resourceGenerators.clear();
-
-        File generatorsFile = FileManager.getFileWithoutCreating("worlds/" + this.name + "/generators.json", ProtectYourCastleMain.getInstance());
-        if (!generatorsFile.exists()) {
-            FileManager.saveResource("generators.json", "worlds/" + this.name + "generators.json", ProtectYourCastleMain.getInstance());
-        }
-        this.resourceGenerators.addAll(Game.gson.fromJson(FileManager.read(generatorsFile), generatorsType));
+        this.resourceGenerators.addAll(Game.gson.fromJson(FileManager.read(loadFile("generators.json")), generatorsType));
     }
 
     private void saveTeams(){
-        File teamsFile = FileManager.getFile("worlds/" + this.name + "/teams.json", ProtectYourCastleMain.getInstance());
-        FileManager.write(Game.gson.toJson(this.loadedTeams), teamsFile);
+        FileManager.write(Game.gson.toJson(this.loadedTeams), loadFile("teams.json"));
     }
 
     private void saveTraders(){
-        File tradersFile = FileManager.getFile("worlds/" + this.name + "/traders.json", ProtectYourCastleMain.getInstance());
-        FileManager.write(Game.gson.toJson(this.traders), tradersFile);
-
-        File weaponsFile = FileManager.getFileWithoutCreating("worlds/" + this.name + "/weapons.json", ProtectYourCastleMain.getInstance());
-        FileManager.write(Game.gson.toJson(this.weapons), weaponsFile);
+        FileManager.write(Game.gson.toJson(this.traders), loadFile("traders.json"));
+        FileManager.write(Game.gson.toJson(this.weapons), loadFile("weapons.json"));
     }
 
     private void saveResourceGenerators(){
-        File generatorsFile = FileManager.getFile("worlds/" + this.name + "/generators.json", ProtectYourCastleMain.getInstance());
-        FileManager.write(Game.gson.toJson(this.resourceGenerators), generatorsFile);
+        FileManager.write(Game.gson.toJson(this.resourceGenerators), loadFile("generators.json"));
     }
 }
