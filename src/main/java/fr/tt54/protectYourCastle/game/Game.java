@@ -144,6 +144,15 @@ public class Game {
         return creator.createWorld();
     }
 
+    public static Game getCurrentGame() {
+        return currentGame;
+    }
+
+    public static String getLoadedWorld() {
+        return loadedWorld;
+    }
+
+
     public void prepare(String worldName){
         if(loadedWorld != null){
             System.err.println("Un monde est déjà chargé, impossible d'en charger un autre tant que la partie n'est pas terminée !");
@@ -402,14 +411,6 @@ public class Game {
 
     public int getTime() {
         return time;
-    }
-
-    public static Game getCurrentGame() {
-        return currentGame;
-    }
-
-    public static String getLoadedWorld() {
-        return loadedWorld;
     }
 
     public Status getGameStatus() {
