@@ -86,7 +86,7 @@ public class Game {
                 throw new RuntimeException(e);
             }
         }
-        if(!sourceGameWorldFolder.exists()){
+        if(!sourceGameWorldFolder.exists() || !sourceGameWorldFolder.isDirectory()){
             return null;
         }
 
