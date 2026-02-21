@@ -221,10 +221,20 @@ public class Trader {
 
         private final NPCTrade gunTrade;
         private final NPCTrade ammoTrade;
+        private boolean overPowered;
 
-        public GameWeapon(NPCTrade gunTrade, NPCTrade ammoTrade) {
+        public GameWeapon(NPCTrade gunTrade, NPCTrade ammoTrade, boolean overPowered) {
             this.gunTrade = gunTrade;
             this.ammoTrade = ammoTrade;
+            this.overPowered = overPowered;
+        }
+
+        public boolean isOverPowered() {
+            return overPowered;
+        }
+
+        public void setOverPowered(boolean overPowered) {
+            this.overPowered = overPowered;
         }
 
         public NPCTrade getGunTrade() {

@@ -22,15 +22,18 @@ public class WeaponInventory extends CorePersonalInventory {
     private final Trader.GameWeapon displayedWeapon;
     private final CorePersonalInventory previousInventory;
 
+    private boolean overpoweredWeapon;
+
     public WeaponInventory(Player player, boolean editing, Trader.GameWeapon displayedWeapon, CorePersonalInventory previousInventory) {
         super(editing ? "Edition d'une arme" : "Ajout d'une arme", player);
         this.editing = editing;
         this.displayedWeapon = displayedWeapon;
         this.previousInventory = previousInventory;
+        this.overpoweredWeapon = displayedWeapon.isOverPowered();
     }
 
     public WeaponInventory(Player player, CorePersonalInventory previousInventory) {
-        this(player, false, new Trader.GameWeapon(new Trader.NPCTrade(new ArrayList<>(), null), new Trader.NPCTrade(new ArrayList<>(), null)), previousInventory);
+        this(player, false, new Trader.GameWeapon(new Trader.NPCTrade(new ArrayList<>(), null), new Trader.NPCTrade(new ArrayList<>(), null), false), previousInventory);
     }
 
     @Override
@@ -43,6 +46,8 @@ public class WeaponInventory extends CorePersonalInventory {
         inv.setItem(9 + 4, this.displayedWeapon.getGunTrade().getInput().isEmpty() ? DefaultItems.AIR.build() : this.displayedWeapon.getGunTrade().getInput().get(0).clone());
         inv.setItem(9 + 5, this.displayedWeapon.getGunTrade().getInput().size() < 2 ? DefaultItems.AIR.build() : this.displayedWeapon.getGunTrade().getInput().get(1).clone());
         inv.setItem(9 + 7, this.displayedWeapon.getGunTrade().getReward() == null ? DefaultItems.AIR.build() : this.displayedWeapon.getGunTrade().getReward().clone());
+
+        inv.setItem(2 * 9 + 4, this.overpoweredWeapon ? new ItemBuilder(Material.LIME_STAINED_GLASS_PANE, "§aArme OP").build() : new ItemBuilder(Material.RED_STAINED_GLASS_PANE, "§cArme non OP").build());
 
         inv.setItem(3 * 9 + 4, this.displayedWeapon.getAmmoTrade().getInput().isEmpty() ? DefaultItems.AIR.build() : this.displayedWeapon.getAmmoTrade().getInput().get(0).clone());
         inv.setItem(3 * 9 + 5, this.displayedWeapon.getAmmoTrade().getInput().size() < 2 ? DefaultItems.AIR.build() : this.displayedWeapon.getAmmoTrade().getInput().get(1).clone());
@@ -111,18 +116,23 @@ public class WeaponInventory extends CorePersonalInventory {
                     this.displayedWeapon.getGunTrade().setReward(gunReward.clone());
                     this.displayedWeapon.getAmmoTrade().setInput(ammoInputs);
                     this.displayedWeapon.getAmmoTrade().setReward(ammoReward.clone());
+                    this.displayedWeapon.setOverPowered(this.overpoweredWeapon);
                     player.sendMessage("§aL'arme a bien été modifiée !");
                     this.previousInventory.openInventory();
                 } else{
                     Trader.weapons.add(new Trader.GameWeapon(
                             new Trader.NPCTrade(gunInputs, gunReward.clone()),
-                            new Trader.NPCTrade(ammoInputs, ammoReward.clone())
+                            new Trader.NPCTrade(ammoInputs, ammoReward.clone()),
+                            this.overpoweredWeapon
                     ));
                     player.sendMessage("§aL'arme a bien été ajoutée !");
                     this.openInventory();
                 }
             } else if(slot == 9 * 4) {
                 this.previousInventory.openInventory();
+            } else if(slot == 2 * 9 + 4) {
+                this.overpoweredWeapon = !this.overpoweredWeapon;
+                event.getInventory().setItem(2 * 9 + 4, this.overpoweredWeapon ? new ItemBuilder(Material.LIME_STAINED_GLASS_PANE, "§aArme OP").build() : new ItemBuilder(Material.RED_STAINED_GLASS_PANE, "§cArme non OP").build());
             }
         }
     }
