@@ -170,7 +170,18 @@ public class Game {
         if(GameParameters.ENABLE_RANDOM_WEAPONS.get()){
             List<Trader.GameWeapon> weapons = new ArrayList<>(Trader.weapons);
             Collections.shuffle(weapons);
-            this.selectedWeapons = weapons.subList(0, Math.min(GameParameters.WEAPONS_TO_SELECT.get(), weapons.size()));
+            this.selectedWeapons = new ArrayList<>();
+            boolean hasOverpoweredWeapon = false;
+            for(Trader.GameWeapon weapon : weapons){
+                if(weapon.isOverPowered() && hasOverpoweredWeapon){
+                    continue;
+                }
+                this.selectedWeapons.add(weapon);
+                hasOverpoweredWeapon = hasOverpoweredWeapon || weapon.isOverPowered();
+                if(this.selectedWeapons.size() >= GameParameters.WEAPONS_TO_SELECT.get()){
+                    break;
+                }
+            }
         }
 
         for(Player player : Bukkit.getOnlinePlayers()){
