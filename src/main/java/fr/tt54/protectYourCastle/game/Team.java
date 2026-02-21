@@ -105,6 +105,22 @@ public class Team {
         }
     }
 
+    public static void fillRandomly() {
+        Team team1 = getTeam(TeamColor.RED);
+        Team team2 = getTeam(TeamColor.YELLOW);
+
+        List<Player> players = new ArrayList<>(Bukkit.getOnlinePlayers());
+        Collections.shuffle(players);
+        for(Player player : players){
+            if(team1.getMembers().contains(player.getUniqueId()) || team2.getMembers().contains(player.getUniqueId())) continue;
+            if(team1.getMembers().size() <= team2.getMembers().size()){
+                team1.joinTeam(player.getUniqueId());
+            } else {
+                team2.joinTeam(player.getUniqueId());
+            }
+        }
+    }
+
     private final TeamColor color;
     private SavedLocation spawnLocation;
     private SavedLocation bannerLocation;

@@ -378,7 +378,8 @@ public class CmdCastle extends CoreCommand {
                         Bukkit.broadcastMessage("§a" + target.getName() + " a quitté l'équipe " + team.getColor().getChatColor() + team.getColor().name());
                         return true;
                     } else if(args[1].equalsIgnoreCase("fill")){
-                        boolean clearBefore = args.length == 3 && args[2].equalsIgnoreCase("withClear");
+                        boolean clearBefore = args.length >= 3 && args[2].equalsIgnoreCase("withClear");
+                        boolean random = args.length == 4 && args[3].equalsIgnoreCase("randomly");
                         if(clearBefore){
                             for(Team team : Team.getTeams()){
                                 for(UUID uuid : new ArrayList<>(team.getMembers())){
@@ -387,7 +388,11 @@ public class CmdCastle extends CoreCommand {
                             }
                         }
 
-                        Team.fillWithScores();
+                        if(!random) {
+                            Team.fillWithScores();
+                        } else {
+                            Team.fillRandomly();
+                        }
                         player.sendMessage("§aLes équipes ont bien été remplies");
                         return true;
                     } else if(args[1].equalsIgnoreCase("clear")){
@@ -715,7 +720,7 @@ public class CmdCastle extends CoreCommand {
                 if(args[1].equalsIgnoreCase("spawn") || args[1].equalsIgnoreCase("drawbridge") || args[1].equalsIgnoreCase("rollback") || args[1].equalsIgnoreCase("protected") || args[1].equalsIgnoreCase("base") || args[1].equalsIgnoreCase("banner") || args[1].equalsIgnoreCase("join")){
                     return tabComplete(args[2], Arrays.stream(Team.TeamColor.values()).map(teamColor -> teamColor.name().toLowerCase()).toList());
                 } else if(args[1].equalsIgnoreCase("fill")){
-                    return tabComplete(args[2], "withClear");
+                    return tabComplete(args[2], "withClear", "withoutClear");
                 }
             } else if(args[0].equalsIgnoreCase("parameter")){
                 if(args[1].equalsIgnoreCase("set") || args[1].equalsIgnoreCase("get")){
@@ -741,6 +746,8 @@ public class CmdCastle extends CoreCommand {
                     return block != null ? List.of(block.getLocation().getBlockX() + "") : List.of();
                 } else if(args[1].equalsIgnoreCase("join")){
                     return tabComplete(args[3], Bukkit.getOnlinePlayers().stream().map(Player::getName).toList());
+                } else if(args[1].equalsIgnoreCase("fill")){
+                    return tabComplete(args[3], "randomly");
                 }
             }
         } else if(args.length == 5){
