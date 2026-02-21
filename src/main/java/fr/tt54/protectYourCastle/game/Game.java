@@ -16,6 +16,7 @@ import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -405,7 +406,7 @@ public class Game {
         if(player.getInventory().getLeggings() == null || player.getInventory().getLeggings().getType() == Material.AIR) player.getInventory().setLeggings(new ItemStack(Material.IRON_LEGGINGS));
         if(player.getInventory().getBoots() == null || player.getInventory().getBoots().getType() == Material.AIR) player.getInventory().setBoots(new ItemStack(Material.IRON_BOOTS));
 
-        player.getInventory().addItem(new ItemBuilder(Material.IRON_SWORD).build(), new ItemBuilder(Material.BREAD, 4).build());
+        player.getInventory().addItem(new ItemBuilder(Material.IRON_SWORD).addEnchant(Enchantment.DAMAGE_ALL, 20).build(), new ItemBuilder(Material.BREAD, 4).build());
     }
 
     public void addKill(@NotNull Player killer) {
