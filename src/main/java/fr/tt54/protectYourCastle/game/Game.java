@@ -437,6 +437,10 @@ public class Game {
         this.gameStatistics.addStatistic(player.getUniqueId(), GameStatistics.StatisticKey.DISTANCE_WITH_PLANE, (int) (100 * distance));
     }
 
+    public void increaseDamageDealt(UUID playerUUID, float damages) {
+        this.gameStatistics.addStatistic(playerUUID, GameStatistics.StatisticKey.DAMAGE_DEALT, (int) (damages * 100));
+    }
+
     public int getTime() {
         return time;
     }

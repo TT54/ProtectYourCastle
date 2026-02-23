@@ -249,6 +249,7 @@ public class GameStatistics {
         BANNERS_BROKEN("Bannières cassées"),
         POINTS_WON("Points gagnés"),
         CRITICAL_KILLS("Kills importants"),
+        DAMAGE_DEALT("Dégâts infligés", 100),
         DISTANCE_WALKED("Distance marchée", 100),
         DISTANCE_WITH_PLANE("Distance en avion", 100);
 

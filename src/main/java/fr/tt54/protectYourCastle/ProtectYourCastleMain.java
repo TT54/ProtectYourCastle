@@ -7,12 +7,12 @@ import fr.tt54.protectYourCastle.game.*;
 import fr.tt54.protectYourCastle.game.Team;
 import fr.tt54.protectYourCastle.listeners.BannerListener;
 import fr.tt54.protectYourCastle.listeners.GameListener;
+import fr.tt54.protectYourCastle.listeners.ModEventListener;
 import fr.tt54.protectYourCastle.mod_bridges.VoiceChatBridge;
+import fr.tt54.pycmod.events.PYCBukkitEventRegistry;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.*;
-
-import java.util.HashMap;
 
 public final class ProtectYourCastleMain extends JavaPlugin {
 
@@ -45,6 +45,11 @@ public final class ProtectYourCastleMain extends JavaPlugin {
             voiceChatBridge.enable();
         } catch (Exception | Error e){
             System.err.println("Impossible d'activer la liaison avec voicechat");
+        }
+        try {
+            PYCBukkitEventRegistry.registerPlayerDamagedByPlayerEvent(ModEventListener::onPlayerDamagedByPlayer);
+        } catch (Exception | Error e){
+            System.err.println("Impossible d'enregistrer les événements personnalisés");
         }
     }
 
