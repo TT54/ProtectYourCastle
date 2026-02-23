@@ -13,10 +13,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.entity.Display;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.TextDisplay;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -25,10 +22,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -294,6 +288,19 @@ public class GameListener implements Listener {
             textDisplay.setText("§b" + format.format(event.getFinalDamage()));
 
             Bukkit.getScheduler().runTaskLater(ProtectYourCastleMain.getInstance(), textDisplay::remove, 15L);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerMove(PlayerMoveEvent event){
+        Game game = Game.getCurrentGame();
+        if(game != null && game.isRunning()) {
+            Team team = Team.getPlayerTeam(event.getPlayer().getUniqueId());
+            Entity entity = event.getPlayer().getVehicle();
+            if(team != null && event.getTo() != null && event.getFrom().getWorld() == event.getTo().getWorld() && entity != null && !entity.isOnGround()){
+                double distance = event.getTo().distance(event.getFrom());
+                game.increaseDistanceInPlane(event.getPlayer(), distance);
+            }
         }
     }
 

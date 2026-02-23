@@ -158,6 +158,10 @@ public class GameStatistics {
         this.setPlayerStatistic(playerUUID, key, this.getPlayerStatistic(playerUUID, key) + 1);
     }
 
+    public void addStatistic(UUID playerUUID, StatisticKey key, int value) {
+        this.setPlayerStatistic(playerUUID, key, this.getPlayerStatistic(playerUUID, key) + value);
+    }
+
     public int getTeamStatistic(Team.TeamColor color, StatisticKey key){
         int value = 0;
         for(UUID playerUUID : this.playerTeam.keySet()){
@@ -243,7 +247,9 @@ public class GameStatistics {
         KILLS("Kills"),
         DEATHS("Morts"),
         BANNERS_BROKEN("Bannières cassées"),
-        POINTS_WON("Points gagnés");
+        POINTS_WON("Points gagnés"),
+        DISTANCE_WALKED("Distance marchée"),
+        DISTANCE_WITH_PLANE("Distance en avion");
 
         private final String displayName;
 

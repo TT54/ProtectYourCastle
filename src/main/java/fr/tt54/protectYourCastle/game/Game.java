@@ -228,6 +228,8 @@ public class Game {
                 ScoreboardManager.showScoreboard(player, scoreboard);
                 Team team = Team.getPlayerTeam(player.getUniqueId());
                 player.getEnderChest().clear();
+                player.setStatistic(Statistic.WALK_ONE_CM, 0);
+                player.setStatistic(Statistic.SPRINT_ONE_CM, 0);
                 if(team != null) {
                     spawnPlayer(player, team, true);
                 }
@@ -253,6 +255,11 @@ public class Game {
 
             for(ResourceGenerator generator : this.getGenerators()){
                 generator.getLocation().getChunk().setForceLoaded(false);
+            }
+
+            for(UUID uuid : this.gameStatistics.getPlayers()){
+                OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
+                this.gameStatistics.setPlayerStatistic(uuid, GameStatistics.StatisticKey.DISTANCE_WALKED, offlinePlayer.getStatistic(Statistic.WALK_ONE_CM) + offlinePlayer.getStatistic(Statistic.SPRINT_ONE_CM));
             }
 
             for(Player player : new ArrayList<>(Bukkit.getOnlinePlayers())){
@@ -421,6 +428,10 @@ public class Game {
 
     public void addDeath(Player player){
         this.gameStatistics.increaseStatistic(player.getUniqueId(), GameStatistics.StatisticKey.DEATHS);
+    }
+
+    public void increaseDistanceInPlane(Player player, double distance) {
+        this.gameStatistics.addStatistic(player.getUniqueId(), GameStatistics.StatisticKey.DISTANCE_WITH_PLANE, (int) (100 * distance));
     }
 
     public int getTime() {

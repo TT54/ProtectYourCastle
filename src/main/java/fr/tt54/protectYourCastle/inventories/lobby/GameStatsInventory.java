@@ -25,6 +25,10 @@ import java.util.stream.Stream;
 public class GameStatsInventory extends CorePersonalInventory {
 
     private final GameStatistics gameStats;
+    private final int[] slots = {
+            9 + 2       , 9 + 3     , 9 + 5     , 9 + 6,
+            2 * 9 + 2   , 2 * 9 + 3 , 9 * 2 + 5 , 9 * 2 + 6,
+    };
 
     public GameStatsInventory(Player player, GameStatistics gameStats) {
         super("Statistiques", player);
@@ -47,9 +51,9 @@ public class GameStatsInventory extends CorePersonalInventory {
                         .build()
         );
 
-        List<Integer> slots = new ArrayList<>(List.of(9 + 6, 9 + 5, 9 + 3, 9 + 2));
-        for(GameStatistics.StatisticKey key : GameStatistics.StatisticKey.values()){
-            inv.setItem(slots.remove(slots.size() - 1), this.drawBestPlayerStats(key));
+        for(int i = 0; i < GameStatistics.StatisticKey.values().length; i++){
+            if(i >= slots.length) break;
+            inv.setItem(slots[i], this.drawBestPlayerStats(GameStatistics.StatisticKey.values()[i]));
         }
 
         inv.setItem(9 * 3 + 3, getTeamInfoItem(Team.TeamColor.YELLOW));
