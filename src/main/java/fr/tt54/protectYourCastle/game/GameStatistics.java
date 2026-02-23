@@ -248,17 +248,27 @@ public class GameStatistics {
         DEATHS("Morts"),
         BANNERS_BROKEN("Bannières cassées"),
         POINTS_WON("Points gagnés"),
-        DISTANCE_WALKED("Distance marchée"),
-        DISTANCE_WITH_PLANE("Distance en avion");
+        DISTANCE_WALKED("Distance marchée", 100),
+        DISTANCE_WITH_PLANE("Distance en avion", 100);
 
         private final String displayName;
+        private final int divisionDisplayFactor;
 
         StatisticKey(String displayName) {
+            this(displayName, 1);
+        }
+
+        StatisticKey(String displayName, int divisionDisplayFactor) {
             this.displayName = displayName;
+            this.divisionDisplayFactor = divisionDisplayFactor;
         }
 
         public String getDisplayName() {
             return displayName;
+        }
+
+        public int getDivisionDisplayFactor() {
+            return divisionDisplayFactor;
         }
     }
 

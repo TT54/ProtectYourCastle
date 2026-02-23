@@ -89,10 +89,12 @@ public class GameStatsInventory extends CorePersonalInventory {
         List<UUID> results = this.gameStats.getPlayers().stream().sorted(Comparator.comparingInt(uuid -> -this.gameStats.getPlayerStatistic(uuid, key))).toList();
         UUID bestUUID = results.get(0);
         OfflinePlayer p = Bukkit.getOfflinePlayer(bestUUID);
+        int bestStat = this.gameStats.getPlayerStatistic(bestUUID, key);
+        if(bestStat == 0) return new ItemBuilder(Material.BARRIER, "§cAucune donnée pour : " + key.getDisplayName()).build();
         return new ItemBuilder(Material.PLAYER_HEAD, "§eTop §6" + key.getDisplayName() + "§e : §6§l" + p.getName())
                 .setHeadOwner(p)
                 .setLore(results.stream()
-                        .map(uuid -> this.gameStats.getPlayerTeam(uuid).getChatColor() + Bukkit.getOfflinePlayer(uuid).getName() + " §e--> §f" + this.gameStats.getPlayerStatistic(uuid, key))
+                        .map(uuid -> this.gameStats.getPlayerTeam(uuid).getChatColor() + Bukkit.getOfflinePlayer(uuid).getName() + " §e--> §f" + (this.gameStats.getPlayerStatistic(uuid, key) / key.getDivisionDisplayFactor()))
                         .toList())
                 .build();
     }
