@@ -177,7 +177,10 @@ public class GameListener implements Listener {
             }
 
             if(player.getKiller() != null && player.getKiller() != player) {
-                Game.getCurrentGame().addKill(player.getKiller());
+                final Team killerTeam = Team.getPlayerTeam(player.getKiller().getUniqueId());
+                if(killerTeam != team) {
+                    Game.getCurrentGame().addKill(player.getKiller());
+                }
             }
 
             Game.getCurrentGame().addDeath(player);
