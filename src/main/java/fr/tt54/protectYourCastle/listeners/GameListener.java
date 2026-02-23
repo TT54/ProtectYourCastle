@@ -19,7 +19,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -82,12 +81,12 @@ public class GameListener implements Listener {
                 if(t != team && t.getBase().contains(event.getBlock().getLocation())){
                     event.setCancelled(true);
                     if(event.getBlock().getLocation().distanceSquared(t.getBannerLocation()) < .1){
-                        if(Game.getCurrentGame().getBannerHolder().containsKey(team.getColor())){
+                        Game game = Game.getCurrentGame();
+                        if(game.getBannerHolders().containsKey(team.getColor()) || !game.pickupBanner(player)){
                             player.sendMessage("§cVotre équipe a déjà une bannière dans un inventaire");
                             return;
                         }
                         Bukkit.broadcastMessage("§6[Castle] " + t.getColor().getChatColor() + player.getName() + "§a a volé une bannière à la team " + t.getColor().getChatColor() + t.getColor().name());
-                        player.getWorld().dropItem(player.getLocation().clone().add(0, .5, 0), t.getBannerItem());
                         Game.getCurrentGame().addBannerBroken(player);
                     } else {
                         player.sendMessage("§cVous ne pouvez pas casser de blocs à la main dans la base ennemie");
@@ -122,15 +121,12 @@ public class GameListener implements Listener {
             Team team = Team.getPlayerTeam(player.getUniqueId());
             if(team != null && event.getClickedBlock().getLocation().distanceSquared(team.getBannerLocation()) < .1){
                 event.setCancelled(true);
-                ItemStack is = event.getItem();
-                if(Team.isBannerItem(is)){
-                    Game.getCurrentGame().placeBanner(team, player, is);
-                    is.setAmount(0);
-                    return;
-                } else if(event.getAction() == Action.LEFT_CLICK_BLOCK){
+                if(Game.getCurrentGame().isBannerHolder(player)){
+                    Game.getCurrentGame().placeBanner(team, player);
+                } else{
                     player.sendMessage("§cVous ne pouvez pas casser votre bannière !");
-                    return;
                 }
+                return;
             }
         }
 
@@ -175,8 +171,8 @@ public class GameListener implements Listener {
         }
 
         if(Game.getCurrentGame() != null && Game.getCurrentGame().isRunning()){
-            if(team != null && player.getUniqueId().equals(Game.getCurrentGame().getBannerHolder().get(team.getColor()))){
-                Game.getCurrentGame().getBannerHolder().remove(team.getColor());
+            if(team != null && player.getUniqueId().equals(Game.getCurrentGame().getBannerHolders().get(team.getColor()))){
+                Game.getCurrentGame().getBannerHolders().remove(team.getColor());
                 Bukkit.broadcastMessage("§6[Castle] " + team.getColor().getChatColor() + player.getName() + "§c a perdu la bannière ennemi qu'il transportait");
             }
 

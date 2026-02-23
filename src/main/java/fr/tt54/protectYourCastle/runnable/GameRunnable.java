@@ -4,6 +4,8 @@ import fr.tt54.protectYourCastle.game.Game;
 import fr.tt54.protectYourCastle.game.GameParameters;
 import fr.tt54.protectYourCastle.game.ResourceGenerator;
 import fr.tt54.protectYourCastle.game.Team;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -53,6 +55,11 @@ public class GameRunnable extends BukkitRunnable {
             Team team = Team.getTeam(teamColor);
             if(!(team.getBannerLocation().getBlock().getState() instanceof Banner)){
                 team.getBannerLocation().getBlock().setType(Material.valueOf(teamColor.getBanner().name()));
+            }
+
+            Player player = game.getBannerHolder(teamColor);
+            if(player != null){
+                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("§eVous portez une bannière " + teamColor.getChatColor() + teamColor.name().toLowerCase() + "§e !"));
             }
         }
 

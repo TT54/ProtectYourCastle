@@ -52,7 +52,7 @@ public class Game {
     private Status gameStatus;
     private int time;
     private final Map<Team.TeamColor, Integer> points = new HashMap<>();
-    private final Map<Team.TeamColor, UUID> bannerHolder = new HashMap<>();
+    private final Map<Team.TeamColor, UUID> bannerHolders = new HashMap<>();
     private GameStatistics gameStatistics;
     private List<Trader.GameWeapon> selectedWeapons = new ArrayList<>();
 
@@ -338,21 +338,17 @@ public class Game {
         if(team == null){
             return true;
         }
-        if(bannerHolder.containsKey(team.getColor())){
+        if(bannerHolders.containsKey(team.getColor())){
             return false;
         }
 
-        bannerHolder.put(team.getColor(), player.getUniqueId());
+        bannerHolders.put(team.getColor(), player.getUniqueId());
         return true;
     }
 
-    public void placeBanner(Team team, Player player, ItemStack is) {
-        this.bannerHolder.remove(team.getColor());
-        if(Team.getBannerOwner(is) != team.getColor()) {
-            Game.currentGame.addPoint(team.getColor(), player, 1);
-        } else{
-            player.sendMessage("§6[Castle] §aVous avez ramené votre bannière chez vous");
-        }
+    public void placeBanner(Team team, Player player) {
+        this.bannerHolders.remove(team.getColor());
+        Game.currentGame.addPoint(team.getColor(), player, 1);
     }
 
     public int getPoints(Team.TeamColor color){
@@ -439,8 +435,20 @@ public class Game {
         return points;
     }
 
-    public Map<Team.TeamColor, UUID> getBannerHolder() {
-        return bannerHolder;
+    public Map<Team.TeamColor, UUID> getBannerHolders() {
+        return bannerHolders;
+    }
+
+    public Player getBannerHolder(Team.TeamColor teamColor) {
+        UUID uuid = bannerHolders.get(teamColor);
+        if(uuid != null){
+            return Bukkit.getPlayer(uuid);
+        }
+        return null;
+    }
+
+    public boolean isBannerHolder(Player player){
+        return bannerHolders.containsValue(player.getUniqueId());
     }
 
     public List<Trader.GameWeapon> getSelectedWeapons() {
