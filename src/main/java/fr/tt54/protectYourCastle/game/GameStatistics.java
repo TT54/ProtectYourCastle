@@ -249,20 +249,22 @@ public class GameStatistics {
         BANNERS_BROKEN("Bannières cassées"),
         POINTS_WON("Points gagnés"),
         CRITICAL_KILLS("Kills importants"),
-        DAMAGE_DEALT("Dégâts infligés", 100),
-        DISTANCE_WALKED("Distance marchée", 100),
-        DISTANCE_WITH_PLANE("Distance en avion", 100);
+        DAMAGE_DEALT("Dégâts infligés", 100, ""),
+        DISTANCE_WALKED("Distance marchée", 100, "m"),
+        DISTANCE_WITH_PLANE("Distance en avion", 100, "m");
 
         private final String displayName;
         private final int divisionDisplayFactor;
+        private final String suffix;
 
         StatisticKey(String displayName) {
-            this(displayName, 1);
+            this(displayName, 1, "");
         }
 
-        StatisticKey(String displayName, int divisionDisplayFactor) {
+        StatisticKey(String displayName, int divisionDisplayFactor, String suffix) {
             this.displayName = displayName;
             this.divisionDisplayFactor = divisionDisplayFactor;
+            this.suffix = suffix;
         }
 
         public String getDisplayName() {
@@ -271,6 +273,10 @@ public class GameStatistics {
 
         public int getDivisionDisplayFactor() {
             return divisionDisplayFactor;
+        }
+
+        public String getSuffix() {
+            return suffix;
         }
     }
 

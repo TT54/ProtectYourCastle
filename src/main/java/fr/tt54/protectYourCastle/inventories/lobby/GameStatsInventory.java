@@ -94,7 +94,7 @@ public class GameStatsInventory extends CorePersonalInventory {
         return new ItemBuilder(Material.PLAYER_HEAD, "§eTop §6" + key.getDisplayName() + "§e : §6§l" + p.getName())
                 .setHeadOwner(p)
                 .setLore(results.stream()
-                        .map(uuid -> this.gameStats.getPlayerTeam(uuid).getChatColor() + Bukkit.getOfflinePlayer(uuid).getName() + " §e--> §f" + (this.gameStats.getPlayerStatistic(uuid, key) / key.getDivisionDisplayFactor()))
+                        .map(uuid -> this.gameStats.getPlayerTeam(uuid).getChatColor() + Bukkit.getOfflinePlayer(uuid).getName() + " §e--> §f" + (this.gameStats.getPlayerStatistic(uuid, key) / key.getDivisionDisplayFactor()) + key.getSuffix())
                         .toList())
                 .build();
     }
