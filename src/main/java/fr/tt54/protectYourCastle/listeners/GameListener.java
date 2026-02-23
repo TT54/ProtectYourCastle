@@ -165,16 +165,18 @@ public class GameListener implements Listener {
         }
 
         if(Game.getCurrentGame() != null && Game.getCurrentGame().isRunning()){
-            if(team != null && player.getUniqueId().equals(Game.getCurrentGame().getBannerHolders().get(team.getColor()))){
-                Game.getCurrentGame().getBannerHolders().remove(team.getColor());
-                Bukkit.broadcastMessage("§6[Castle] " + team.getColor().getChatColor() + player.getName() + "§c a perdu la bannière ennemi qu'il transportait");
-            }
+            boolean bannerHolder = team != null && player.getUniqueId().equals(Game.getCurrentGame().getBannerHolders().get(team.getColor()));
 
             if(player.getKiller() != null && player.getKiller() != player) {
                 final Team killerTeam = Team.getPlayerTeam(player.getKiller().getUniqueId());
                 if(killerTeam != team) {
-                    Game.getCurrentGame().addKill(player.getKiller());
+                    Game.getCurrentGame().addKill(player.getKiller(), bannerHolder);
                 }
+            }
+
+            if(bannerHolder){
+                Game.getCurrentGame().getBannerHolders().remove(team.getColor());
+                Bukkit.broadcastMessage("§6[Castle] " + team.getColor().getChatColor() + player.getName() + "§c a perdu la bannière ennemi qu'il transportait");
             }
 
             Game.getCurrentGame().addDeath(player);

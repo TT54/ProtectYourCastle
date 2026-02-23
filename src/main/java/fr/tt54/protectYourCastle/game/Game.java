@@ -418,8 +418,11 @@ public class Game {
         player.getInventory().addItem(new ItemBuilder(Material.IRON_SWORD).addEnchant(Enchantment.DAMAGE_ALL, 20).build(), new ItemBuilder(Material.BREAD, 4).build());
     }
 
-    public void addKill(@NotNull Player killer) {
+    public void addKill(@NotNull Player killer, boolean critical) {
         this.gameStatistics.increaseStatistic(killer.getUniqueId(), GameStatistics.StatisticKey.KILLS);
+        if(critical){
+            this.gameStatistics.increaseStatistic(killer.getUniqueId(), GameStatistics.StatisticKey.CRITICAL_KILLS);
+        }
     }
 
     public void addBannerBroken(Player player) {
