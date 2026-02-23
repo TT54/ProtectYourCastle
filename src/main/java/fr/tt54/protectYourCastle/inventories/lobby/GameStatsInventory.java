@@ -47,7 +47,13 @@ public class GameStatsInventory extends CorePersonalInventory {
         inv.setItem(9 + 4,
                 new ItemBuilder(winner.getBanner(), "§eVictoire " + winner.getChatColor() + winner.name() + " : §e" + gameStats.getTeamStatistic(winner, GameStatistics.StatisticKey.POINTS_WON))
                         .setLore("§7----------")
-                        .addLoreLine(Stream.of(Team.TeamColor.values()).map(color -> color.getChatColor() + color.name() + " :§7 " + gameStats.getTeamStatistic(color, GameStatistics.StatisticKey.POINTS_WON)).toList())
+                        .addLoreLine(Team.TeamColor.RED.getChatColor() + Team.TeamColor.RED.name() + " "
+                                + (gameStats.getWinner() == Team.TeamColor.RED ? "§f§l" : "§7")
+                                + gameStats.getTeamStatistic(Team.TeamColor.RED, GameStatistics.StatisticKey.POINTS_WON)
+                                + " §8- "
+                                + (gameStats.getWinner() == Team.TeamColor.YELLOW ? "§f§l" : "§7")
+                                + gameStats.getTeamStatistic(Team.TeamColor.YELLOW, GameStatistics.StatisticKey.POINTS_WON)
+                                + " " + Team.TeamColor.YELLOW.getChatColor() + Team.TeamColor.YELLOW.name())
                         .build()
         );
 

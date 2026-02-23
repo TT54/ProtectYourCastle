@@ -1,6 +1,7 @@
 package fr.tt54.protectYourCastle.inventories.lobby;
 
 import fr.tt54.protectYourCastle.game.GameStatistics;
+import fr.tt54.protectYourCastle.game.Team;
 import fr.tt54.protectYourCastle.inventories.PageableInventory;
 import fr.tt54.protectYourCastle.utils.ItemBuilder;
 import fr.tt54.protectYourCastle.utils.TimeUnit;
@@ -36,8 +37,19 @@ public class GameStatsListInventory extends PageableInventory<GameStatistics> {
         LocalTime localTime = LocalTime.ofInstant(instant, ZoneId.systemDefault());
         DecimalFormat format = new DecimalFormat("#");
         return new ItemBuilder(gameStatistics.getWinner() == null ? Material.PAPER : gameStatistics.getWinner().getBanner(), "§ePartie " + localDate.getDayOfMonth() + "/" + localDate.getMonthValue() + "/" + localDate.getYear() + " " + localTime.getHour() + ":" + localTime.getMinute())
-                .addLoreLine("§eDurée : §f" + TimeUnit.getShortFormattedTimeLeft((int) (gameStatistics.getGameEnd() - gameStatistics.getGameBegin()) / 1000, TimeUnit.HOURS), "§7----------")
+                .addLoreLine(
+                        "",
+                        Team.TeamColor.RED.getChatColor() + Team.TeamColor.RED.name() + " "
+                                + (gameStatistics.getWinner() == Team.TeamColor.RED ? "§f§l" : "§7")
+                                + gameStatistics.getTeamStatistic(Team.TeamColor.RED, GameStatistics.StatisticKey.POINTS_WON)
+                                + " §8- "
+                                + (gameStatistics.getWinner() == Team.TeamColor.YELLOW ? "§f§l" : "§7")
+                                + gameStatistics.getTeamStatistic(Team.TeamColor.YELLOW, GameStatistics.StatisticKey.POINTS_WON)
+                                + " " + Team.TeamColor.YELLOW.getChatColor() + Team.TeamColor.YELLOW.name(),
+                        "§7----------"
+                )
                 .addLoreLine(gameStatistics.getPlayers().stream().sorted(Comparator.comparingDouble(uuid -> -gameStatistics.getPlayerScore(uuid))).map(uuid -> "§f - " + gameStatistics.getPlayerTeam(uuid).getChatColor() + Bukkit.getOfflinePlayer(uuid).getName() + " §8 (" + format.format(gameStatistics.getPlayerScore(uuid)) + ")").toList())
+                .addLoreLine("§7----------", "§eDurée : §f" + TimeUnit.getShortFormattedTimeLeft((int) (gameStatistics.getGameEnd() - gameStatistics.getGameBegin()) / 1000, TimeUnit.HOURS))
                 .build();
     }
 
