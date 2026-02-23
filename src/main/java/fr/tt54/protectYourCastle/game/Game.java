@@ -230,6 +230,7 @@ public class Game {
                 player.getEnderChest().clear();
                 player.setStatistic(Statistic.WALK_ONE_CM, 0);
                 player.setStatistic(Statistic.SPRINT_ONE_CM, 0);
+                player.setStatistic(Statistic.FLY_ONE_CM, 0);
                 if(team != null) {
                     spawnPlayer(player, team, true);
                 }
@@ -259,7 +260,7 @@ public class Game {
 
             for(UUID uuid : this.gameStatistics.getPlayers()){
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
-                this.gameStatistics.setPlayerStatistic(uuid, GameStatistics.StatisticKey.DISTANCE_WALKED, offlinePlayer.getStatistic(Statistic.WALK_ONE_CM) + offlinePlayer.getStatistic(Statistic.SPRINT_ONE_CM));
+                this.gameStatistics.setPlayerStatistic(uuid, GameStatistics.StatisticKey.DISTANCE_WALKED, offlinePlayer.getStatistic(Statistic.WALK_ONE_CM) + offlinePlayer.getStatistic(Statistic.SPRINT_ONE_CM) + offlinePlayer.getStatistic(Statistic.FLY_ONE_CM));
             }
 
             for(Player player : new ArrayList<>(Bukkit.getOnlinePlayers())){
