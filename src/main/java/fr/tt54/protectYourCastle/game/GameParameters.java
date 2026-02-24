@@ -43,6 +43,9 @@ public class GameParameters {
     public static Parameter<Double> HEALTH_BOOST_FOR_SMALL_TEAM = new Parameter<>("health_boost_for_small_team", 10d);
     public static Parameter<Boolean> ENABLE_RANDOM_WEAPONS = new Parameter<>("enable_random_weapons", true);
     public static Parameter<Integer> WEAPONS_TO_SELECT = new Parameter<>("weapons_to_select", 4);
+    public static Parameter<Boolean> PROGRESSIVE_WEAPONS = new Parameter<>("progressive_weapons", true);
+    public static Parameter<Integer> PROGRESSIVE_WEAPONS_BASE = new Parameter<>("progressive_weapons_base", 2);
+    public static Parameter<Integer> PROGRESSIVE_WEAPONS_DELAY = new Parameter<>("progressive_weapons_delay", 20 * 60);
     public static Parameter<Double> BASE_KNOCKBACK_RESISTANCE = new Parameter<>("base_knockback_resistance", 0.4d);
 
     public static Parameter<Boolean> ENABLE_DAMAGE_INDICATOR = new Parameter<>("enable_damage_indicator", true);

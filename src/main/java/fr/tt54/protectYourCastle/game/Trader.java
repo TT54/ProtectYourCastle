@@ -142,11 +142,15 @@ public class Trader {
         Merchant merchantMenu = Bukkit.createMerchant(this.name);
         List<MerchantRecipe> recipes = new ArrayList<>();
         final List<NPCTrade> merchantTrades = new ArrayList<>();
-        if(this.weaponTrader && Game.getCurrentGame() != null && !Game.getCurrentGame().getSelectedWeapons().isEmpty() && GameParameters.ENABLE_RANDOM_WEAPONS.get()){
-            Game.getCurrentGame().getSelectedWeapons().forEach(gameWeapon -> {
-                merchantTrades.add(gameWeapon.gunTrade);
-                merchantTrades.add(gameWeapon.ammoTrade);
-            });
+        final List<GameWeapon> weaponsToTrade = Game.getCurrentGame().getSelectedWeapons();
+        if(this.weaponTrader && Game.getCurrentGame() != null && !weaponsToTrade.isEmpty() && GameParameters.ENABLE_RANDOM_WEAPONS.get()){
+            int weaponsToAdd = Math.min(weaponsToTrade.size(),
+                    GameParameters.PROGRESSIVE_WEAPONS_BASE.get() + Game.getCurrentGame().getTime() / GameParameters.PROGRESSIVE_WEAPONS_DELAY.get());
+
+            for(int i = 0; i < weaponsToAdd; i++){
+                merchantTrades.add(weaponsToTrade.get(i).gunTrade);
+                merchantTrades.add(weaponsToTrade.get(i).ammoTrade);
+            }
         } else{
             merchantTrades.addAll(trades);
         }
