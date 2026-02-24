@@ -3,7 +3,7 @@ package fr.tt54.protectYourCastle.cmd;
 import fr.tt54.protectYourCastle.ProtectYourCastleMain;
 import fr.tt54.protectYourCastle.game.*;
 import fr.tt54.protectYourCastle.inventories.ConfirmationInventory;
-import fr.tt54.protectYourCastle.inventories.trades.weapons.WeaponsListInventory;
+import fr.tt54.protectYourCastle.inventories.trades.weapons.WeaponsBundleListInventory;
 import fr.tt54.protectYourCastle.utils.Area;
 import org.bukkit.*;
 import org.bukkit.block.Banner;
@@ -640,7 +640,7 @@ public class CmdCastle extends CoreCommand {
                     }
                 }
             } else if(args[0].equalsIgnoreCase("weapons")){
-                WeaponsListInventory inv = new WeaponsListInventory(player, 1);
+                WeaponsBundleListInventory inv = new WeaponsBundleListInventory(player, 1);
                 inv.openInventory();
                 return true;
             } else if(args[0].equalsIgnoreCase("save")){

@@ -22,10 +22,10 @@ import java.util.*;
 public class Trader {
 
     private static final Type traderType = new TypeToken<Map<UUID, Trader>>() {}.getType();
-    private static final Type weaponsType = new TypeToken<List<GameWeapon>>() {}.getType();
+    private static final Type weaponsType = new TypeToken<List<List<GameWeapon>>>() {}.getType();
 
     public static Map<UUID, Trader> traders = new HashMap<>();
-    public static List<GameWeapon> weapons = new ArrayList<>();
+    public static List<List<GameWeapon>> weapons = new ArrayList<>();
 
     public static void load(){
         traders.clear();

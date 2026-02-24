@@ -20,20 +20,22 @@ public class WeaponInventory extends CorePersonalInventory {
 
     private final boolean editing;
     private final Trader.GameWeapon displayedWeapon;
+    private final List<Trader.GameWeapon> bundle;
     private final CorePersonalInventory previousInventory;
 
     private boolean overpoweredWeapon;
 
-    public WeaponInventory(Player player, boolean editing, Trader.GameWeapon displayedWeapon, CorePersonalInventory previousInventory) {
+    public WeaponInventory(Player player, boolean editing, Trader.GameWeapon displayedWeapon, List<Trader.GameWeapon> bundle, CorePersonalInventory previousInventory) {
         super(editing ? "Edition d'une arme" : "Ajout d'une arme", player);
         this.editing = editing;
         this.displayedWeapon = displayedWeapon;
+        this.bundle = bundle;
         this.previousInventory = previousInventory;
         this.overpoweredWeapon = displayedWeapon.isOverPowered();
     }
 
-    public WeaponInventory(Player player, CorePersonalInventory previousInventory) {
-        this(player, false, new Trader.GameWeapon(new Trader.NPCTrade(new ArrayList<>(), null), new Trader.NPCTrade(new ArrayList<>(), null), false), previousInventory);
+    public WeaponInventory(Player player, List<Trader.GameWeapon> bundle, CorePersonalInventory previousInventory) {
+        this(player, false, new Trader.GameWeapon(new Trader.NPCTrade(new ArrayList<>(), null), new Trader.NPCTrade(new ArrayList<>(), null), false), bundle, previousInventory);
     }
 
     @Override
@@ -99,7 +101,7 @@ public class WeaponInventory extends CorePersonalInventory {
                     player.sendMessage("§cVous devez définir un prix pour l'arme !");
                     return;
                 } else if(gunReward == null || gunReward.getType().isAir()){
-                    Trader.weapons.remove(this.displayedWeapon);
+                    bundle.remove(this.displayedWeapon);
                     this.previousInventory.openInventory();
                     player.sendMessage("§aL'arme a bien été retirée");
                     return;
@@ -120,7 +122,7 @@ public class WeaponInventory extends CorePersonalInventory {
                     player.sendMessage("§aL'arme a bien été modifiée !");
                     this.previousInventory.openInventory();
                 } else{
-                    Trader.weapons.add(new Trader.GameWeapon(
+                    bundle.add(new Trader.GameWeapon(
                             new Trader.NPCTrade(gunInputs, gunReward.clone()),
                             new Trader.NPCTrade(ammoInputs, ammoReward.clone()),
                             this.overpoweredWeapon
