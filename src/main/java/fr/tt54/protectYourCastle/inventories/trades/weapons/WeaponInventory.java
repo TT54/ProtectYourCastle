@@ -135,6 +135,27 @@ public class WeaponInventory extends CorePersonalInventory {
             } else if(slot == 2 * 9 + 4) {
                 this.overpoweredWeapon = !this.overpoweredWeapon;
                 event.getInventory().setItem(2 * 9 + 4, this.overpoweredWeapon ? new ItemBuilder(Material.LIME_STAINED_GLASS_PANE, "§aArme OP").build() : new ItemBuilder(Material.RED_STAINED_GLASS_PANE, "§cArme non OP").build());
+            } else if(slot == 9 + 7){
+                // On pré-rempli les autres slots avec les armes déjà créées
+                ItemStack newGun = event.getCursor() == null ? null : event.getCursor().clone();
+                if(newGun != null && newGun.getType() != Material.AIR){
+                    boolean found = false;
+                    for(List<Trader.GameWeapon> bundle : Trader.weapons){
+                        for(Trader.GameWeapon weapon : bundle){
+                            if(newGun.getType() == weapon.getGunTrade().getReward().getType()){
+                                event.getInventory().setItem(9 + 4, !weapon.getGunTrade().getInput().isEmpty() ? weapon.getGunTrade().getInput().get(0).clone() : DefaultItems.AIR.build());
+                                event.getInventory().setItem(9 + 5, weapon.getGunTrade().getInput().size() > 1 ? weapon.getGunTrade().getInput().get(1).clone() : DefaultItems.AIR.build());
+
+                                event.getInventory().setItem(9 * 3 + 4, !weapon.getAmmoTrade().getInput().isEmpty() ? weapon.getAmmoTrade().getInput().get(0).clone() : DefaultItems.AIR.build());
+                                event.getInventory().setItem(9 * 3 + 5, weapon.getAmmoTrade().getInput().size() > 1 ? weapon.getAmmoTrade().getInput().get(1).clone() : DefaultItems.AIR.build());
+                                event.getInventory().setItem(9 * 3 + 7, weapon.getAmmoTrade().getReward() != null ? weapon.getAmmoTrade().getReward().clone() : DefaultItems.AIR.build());
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+                    player.sendMessage(found ? "§aPrix pré-rempli depuis une arme existante !" : "§cAucune arme existante ne correspond à cet objet, les prix ne seront pas pré-remplis.");
+                }
             }
         }
     }
@@ -151,6 +172,6 @@ public class WeaponInventory extends CorePersonalInventory {
 
     @Override
     public void onInventoryDrag(InventoryDragEvent event) {
-
+        event.setCancelled(true);
     }
 }
