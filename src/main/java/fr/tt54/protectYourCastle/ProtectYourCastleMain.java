@@ -43,13 +43,17 @@ public final class ProtectYourCastleMain extends JavaPlugin {
 
         try {
             voiceChatBridge.enable();
-        } catch (Exception | Error e){
-            System.err.println("Impossible d'activer la liaison avec voicechat");
+        } catch (NoClassDefFoundError e) {
+            getLogger().warning("Impossible d'activer la liaison avec voicechat: dépendance manquante.");
+        } catch (Exception e) {
+            getLogger().log(java.util.logging.Level.WARNING, "Impossible d'activer la liaison avec voicechat", e);
         }
         try {
             PYCBukkitEventRegistry.registerPlayerDamagedByPlayerEvent(ModEventListener::onPlayerDamagedByPlayer);
-        } catch (Exception | Error e){
-            System.err.println("Impossible d'enregistrer les événements personnalisés");
+        } catch (NoClassDefFoundError e) {
+            getLogger().warning("Impossible d'enregistrer les événements personnalisés: dépendance PYCMod manquante.");
+        } catch (Exception e) {
+            getLogger().log(java.util.logging.Level.WARNING, "Impossible d'enregistrer les événements personnalisés", e);
         }
     }
 
