@@ -5,7 +5,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -351,57 +350,16 @@ public class MovementTraceRecorder {
         }
 
         private static MovementMode from(Player player) {
-            if(player.isGliding()){
-                return GLIDING;
-            }
-
-            Entity vehicle = player.getVehicle();
-            if(vehicle == null){
-                return FOOT;
-            }
-
-            String vehicleType = vehicle.getType().name().toLowerCase(Locale.ROOT);
-            if(vehicleType.contains("minecart")){
-                return TRAIN;
-            }
-            if(vehicleType.contains("boat")){
-                return BOAT;
-            }
-            if(isMountType(vehicleType)){
-                return MOUNT;
-            }
-            if(isFlyingVehicle(vehicle, vehicleType, player)){
-                return FLYING_VEHICLE;
-            }
-            return OTHER_VEHICLE;
-        }
-
-        private static boolean isMountType(String vehicleType) {
-            return vehicleType.contains("horse")
-                    || vehicleType.contains("llama")
-                    || vehicleType.contains("camel")
-                    || vehicleType.contains("donkey")
-                    || vehicleType.contains("mule")
-                    || vehicleType.equals("pig")
-                    || vehicleType.equals("strider")
-                    || vehicleType.equals("ravager");
-        }
-
-        private static boolean isFlyingVehicle(Entity vehicle, String vehicleType, Player player) {
-            if(!vehicle.isOnGround()){
-                return true;
-            }
-            if(player.isFlying()){
-                return true;
-            }
-            return vehicleType.contains("air")
-                    || vehicleType.contains("plane")
-                    || vehicleType.contains("aircraft")
-                    || vehicleType.contains("heli")
-                    || vehicleType.contains("drone")
-                    || vehicleType.contains("jet")
-                    || vehicleType.contains("gyro")
-                    || vehicleType.contains("quadcopter");
+            MovementModeClassifier.MovementMode mode = MovementModeClassifier.classify(player);
+            return switch (mode) {
+                case FOOT -> FOOT;
+                case FLYING_VEHICLE -> FLYING_VEHICLE;
+                case TRAIN -> TRAIN;
+                case BOAT -> BOAT;
+                case MOUNT -> MOUNT;
+                case GLIDING -> GLIDING;
+                case OTHER_VEHICLE -> OTHER_VEHICLE;
+            };
         }
     }
 }

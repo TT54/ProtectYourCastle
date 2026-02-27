@@ -3,6 +3,7 @@ package fr.tt54.protectYourCastle.listeners;
 import fr.tt54.protectYourCastle.ProtectYourCastleMain;
 import fr.tt54.protectYourCastle.game.Game;
 import fr.tt54.protectYourCastle.game.GameParameters;
+import fr.tt54.protectYourCastle.game.MovementModeClassifier;
 import fr.tt54.protectYourCastle.game.Team;
 import fr.tt54.protectYourCastle.game.Trader;
 import fr.tt54.protectYourCastle.mod_bridges.CuriosBridge;
@@ -302,16 +303,20 @@ public class GameListener implements Listener {
         Game game = Game.getCurrentGame();
         if(game != null && game.isRunning()) {
             Team team = Team.getPlayerTeam(event.getPlayer().getUniqueId());
-            Entity entity = event.getPlayer().getVehicle();
             if(team != null && event.getTo() != null && event.getFrom().getWorld() == event.getTo().getWorld()){
                 double distance = event.getTo().distance(event.getFrom());
                 if(distance <= 0 || distance > 50){
                     return;
                 }
 
-                if(event.getPlayer().getGameMode() == GameMode.SURVIVAL && entity == null){
+                if(event.getPlayer().getGameMode() != GameMode.SURVIVAL){
+                    return;
+                }
+
+                MovementModeClassifier.MovementMode movementMode = MovementModeClassifier.classify(event.getPlayer());
+                if(movementMode == MovementModeClassifier.MovementMode.FOOT){
                     game.increaseDistanceWalked(event.getPlayer(), distance);
-                } else if(entity != null && !entity.isOnGround()){
+                } else if(movementMode == MovementModeClassifier.MovementMode.FLYING_VEHICLE){
                     game.increaseDistanceInPlane(event.getPlayer(), distance);
                 }
             }
