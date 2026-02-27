@@ -3,7 +3,8 @@ package fr.tt54.protectYourCastle.cmd;
 import fr.tt54.protectYourCastle.ProtectYourCastleMain;
 import fr.tt54.protectYourCastle.game.*;
 import fr.tt54.protectYourCastle.inventories.ConfirmationInventory;
-import fr.tt54.protectYourCastle.inventories.trades.weapons.WeaponsBundleListInventory;
+import fr.tt54.protectYourCastle.inventories.traders.trades.TradesListInventory;
+import fr.tt54.protectYourCastle.inventories.traders.weapons.WeaponsBundleListInventory;
 import fr.tt54.protectYourCastle.utils.Area;
 import org.bukkit.*;
 import org.bukkit.block.Banner;
@@ -408,32 +409,19 @@ public class CmdCastle extends CoreCommand {
             } else if(args[0].equalsIgnoreCase("trader")){
                 if(args.length >= 2){
                     if(args[1].equalsIgnoreCase("spawn")){
-                        String name = "Marchant";
-                        if(args.length > 2){
-                            name = "";
-                            for(int i = 2; i < args.length; i++){
-                                name += " " + args[i];
-                            }
-                            name = name.substring(1);
+                        if(args.length != 3) {
+                            player.sendMessage("§cBon usage : '/castle trader spawn <name>'");
+                            return false;
                         }
 
-                        Trader sameExisting = null;
-                        for(Trader trader : Trader.traders.values()){
-                            if(trader.getName().equalsIgnoreCase(name)){
-                                sameExisting = trader;
-                                player.sendMessage("§aUn marchant du même nom a été trouvé, ses trades ont été copiés");
-                            }
-                        }
-
+                        String name = args[2];
                         Trader trader;
-                        if(sameExisting != null){
-                            List<Trader.NPCTrade> trades = new ArrayList<>();
-                            for(Trader.NPCTrade trade : sameExisting.getTrades()){
-                                trades.add(trade.clone());
-                            }
-                            trader = new Trader(name, trades, false);
-                        } else {
+
+                        if(Trader.getTradesBase(name.toLowerCase()) == null){
                             trader = new Trader(name, false);
+                            player.sendMessage("§cAucune base de marchant trouvée pour ce nom, une base vide a été créée par défaut");
+                        } else {
+                            trader = new Trader(name, false, Trader.getTradesBase(name.toLowerCase()));
                         }
                         trader.spawn(player.getLocation());
                         player.sendMessage("§aVous avez fait apparaître un marchant");
@@ -452,7 +440,7 @@ public class CmdCastle extends CoreCommand {
                             return false;
                         }
                     } else if(args[1].equalsIgnoreCase("respawn")){
-                        for(Trader trader : new ArrayList<>(Trader.traders.values())){
+                        for(Trader trader : new ArrayList<>(Trader.tradersNPCs.values())){
                             if(trader.getSavedLocation() != null){
                                 Location loc = trader.getSavedLocation().toLocation();
                                 if(loc.getWorld() == player.getWorld() && loc.distance(player.getLocation()) < 64){
@@ -460,6 +448,32 @@ public class CmdCastle extends CoreCommand {
                                 }
                             }
                         }
+                    } else if(args[1].equalsIgnoreCase("edit")) {
+                        TradesListInventory inv = new TradesListInventory(player, 1);
+                        inv.openInventory();
+                    } else if(args[1].equalsIgnoreCase("add")){
+                        if(args.length < 3){
+                            player.sendMessage("§cBon usage : '/castle trader add <name> [display name]'");
+                            return false;
+                        }
+
+                        String name = args[2];
+                        String displayName;
+                        if(args.length >= 4){
+                            displayName = String.join(" ", Arrays.copyOfRange(args, 3, args.length));
+                        } else {
+                            displayName = name;
+                        }
+
+                        if(Trader.getTradesBase(name.toLowerCase()) != null){
+                            player.sendMessage("§cUne liste de trades existe déjà pour ce nom");
+                            return false;
+                        }
+
+                        Trader.TradesBase base = new Trader.TradesBase(name, new ArrayList<>(), displayName);
+                        Trader.addTradesBase(base);
+                        player.sendMessage("§aLa liste de trades " + displayName + " a bien été créée");
+                        return true;
                     }
                 }
             } else if(args[0].equalsIgnoreCase("set_duration")){
@@ -699,7 +713,7 @@ public class CmdCastle extends CoreCommand {
             } else if(args[0].equalsIgnoreCase("team")){
                 return tabComplete(args[1], "spawn", "base", "banner", "join", "leave", "protected", "rollback", "drawbridge", "fill", "clear");
             } else if(args[0].equalsIgnoreCase("trader")){
-                return tabComplete(args[1], "spawn", "remove", "respawn");
+                return tabComplete(args[1], "spawn", "remove", "respawn", "edit", "add");
             } else if(args[0].equalsIgnoreCase("parameter")){
                 return tabComplete(args[1], "set", "get", "list");
             } else if(args[0].equalsIgnoreCase("edit")){
@@ -733,6 +747,10 @@ public class CmdCastle extends CoreCommand {
             } else if(args[0].equalsIgnoreCase("edit")){
                 if(args[1].equalsIgnoreCase("join")){
                     return tabComplete(args[2], Arrays.stream(new File(ProtectYourCastleMain.getInstance().getDataFolder(), "worlds/").listFiles()).filter(File::isDirectory).map(File::getName).toList());
+                }
+            } else if(args[0].equalsIgnoreCase("trader")){
+                if(args[1].equalsIgnoreCase("spawn")){
+                    return tabComplete(args[2], Trader.getAllTradesBases().stream().map(Trader.TradesBase::getName).toList());
                 }
             }
         } else if(args.length == 4){

@@ -1,4 +1,4 @@
-package fr.tt54.protectYourCastle.inventories.trades.weapons;
+package fr.tt54.protectYourCastle.inventories.traders.weapons;
 
 import fr.tt54.protectYourCastle.game.Trader;
 import fr.tt54.protectYourCastle.inventories.CorePersonalInventory;

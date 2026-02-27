@@ -1,4 +1,4 @@
-package fr.tt54.protectYourCastle.inventories.trades;
+package fr.tt54.protectYourCastle.inventories.traders.trades;
 
 import fr.tt54.protectYourCastle.game.Trader;
 import fr.tt54.protectYourCastle.inventories.CorePersonalInventory;
@@ -16,14 +16,16 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AddTradeInventory extends CorePersonalInventory {
+public class EditTradeInventory extends CorePersonalInventory {
 
-    private final Trader trader;
+    private final Trader.TradesBase trades;
+    private final Trader.NPCTrade trade;
     private final CorePersonalInventory previousInv;
 
-    public AddTradeInventory(Player player, Trader trader, CorePersonalInventory previousInv) {
+    public EditTradeInventory(Player player, Trader.TradesBase trades, Trader.NPCTrade trade, CorePersonalInventory previousInv) {
         super("Ajouter un trade", player);
-        this.trader = trader;
+        this.trades = trades;
+        this.trade = trade;
         this.previousInv = previousInv;
     }
 
@@ -31,9 +33,9 @@ public class AddTradeInventory extends CorePersonalInventory {
     public @NotNull Inventory getInventory() {
         Inventory inv = createBaseInventory(3);
 
-        inv.setItem(9 + 2, new ItemStack(Material.AIR));
-        inv.setItem(9 + 3, new ItemStack(Material.AIR));
-        inv.setItem(9 + 6, new ItemStack(Material.AIR));
+        inv.setItem(9 + 2, !this.trade.getInput().isEmpty() ? this.trade.getInput().get(0).clone() : new ItemStack(Material.AIR));
+        inv.setItem(9 + 3, this.trade.getInput().size() >= 2 ? this.trade.getInput().get(1).clone() : new ItemStack(Material.AIR));
+        inv.setItem(9 + 6, this.trade.getReward().clone());
 
         inv.setItem(9 * 2, DefaultItems.BACK.build());
         inv.setItem(9 * 2 + 8, new ItemBuilder(Material.LIME_STAINED_GLASS_PANE, "§aValider").build());
@@ -45,8 +47,12 @@ public class AddTradeInventory extends CorePersonalInventory {
     public void onInventoryClick(InventoryClickEvent event) {
         if(event.getClickedInventory() == event.getInventory()) {
             if(event.getSlot() == 9 * 2){
+                event.setCancelled(true);
+
                 previousInv.openInventory();
             } else if (event.getSlot() == 9 * 2 + 8) {
+                event.setCancelled(true);
+
                 ItemStack item1 = event.getInventory().getItem(9 + 2);
                 ItemStack item2 = event.getInventory().getItem(9 + 3);
                 ItemStack result = event.getInventory().getItem(9 + 6);
@@ -55,19 +61,26 @@ public class AddTradeInventory extends CorePersonalInventory {
                 if(item1 != null && item1.getType() != Material.AIR) inputs.add(item1);
                 if(item2 != null && item2.getType() != Material.AIR) inputs.add(item2);
 
+                if(result == null || result.getType() == Material.AIR){
+                    if(inputs.isEmpty()){
+                        this.trades.removeTrade(this.trade);
+                        player.sendMessage("§cTrade supprimé");
+                        this.previousInv.openInventory();
+                        return;
+                    }
+                    player.sendMessage("§cImpossible de créer un trade vide !");
+                    return;
+                }
+
                 if(inputs.isEmpty()){
                     player.sendMessage("§cImpossible de créer un trade vide !");
                     return;
                 }
 
-                if(result == null || result.getType() == Material.AIR){
-                    player.sendMessage("§cImpossible de créer un trade vide !");
-                    return;
-                }
+                this.trade.setInput(inputs);
+                this.trade.setReward(result);
 
-                Trader.NPCTrade trade = new Trader.NPCTrade(inputs, result);
-                this.trader.addTrade(trade);
-                this.openInventory();
+                this.previousInv.openInventory();
             } else if (event.getSlot() != 9 + 2 && event.getSlot() != 9 + 3 && event.getSlot() != 9 + 6) {
                 event.setCancelled(true);
             }

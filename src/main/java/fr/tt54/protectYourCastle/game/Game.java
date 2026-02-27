@@ -93,7 +93,7 @@ public class Game {
         FileManager.copy(sourceGameWorldFolder, gameWorldFolder);
         FileManager.copy(new File(sourceGameWorldFolder, "generators.json"), new File(ProtectYourCastleMain.getInstance().getDataFolder(), "generators.json"));
         FileManager.copy(new File(sourceGameWorldFolder, "teams.json"), new File(ProtectYourCastleMain.getInstance().getDataFolder(), "teams.json"));
-        FileManager.copy(new File(sourceGameWorldFolder, "traders.json"), new File(ProtectYourCastleMain.getInstance().getDataFolder(), "traders.json"));
+        FileManager.copy(new File(sourceGameWorldFolder, "tradersNPCs.json"), new File(ProtectYourCastleMain.getInstance().getDataFolder(), "tradersNPCs.json"));
         FileManager.copy(new File(sourceGameWorldFolder, "weapons.json"), new File(ProtectYourCastleMain.getInstance().getDataFolder(), "weapons.json"));
 
         ProtectYourCastleMain.getInstance().loadGame();
@@ -123,7 +123,7 @@ public class Game {
 
             FileManager.copy(new File(ProtectYourCastleMain.getInstance().getDataFolder(), "generators.json"), new File(sourceGameWorldFolder, "generators.json"));
             FileManager.copy(new File(ProtectYourCastleMain.getInstance().getDataFolder(), "teams.json"), new File(sourceGameWorldFolder, "teams.json"));
-            FileManager.copy(new File(ProtectYourCastleMain.getInstance().getDataFolder(), "traders.json"), new File(sourceGameWorldFolder, "traders.json"));
+            FileManager.copy(new File(ProtectYourCastleMain.getInstance().getDataFolder(), "tradersNPCs.json"), new File(sourceGameWorldFolder, "tradersNPCs.json"));
             FileManager.copy(new File(ProtectYourCastleMain.getInstance().getDataFolder(), "weapons.json"), new File(sourceGameWorldFolder, "weapons.json"));
         }
 

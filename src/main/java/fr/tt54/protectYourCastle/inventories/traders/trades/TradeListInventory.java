@@ -1,4 +1,4 @@
-package fr.tt54.protectYourCastle.inventories.trades;
+package fr.tt54.protectYourCastle.inventories.traders.trades;
 
 import fr.tt54.protectYourCastle.game.Trader;
 import fr.tt54.protectYourCastle.inventories.PageableInventory;
@@ -15,11 +15,11 @@ import java.util.List;
 
 public class TradeListInventory extends PageableInventory<Trader.NPCTrade> {
 
-    private final Trader trader;
+    private final Trader.TradesBase trades;
 
-    public TradeListInventory(Player player, int page, Trader trader) {
+    public TradeListInventory(Player player, int page, Trader.TradesBase trades) {
         super("Liste des échanges", player, page);
-        this.trader = trader;
+        this.trades = trades;
     }
 
     @Override
@@ -29,22 +29,22 @@ public class TradeListInventory extends PageableInventory<Trader.NPCTrade> {
 
     @Override
     protected List<Trader.NPCTrade> getObjectsList() {
-        return trader.getTrades();
+        return trades.getTrades();
     }
 
     @Override
     protected void generateOverlayInv(Inventory inv) {
         inv.setItem(9 * 5 + 8, new ItemBuilder(Material.DIAMOND, "§aCréer un trade").build());
-        inv.setItem(9 * 5 + 4, (trader.isWeaponTrader() ?
+/*        inv.setItem(9 * 5 + 4, (trades.isWeaponTrader() ?
                 new ItemBuilder(Material.LIME_STAINED_GLASS_PANE, "§aNPC vendeur d'armes") :
                 new ItemBuilder(Material.RED_STAINED_GLASS_PANE, "§cNPC normal"))
                 .build()
-        );
+        );*/
     }
 
     @Override
     protected void onObjectClicked(InventoryClickEvent event, Trader.NPCTrade trade) {
-        EditTradeInventory inv = new EditTradeInventory(player, this.trader, trade, this);
+        EditTradeInventory inv = new EditTradeInventory(player, this.trades, trade, this);
         inv.openInventory();
     }
 
@@ -52,12 +52,12 @@ public class TradeListInventory extends PageableInventory<Trader.NPCTrade> {
     protected void onInvClick(InventoryClickEvent event) {
         if(event.getInventory() == event.getClickedInventory()){
             if(event.getSlot() == 9 * 5 + 8) {
-                AddTradeInventory inv = new AddTradeInventory(player, this.trader, this);
+                AddTradeInventory inv = new AddTradeInventory(player, this.trades, this);
                 inv.openInventory();
-            } else if(event.getSlot() == 9 * 5 + 4){
-                this.trader.setWeaponTrader(!this.trader.isWeaponTrader());
+            } /*else if(event.getSlot() == 9 * 5 + 4){
+                this.trades.setWeaponTrader(!this.trades.isWeaponTrader());
                 this.openInventory();
-            }
+            }*/
         }
     }
 
