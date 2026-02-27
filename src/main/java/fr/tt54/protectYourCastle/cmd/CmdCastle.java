@@ -129,12 +129,34 @@ public class CmdCastle extends CoreCommand {
                     return false;
                 }
 
+                StartValidationReport validationReport = this.validateStartConfiguration(args[1]);
+                if(!validationReport.warnings.isEmpty()){
+                    player.sendMessage("§6[Castle] §eVérification config: " + validationReport.warnings.size() + " avertissement(s)");
+                    for(String warning : validationReport.warnings){
+                        player.sendMessage("§e- " + warning);
+                    }
+                }
+
+                if(!validationReport.errors.isEmpty()){
+                    player.sendMessage("§6[Castle] §cImpossible de lancer la partie: configuration invalide");
+                    for(String error : validationReport.errors){
+                        player.sendMessage("§c- " + error);
+                    }
+                    return false;
+                }
+
                 boolean empty = true;
+                int redCount = 0;
+                int yellowCount = 0;
                 for(Player p : Bukkit.getOnlinePlayers()){
                     Team team = Team.getPlayerTeam(p.getUniqueId());
                     if(team != null) {
                         empty = false;
-                        break;
+                        if(team.getColor() == Team.TeamColor.RED){
+                            redCount++;
+                        } else if(team.getColor() == Team.TeamColor.YELLOW){
+                            yellowCount++;
+                        }
                     }
                 }
 
@@ -143,13 +165,29 @@ public class CmdCastle extends CoreCommand {
                     return false;
                 }
 
+                if(redCount == 0 || yellowCount == 0){
+                    player.sendMessage("§e[Castle] Une équipe est vide (RED=" + redCount + ", YELLOW=" + yellowCount + "). La partie peut démarrer, mais ce n'est pas conseillé.");
+                }
+
                 if(!Game.createNew()){
                     player.sendMessage("§cUne partie est déjà en cours");
                     return false;
                 }
 
-                Game.getCurrentGame().prepare(args[1]);
-                Game.getCurrentGame().launch();
+                Game game = Game.getCurrentGame();
+                game.prepare(args[1]);
+                if(game.getGameStatus() != Game.Status.PREPARING){
+                    player.sendMessage("§cÉchec de préparation de la partie. Vérifiez que la map '" + args[1] + "' existe et est complète.");
+                    game.stop();
+                    return false;
+                }
+
+                game.launch();
+                if(!game.isRunning()){
+                    player.sendMessage("§cÉchec au lancement de la partie.");
+                    game.stop();
+                    return false;
+                }
                 player.sendMessage("§aLa partie a bien été lancée");
                 return true;
             } else if(args[0].equalsIgnoreCase("stop")){
@@ -683,6 +721,124 @@ public class CmdCastle extends CoreCommand {
         }
 
         return false;
+    }
+
+    private StartValidationReport validateStartConfiguration(String worldName){
+        StartValidationReport report = new StartValidationReport();
+
+        File sourceGameWorldFolder = new File(ProtectYourCastleMain.getInstance().getDataFolder(), "worlds/" + worldName);
+        if(!sourceGameWorldFolder.exists() || !sourceGameWorldFolder.isDirectory()){
+            report.errors.add("La map '" + worldName + "' est introuvable dans le dossier worlds.");
+            return report;
+        }
+
+        String[] requiredMapFiles = {"level.dat", "generators.json", "teams.json", "traders.json", "weapons.json"};
+        for(String fileName : requiredMapFiles){
+            if(!new File(sourceGameWorldFolder, fileName).exists()){
+                report.errors.add("Fichier manquant dans la map '" + worldName + "': " + fileName);
+            }
+        }
+
+        if(GameParameters.GAME_DURATION.get() <= 0){
+            report.errors.add("Le paramètre game_duration doit être > 0.");
+        }
+        if(GameParameters.RESPAWN_DELAY.get() < 0){
+            report.errors.add("Le paramètre respawn_delay doit être >= 0.");
+        }
+        if(GameParameters.MAP_RADIUS.get() <= 0){
+            report.errors.add("Le paramètre map_radius doit être > 0.");
+        }
+
+        for(Team.TeamColor teamColor : Team.TeamColor.values()){
+            Team team = Team.getTeam(teamColor);
+            if(team == null){
+                report.errors.add("L'équipe " + teamColor.name() + " n'est pas définie.");
+                continue;
+            }
+
+            if(team.getSpawnLocation() == null){
+                report.errors.add("L'équipe " + teamColor.name() + " n'a pas de spawn.");
+            }
+            if(team.getBannerLocation() == null){
+                report.errors.add("L'équipe " + teamColor.name() + " n'a pas de bannière.");
+            }
+            if(team.getBase() == null){
+                report.errors.add("L'équipe " + teamColor.name() + " n'a pas de zone de base.");
+            }
+            if(team.getRollbackLocation() == null){
+                report.warnings.add("L'équipe " + teamColor.name() + " n'a pas de point rollback.");
+            }
+            if(team.getProtectedSpawn() == null){
+                report.warnings.add("L'équipe " + teamColor.name() + " n'a pas de zone protégée.");
+            }
+            if(team.getDrawbridgeLocation() == null){
+                report.warnings.add("L'équipe " + teamColor.name() + " n'a pas de pont-levis.");
+            }
+        }
+
+        List<ResourceGenerator> generators = ResourceGenerator.getResourceGenerators();
+        if(generators.isEmpty()){
+            report.warnings.add("Aucun générateur de ressources n'est configuré.");
+        } else {
+            for(int i = 0; i < generators.size(); i++){
+                ResourceGenerator generator = generators.get(i);
+                if(generator == null){
+                    report.errors.add("Le générateur #" + (i + 1) + " est invalide (null).");
+                    continue;
+                }
+
+                if(generator.getMaterial() == null){
+                    report.errors.add("Le générateur #" + (i + 1) + " n'a pas de matériau.");
+                }
+                if(generator.getCooldown() <= 0){
+                    report.errors.add("Le générateur #" + (i + 1) + " a un cooldown <= 0.");
+                }
+
+                Location location;
+                try {
+                    location = generator.getLocation();
+                } catch (Exception e){
+                    report.errors.add("Le générateur #" + (i + 1) + " a une position invalide.");
+                    continue;
+                }
+                if(location == null){
+                    report.errors.add("Le générateur #" + (i + 1) + " n'a pas de position.");
+                }
+            }
+        }
+
+        if(Trader.traders.isEmpty()){
+            report.warnings.add("Aucun marchand n'est actuellement enregistré.");
+        } else {
+            for(Map.Entry<UUID, Trader> entry : Trader.traders.entrySet()){
+                UUID traderUUID = entry.getKey();
+                Trader trader = entry.getValue();
+                if(traderUUID == null || trader == null){
+                    report.errors.add("Un marchand enregistré est invalide (UUID ou valeur null).");
+                    continue;
+                }
+
+                if(trader.getName() == null || trader.getName().isBlank()){
+                    report.errors.add("Le marchand " + traderUUID + " n'a pas de nom.");
+                }
+                if(trader.getSavedLocation() == null){
+                    report.warnings.add("Le marchand '" + trader.getName() + "' n'a pas de position sauvegardée.");
+                }
+                if(trader.isWeaponTrader() && GameParameters.ENABLE_RANDOM_WEAPONS.get() && Trader.weapons.isEmpty()){
+                    report.warnings.add("Le marchand d'armes '" + trader.getName() + "' n'a aucun bundle d'armes disponible.");
+                }
+                if(!trader.isWeaponTrader() && trader.getTrades().isEmpty()){
+                    report.warnings.add("Le marchand '" + trader.getName() + "' n'a aucun trade.");
+                }
+            }
+        }
+
+        return report;
+    }
+
+    private static class StartValidationReport {
+        private final List<String> errors = new ArrayList<>();
+        private final List<String> warnings = new ArrayList<>();
     }
 
     @Override

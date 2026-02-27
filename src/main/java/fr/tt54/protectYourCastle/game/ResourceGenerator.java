@@ -73,8 +73,13 @@ public class ResourceGenerator {
     }
 
     public static boolean removeResourceGenerator(ResourceGenerator generator) {
-        Entity textDisplay = generator.getLocation().getWorld().getNearbyEntities(
-                generator.getLocation().add(0, 1.5, 0),
+        Location location = generator.getLocation();
+        if(location == null || location.getWorld() == null){
+            return resourceGenerators.remove(generator);
+        }
+
+        Entity textDisplay = location.getWorld().getNearbyEntities(
+                location.add(0, 1.5, 0),
                 .1, .1, .1, e -> e instanceof TextDisplay).stream().findFirst().orElse(null);
         if(textDisplay != null) {
             textDisplay.remove();
@@ -107,7 +112,7 @@ public class ResourceGenerator {
     }
 
     public Location getLocation() {
-        return location.toLocation();
+        return location == null ? null : location.toLocation();
     }
 
     public void setLocation(Location location) {
@@ -115,18 +120,20 @@ public class ResourceGenerator {
     }
 
     public void generate(int amount){
-        if(this.getLocation().getWorld() == null) return;
+        Location generatorLocation = this.getLocation();
+        if(generatorLocation == null || generatorLocation.getWorld() == null) return;
         this.timeBeforeNextDrop--;
         if(this.timeBeforeNextDrop == 0){
             this.timeBeforeNextDrop = this.cooldown;
-            this.getLocation().getWorld().dropItem(this.getLocation(), new ItemStack(this.material, amount));
+            generatorLocation.getWorld().dropItem(generatorLocation, new ItemStack(this.material, amount));
         }
         this.updateName();
     }
 
     public void updateName(){
-        if(this.getLocation().getWorld() == null) return;
-        for(TextDisplay display : this.getLocation().getWorld().getNearbyEntities(this.getLocation().add(0, 1.5, 0), .1, .1, .1, e -> e instanceof TextDisplay).stream().map(e -> (TextDisplay) e).toList()){
+        Location generatorLocation = this.getLocation();
+        if(generatorLocation == null || generatorLocation.getWorld() == null) return;
+        for(TextDisplay display : generatorLocation.getWorld().getNearbyEntities(generatorLocation.add(0, 1.5, 0), .1, .1, .1, e -> e instanceof TextDisplay).stream().map(e -> (TextDisplay) e).toList()){
             display.setText("§eGénérateur de " + material.name().toLowerCase() + "\n" + "§aProchain spawn dans : §b" + timeBeforeNextDrop + "s");
         }
     }
