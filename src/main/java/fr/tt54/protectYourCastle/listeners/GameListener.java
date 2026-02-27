@@ -303,9 +303,17 @@ public class GameListener implements Listener {
         if(game != null && game.isRunning()) {
             Team team = Team.getPlayerTeam(event.getPlayer().getUniqueId());
             Entity entity = event.getPlayer().getVehicle();
-            if(team != null && event.getTo() != null && event.getFrom().getWorld() == event.getTo().getWorld() && entity != null && !entity.isOnGround()){
+            if(team != null && event.getTo() != null && event.getFrom().getWorld() == event.getTo().getWorld()){
                 double distance = event.getTo().distance(event.getFrom());
-                game.increaseDistanceInPlane(event.getPlayer(), distance);
+                if(distance <= 0 || distance > 50){
+                    return;
+                }
+
+                if(event.getPlayer().getGameMode() == GameMode.SURVIVAL && entity == null){
+                    game.increaseDistanceWalked(event.getPlayer(), distance);
+                } else if(entity != null && !entity.isOnGround()){
+                    game.increaseDistanceInPlane(event.getPlayer(), distance);
+                }
             }
         }
     }

@@ -29,12 +29,6 @@ public class CmdCastle extends CoreCommand {
             return false;
         }
 
-        String rootArg = args.length > 0 ? args[0].toLowerCase(Locale.ROOT) : "";
-        if(args.length == 0 || rootArg.equals("help")){
-            this.sendHelp(player, args.length >= 2 ? args[1] : null, player.hasPermission("castle.manage"));
-            return true;
-        }
-
         if(!player.hasPermission("castle.manage")){
             player.sendMessage("§cVous n'avez pas la permission d'exécuter cette commande");
             return false;
@@ -135,34 +129,12 @@ public class CmdCastle extends CoreCommand {
                     return false;
                 }
 
-                StartValidationReport validationReport = this.validateStartConfiguration(args[1]);
-                if(!validationReport.warnings.isEmpty()){
-                    player.sendMessage("§6[Castle] §eVérification config: " + validationReport.warnings.size() + " avertissement(s)");
-                    for(String warning : validationReport.warnings){
-                        player.sendMessage("§e- " + warning);
-                    }
-                }
-
-                if(!validationReport.errors.isEmpty()){
-                    player.sendMessage("§6[Castle] §cImpossible de lancer la partie: configuration invalide");
-                    for(String error : validationReport.errors){
-                        player.sendMessage("§c- " + error);
-                    }
-                    return false;
-                }
-
                 boolean empty = true;
-                int redCount = 0;
-                int yellowCount = 0;
                 for(Player p : Bukkit.getOnlinePlayers()){
                     Team team = Team.getPlayerTeam(p.getUniqueId());
                     if(team != null) {
                         empty = false;
-                        if(team.getColor() == Team.TeamColor.RED){
-                            redCount++;
-                        } else if(team.getColor() == Team.TeamColor.YELLOW){
-                            yellowCount++;
-                        }
+                        break;
                     }
                 }
 
@@ -171,29 +143,13 @@ public class CmdCastle extends CoreCommand {
                     return false;
                 }
 
-                if(redCount == 0 || yellowCount == 0){
-                    player.sendMessage("§e[Castle] Une équipe est vide (RED=" + redCount + ", YELLOW=" + yellowCount + "). La partie peut démarrer, mais ce n'est pas conseillé.");
-                }
-
                 if(!Game.createNew()){
                     player.sendMessage("§cUne partie est déjà en cours");
                     return false;
                 }
 
-                Game game = Game.getCurrentGame();
-                game.prepare(args[1]);
-                if(game.getGameStatus() != Game.Status.PREPARING){
-                    player.sendMessage("§cÉchec de préparation de la partie. Vérifiez que la map '" + args[1] + "' existe et est complète.");
-                    game.stop();
-                    return false;
-                }
-
-                game.launch();
-                if(!game.isRunning()){
-                    player.sendMessage("§cÉchec au lancement de la partie.");
-                    game.stop();
-                    return false;
-                }
+                Game.getCurrentGame().prepare(args[1]);
+                Game.getCurrentGame().launch();
                 player.sendMessage("§aLa partie a bien été lancée");
                 return true;
             } else if(args[0].equalsIgnoreCase("stop")){
@@ -452,57 +408,180 @@ public class CmdCastle extends CoreCommand {
             } else if(args[0].equalsIgnoreCase("trader")){
                 if(args.length >= 2){
                     if(args[1].equalsIgnoreCase("spawn")){
-                        String name = "Marchant";
-                        if(args.length > 2){
-                            name = "";
-                            for(int i = 2; i < args.length; i++){
-                                name += " " + args[i];
+                        String requestedType = null;
+                        StringBuilder nameBuilder = new StringBuilder();
+                        for(int i = 2; i < args.length; i++){
+                            if(args[i].equalsIgnoreCase("--type")){
+                                if(i + 1 >= args.length){
+                                    player.sendMessage("§cBon usage : '/castle trader spawn [name] [--type <type>]'");
+                                    return false;
+                                }
+                                requestedType = args[++i];
+                            } else {
+                                if(nameBuilder.length() > 0){
+                                    nameBuilder.append(" ");
+                                }
+                                nameBuilder.append(args[i]);
                             }
-                            name = name.substring(1);
                         }
+                        String name = nameBuilder.isEmpty() ? "Marchand" : nameBuilder.toString();
 
                         Trader sameExisting = null;
-                        for(Trader trader : Trader.traders.values()){
-                            if(trader.getName().equalsIgnoreCase(name)){
-                                sameExisting = trader;
-                                player.sendMessage("§aUn marchant du même nom a été trouvé, ses trades ont été copiés");
+                        for(Trader existingTrader : Trader.traders.values()){
+                            if(existingTrader != null && existingTrader.getName().equalsIgnoreCase(name)){
+                                sameExisting = existingTrader;
+                                break;
                             }
                         }
 
                         Trader trader;
-                        if(sameExisting != null){
+                        if(requestedType != null){
+                            trader = new Trader(name, false);
+                            if(!trader.bindToType(requestedType)){
+                                player.sendMessage("§cType inconnu: " + requestedType + ". Utilisez '/castle trader type list'");
+                                return false;
+                            }
+                        } else if(sameExisting != null && sameExisting.getTraderType() != null){
+                            trader = new Trader(name, false);
+                            trader.bindToType(sameExisting.getTraderType());
+                            player.sendMessage("§aUn marchand du même nom a été trouvé, son type a été recopié");
+                        } else if(sameExisting != null){
                             List<Trader.NPCTrade> trades = new ArrayList<>();
                             for(Trader.NPCTrade trade : sameExisting.getTrades()){
                                 trades.add(trade.clone());
                             }
-                            trader = new Trader(name, trades, false);
+                            trader = new Trader(name, trades, sameExisting.isWeaponTrader());
+                            player.sendMessage("§aUn marchand du même nom a été trouvé, ses trades ont été copiés");
                         } else {
                             trader = new Trader(name, false);
                         }
                         trader.spawn(player.getLocation());
-                        player.sendMessage("§aVous avez fait apparaître un marchant");
+                        if(trader.getTraderType() != null){
+                            player.sendMessage("§aVous avez fait apparaître un marchand de type §e" + trader.getTraderType());
+                        } else {
+                            player.sendMessage("§aVous avez fait apparaître un marchand");
+                        }
                         return true;
                     } else if(args[1].equalsIgnoreCase("remove")){
-                        Villager villager = (Villager) player.getWorld().getNearbyEntities(player.getLocation(), 2, 2, 2, entity -> entity instanceof Villager).stream().min(Comparator.comparingDouble(entity -> entity.getLocation().distanceSquared(player.getLocation()))).orElse(null);
+                        Villager villager = this.getNearestTraderVillager(player, 2);
                         Trader removed = villager != null ? Trader.getTrader(villager.getUniqueId()) : null;
 
                         if(removed != null){
                             Trader.removeTrader(villager.getUniqueId());
                             villager.remove();
-                            player.sendMessage("§aLe marchant " + removed.getName() + " a bien été supprimé");
+                            player.sendMessage("§aLe marchand " + removed.getName() + " a bien été supprimé");
                             return true;
                         } else {
-                            player.sendMessage("§cAucun marchant trouvé autour de vous");
+                            player.sendMessage("§cAucun marchand trouvé autour de vous");
                             return false;
                         }
                     } else if(args[1].equalsIgnoreCase("respawn")){
+                        int respawnedCount = 0;
                         for(Trader trader : new ArrayList<>(Trader.traders.values())){
                             if(trader.getSavedLocation() != null){
                                 Location loc = trader.getSavedLocation().toLocation();
                                 if(loc.getWorld() == player.getWorld() && loc.distance(player.getLocation()) < 64){
                                     trader.respawn();
+                                    respawnedCount++;
                                 }
                             }
+                        }
+                        player.sendMessage("§aMarchands respawn autour de vous: §e" + respawnedCount);
+                        return true;
+                    } else if(args[1].equalsIgnoreCase("type")){
+                        if(args.length < 3){
+                            player.sendMessage("§cBon usage : '/castle trader type <list|save|bind|unbind|duplicate|delete> ...'");
+                            return false;
+                        }
+
+                        String action = args[2].toLowerCase(Locale.ROOT);
+                        if(action.equals("list")){
+                            Set<String> types = Trader.getTraderTypeNames();
+                            if(types.isEmpty()){
+                                player.sendMessage("§eAucun type de marchand enregistré");
+                            } else {
+                                player.sendMessage("§7----- §eTypes de marchands §7-----");
+                                for(String typeName : types){
+                                    int trades = Trader.getTraderTypeTradeCount(typeName);
+                                    Boolean weaponTrader = Trader.isTraderTypeWeaponTrader(typeName);
+                                    String style = Boolean.TRUE.equals(weaponTrader) ? "vendeur d'armes" : "normal";
+                                    player.sendMessage("§f- §e" + typeName + " §7(" + trades + " trades, " + style + ")");
+                                }
+                            }
+                            return true;
+                        }
+
+                        if(!Set.of("save", "bind", "unbind", "duplicate", "delete").contains(action)){
+                            player.sendMessage("§cAction inconnue. Utilisez '/castle trader type <list|save|bind|unbind|duplicate|delete>'");
+                            return false;
+                        }
+
+                        Trader targetTrader = this.getNearestTrader(player, 2);
+                        if(!action.equals("duplicate") && !action.equals("delete") && targetTrader == null){
+                            player.sendMessage("§cAucun marchand trouvé autour de vous");
+                            return false;
+                        }
+
+                        if(action.equals("save")){
+                            if(args.length != 4){
+                                player.sendMessage("§cBon usage : '/castle trader type save <type>'");
+                                return false;
+                            }
+
+                            if(!Trader.saveTypeFromTrader(args[3], targetTrader)){
+                                player.sendMessage("§cNom de type invalide. Utilisez uniquement a-z, 0-9, '_' ou '-'");
+                                return false;
+                            }
+                            player.sendMessage("§aType enregistré et lié au marchand: §e" + targetTrader.getTraderType());
+                            return true;
+                        } else if(action.equals("bind")){
+                            if(args.length != 4){
+                                player.sendMessage("§cBon usage : '/castle trader type bind <type>'");
+                                return false;
+                            }
+
+                            if(!targetTrader.bindToType(args[3])){
+                                player.sendMessage("§cType inconnu: " + args[3] + ". Utilisez '/castle trader type list'");
+                                return false;
+                            }
+                            player.sendMessage("§aMarchand lié au type: §e" + targetTrader.getTraderType());
+                            return true;
+                        } else if(action.equals("unbind")){
+                            if(args.length != 3){
+                                player.sendMessage("§cBon usage : '/castle trader type unbind'");
+                                return false;
+                            }
+                            if(targetTrader.getTraderType() == null){
+                                player.sendMessage("§eCe marchand n'a pas de type lié");
+                                return true;
+                            }
+                            targetTrader.unbindType();
+                            player.sendMessage("§aLe marchand a été délié de son type");
+                            return true;
+                        } else if(action.equals("duplicate")){
+                            if(args.length != 5){
+                                player.sendMessage("§cBon usage : '/castle trader type duplicate <source> <target>'");
+                                return false;
+                            }
+
+                            if(!Trader.duplicateTraderType(args[3], args[4])){
+                                player.sendMessage("§cDuplication impossible. Vérifiez la source, la cible et le format du nom de type.");
+                                return false;
+                            }
+                            player.sendMessage("§aType dupliqué: §e" + args[3] + " §7-> §e" + args[4]);
+                            return true;
+                        } else if(action.equals("delete")){
+                            if(args.length != 4){
+                                player.sendMessage("§cBon usage : '/castle trader type delete <type>'");
+                                return false;
+                            }
+
+                            if(!Trader.deleteTraderType(args[3])){
+                                player.sendMessage("§cType introuvable: " + args[3]);
+                                return false;
+                            }
+                            player.sendMessage("§aType supprimé: §e" + args[3]);
+                            return true;
                         }
                     }
                 }
@@ -726,465 +805,38 @@ public class CmdCastle extends CoreCommand {
             }
         }
 
-        player.sendMessage("§cSous-commande inconnue. Utilisez /castle help");
-        this.sendHelp(player, null, true);
-        return true;
+        return false;
     }
 
-    private StartValidationReport validateStartConfiguration(String worldName){
-        StartValidationReport report = new StartValidationReport();
-
-        File sourceGameWorldFolder = new File(ProtectYourCastleMain.getInstance().getDataFolder(), "worlds/" + worldName);
-        if(!sourceGameWorldFolder.exists() || !sourceGameWorldFolder.isDirectory()){
-            report.errors.add("La map '" + worldName + "' est introuvable dans le dossier worlds.");
-            return report;
-        }
-
-        String[] requiredMapFiles = {"level.dat", "generators.json", "teams.json", "traders.json", "weapons.json"};
-        for(String fileName : requiredMapFiles){
-            if(!new File(sourceGameWorldFolder, fileName).exists()){
-                report.errors.add("Fichier manquant dans la map '" + worldName + "': " + fileName);
-            }
-        }
-
-        if(GameParameters.GAME_DURATION.get() <= 0){
-            report.errors.add("Le paramètre game_duration doit être > 0.");
-        }
-        if(GameParameters.RESPAWN_DELAY.get() < 0){
-            report.errors.add("Le paramètre respawn_delay doit être >= 0.");
-        }
-        if(GameParameters.MAP_RADIUS.get() <= 0){
-            report.errors.add("Le paramètre map_radius doit être > 0.");
-        }
-
-        for(Team.TeamColor teamColor : Team.TeamColor.values()){
-            Team team = Team.getTeam(teamColor);
-            if(team == null){
-                report.errors.add("L'équipe " + teamColor.name() + " n'est pas définie.");
-                continue;
-            }
-
-            if(team.getSpawnLocation() == null){
-                report.errors.add("L'équipe " + teamColor.name() + " n'a pas de spawn.");
-            }
-            if(team.getBannerLocation() == null){
-                report.errors.add("L'équipe " + teamColor.name() + " n'a pas de bannière.");
-            }
-            if(team.getBase() == null){
-                report.errors.add("L'équipe " + teamColor.name() + " n'a pas de zone de base.");
-            }
-            if(team.getRollbackLocation() == null){
-                report.warnings.add("L'équipe " + teamColor.name() + " n'a pas de point rollback.");
-            }
-            if(team.getProtectedSpawn() == null){
-                report.warnings.add("L'équipe " + teamColor.name() + " n'a pas de zone protégée.");
-            }
-            if(team.getDrawbridgeLocation() == null){
-                report.warnings.add("L'équipe " + teamColor.name() + " n'a pas de pont-levis.");
-            }
-        }
-
-        List<ResourceGenerator> generators = ResourceGenerator.getResourceGenerators();
-        if(generators.isEmpty()){
-            report.warnings.add("Aucun générateur de ressources n'est configuré.");
-        } else {
-            for(int i = 0; i < generators.size(); i++){
-                ResourceGenerator generator = generators.get(i);
-                if(generator == null){
-                    report.errors.add("Le générateur #" + (i + 1) + " est invalide (null).");
-                    continue;
-                }
-
-                if(generator.getMaterial() == null){
-                    report.errors.add("Le générateur #" + (i + 1) + " n'a pas de matériau.");
-                }
-                if(generator.getCooldown() <= 0){
-                    report.errors.add("Le générateur #" + (i + 1) + " a un cooldown <= 0.");
-                }
-
-                Location location;
-                try {
-                    location = generator.getLocation();
-                } catch (Exception e){
-                    report.errors.add("Le générateur #" + (i + 1) + " a une position invalide.");
-                    continue;
-                }
-                if(location == null){
-                    report.errors.add("Le générateur #" + (i + 1) + " n'a pas de position.");
-                }
-            }
-        }
-
-        if(Trader.traders.isEmpty()){
-            report.warnings.add("Aucun marchand n'est actuellement enregistré.");
-        } else {
-            for(Map.Entry<UUID, Trader> entry : Trader.traders.entrySet()){
-                UUID traderUUID = entry.getKey();
-                Trader trader = entry.getValue();
-                if(traderUUID == null || trader == null){
-                    report.errors.add("Un marchand enregistré est invalide (UUID ou valeur null).");
-                    continue;
-                }
-
-                if(trader.getName() == null || trader.getName().isBlank()){
-                    report.errors.add("Le marchand " + traderUUID + " n'a pas de nom.");
-                }
-                if(trader.getSavedLocation() == null){
-                    report.warnings.add("Le marchand '" + trader.getName() + "' n'a pas de position sauvegardée.");
-                }
-                if(trader.isWeaponTrader() && GameParameters.ENABLE_RANDOM_WEAPONS.get() && Trader.weapons.isEmpty()){
-                    report.warnings.add("Le marchand d'armes '" + trader.getName() + "' n'a aucun bundle d'armes disponible.");
-                }
-                if(!trader.isWeaponTrader() && trader.getTrades().isEmpty()){
-                    report.warnings.add("Le marchand '" + trader.getName() + "' n'a aucun trade.");
-                }
-            }
-        }
-
-        return report;
+    private Villager getNearestTraderVillager(Player player, double radius){
+        return (Villager) player.getWorld().getNearbyEntities(
+                player.getLocation(),
+                radius,
+                radius,
+                radius,
+                entity -> entity instanceof Villager && Trader.isTrader(entity.getUniqueId())
+        ).stream().min(Comparator.comparingDouble(entity -> entity.getLocation().distanceSquared(player.getLocation()))).orElse(null);
     }
 
-    private static class StartValidationReport {
-        private final List<String> errors = new ArrayList<>();
-        private final List<String> warnings = new ArrayList<>();
+    private Trader getNearestTrader(Player player, double radius){
+        Villager villager = this.getNearestTraderVillager(player, radius);
+        return villager == null ? null : Trader.getTrader(villager.getUniqueId());
     }
 
-    private void sendHelp(Player player, @Nullable String topic, boolean canManage){
-        String normalizedTopic = topic == null ? "" : topic.toLowerCase(Locale.ROOT);
-        List<String> topics = this.getHelpTopics();
-
-        if(!canManage){
-            player.sendMessage("§6[Castle] §eAide");
-            player.sendMessage("§7Vous n'avez pas accès aux commandes d'administration.");
-            player.sendMessage("§7Commandes disponibles:");
-            player.sendMessage("§f- /castle help");
-            return;
-        }
-
-        if(normalizedTopic.isBlank()){
-            player.sendMessage("§6[Castle] §eAide générale");
-            player.sendMessage("§7Commandes principales:");
-            player.sendMessage("§f- /castle start <map>");
-            player.sendMessage("§f- /castle stop");
-            player.sendMessage("§f- /castle team ...");
-            player.sendMessage("§f- /castle generator ...");
-            player.sendMessage("§f- /castle trader ...");
-            player.sendMessage("§f- /castle edit ...");
-            player.sendMessage("§f- /castle parameter ...");
-            player.sendMessage("§f- /castle ranking ...");
-            player.sendMessage("§f- /castle scores [refresh]");
-            player.sendMessage("§f- /castle weapons");
-            player.sendMessage("§7Détail: /castle help <topic>");
-            player.sendMessage("§7Topics: " + String.join(", ", topics));
-            return;
-        }
-
-        switch (normalizedTopic){
-            case "game", "start", "stop" -> {
-                player.sendMessage("§6[Castle] §eAide game");
-                player.sendMessage("§f- /castle start <map> §7Lance une partie");
-                player.sendMessage("§f- /castle stop §7Arrête la partie");
-                player.sendMessage("§f- /castle save §7Sauvegarde paramètres + game");
-                player.sendMessage("§f- /castle load §7Recharge paramètres + game");
-            }
-            case "generator", "generators" -> {
-                player.sendMessage("§6[Castle] §eAide generator");
-                player.sendMessage("§f- /castle generator add <material> <delay>");
-                player.sendMessage("§f- /castle generator remove");
-                player.sendMessage("§f- /castle generator edit_all <material> <delay>");
-            }
-            case "team", "teams" -> {
-                player.sendMessage("§6[Castle] §eAide team");
-                player.sendMessage("§f- /castle team spawn <team> <x> <y> <z>");
-                player.sendMessage("§f- /castle team banner <team>");
-                player.sendMessage("§f- /castle team base <team> <x1> <y1> <z1> <x2> <y2> <z2>");
-                player.sendMessage("§f- /castle team protected <team> <x1> <y1> <z1> <x2> <y2> <z2>");
-                player.sendMessage("§f- /castle team rollback <team> <x> <y> <z>");
-                player.sendMessage("§f- /castle team drawbridge <team> <x> <y> <z>");
-                player.sendMessage("§f- /castle team join <team> <player>");
-                player.sendMessage("§f- /castle team leave <player>");
-                player.sendMessage("§f- /castle team fill [withClear|withoutClear] [randomly]");
-                player.sendMessage("§f- /castle team clear");
-            }
-            case "trader", "traders" -> {
-                player.sendMessage("§6[Castle] §eAide trader");
-                player.sendMessage("§f- /castle trader spawn [name]");
-                player.sendMessage("§f- /castle trader remove");
-                player.sendMessage("§f- /castle trader respawn");
-            }
-            case "parameter", "params", "config" -> {
-                player.sendMessage("§6[Castle] §eAide parameter");
-                player.sendMessage("§f- /castle parameter list");
-                player.sendMessage("§f- /castle parameter get <parameter>");
-                player.sendMessage("§f- /castle parameter set <parameter> <value>");
-            }
-            case "edit", "world", "worlds" -> {
-                player.sendMessage("§6[Castle] §eAide edit");
-                player.sendMessage("§f- /castle edit join <world>");
-                player.sendMessage("§f- /castle edit create <world>");
-                player.sendMessage("§f- /castle edit save");
-                player.sendMessage("§f- /castle edit leave");
-            }
-            case "ranking", "rankings" -> {
-                player.sendMessage("§6[Castle] §eAide ranking");
-                player.sendMessage("§f- /castle ranking place <type>");
-                player.sendMessage("§f- /castle ranking update");
-                player.sendMessage("§f- /castle ranking remove");
-            }
-            case "scores", "stats" -> {
-                player.sendMessage("§6[Castle] §eAide scores");
-                player.sendMessage("§f- /castle scores");
-                player.sendMessage("§f- /castle scores refresh");
-                player.sendMessage("§f- /stats");
-            }
-            default -> {
-                player.sendMessage("§cTopic d'aide inconnu: " + topic);
-                player.sendMessage("§7Topics disponibles: " + String.join(", ", topics));
-            }
-        }
+    private List<String> getTraderTypeNames(){
+        return new ArrayList<>(Trader.getTraderTypeNames());
     }
 
-    private List<String> getHelpTopics(){
-        return List.of("game", "generator", "team", "trader", "parameter", "edit", "ranking", "scores");
-    }
-
-    private List<String> getWorldNames() {
-        File[] worlds = new File(ProtectYourCastleMain.getInstance().getDataFolder(), "worlds/").listFiles();
-        if(worlds == null){
-            return List.of();
-        }
-        return Arrays.stream(worlds)
-                .filter(File::isDirectory)
-                .map(File::getName)
-                .sorted()
-                .toList();
-    }
-
-    private List<String> getOnlinePlayerNames() {
-        return Bukkit.getOnlinePlayers().stream().map(Player::getName).sorted().toList();
-    }
-
-    private List<String> getTeamColorNames() {
-        return Arrays.stream(Team.TeamColor.values()).map(teamColor -> teamColor.name().toLowerCase(Locale.ROOT)).toList();
-    }
-
-    private List<String> getGeneratorMaterialNames() {
-        return Arrays.stream(Material.values())
-                .filter(Material::isItem)
-                .filter(material -> material != Material.AIR)
-                .map(material -> material.name().toLowerCase(Locale.ROOT))
-                .sorted()
-                .toList();
-    }
-
-    private List<String> getConfiguredGeneratorMaterialNames() {
-        return ResourceGenerator.getResourceGenerators().stream()
-                .filter(Objects::nonNull)
-                .map(ResourceGenerator::getMaterial)
-                .filter(Objects::nonNull)
-                .map(material -> material.name().toLowerCase(Locale.ROOT))
-                .distinct()
-                .sorted()
-                .toList();
-    }
-
-    private List<String> getTraderNames() {
+    private List<String> getTraderNames(){
         return Trader.traders.values().stream()
                 .filter(Objects::nonNull)
                 .map(Trader::getName)
                 .filter(Objects::nonNull)
-                .filter(name -> !name.isBlank())
                 .map(String::trim)
+                .filter(name -> !name.isEmpty())
                 .distinct()
                 .sorted()
                 .toList();
-    }
-
-    private List<String> getTargetedBlockCoordinate(Player player, int axis) {
-        Block block = player.getTargetBlockExact(5);
-        if(block == null){
-            return List.of();
-        }
-        return switch (axis) {
-            case 0 -> List.of(String.valueOf(block.getLocation().getBlockX()));
-            case 1 -> List.of(String.valueOf(block.getLocation().getBlockY()));
-            case 2 -> List.of(String.valueOf(block.getLocation().getBlockZ()));
-            default -> List.of();
-        };
-    }
-
-    private List<String> getParameterNames() {
-        return GameParameters.Parameter.existingParameters.stream().map(GameParameters.Parameter::getName).sorted().toList();
-    }
-
-    private List<String> getParameterValueHints(String parameterName) {
-        GameParameters.Parameter<?> parameter = GameParameters.Parameter.getParameter(parameterName);
-        if(parameter == null){
-            return List.of();
-        }
-
-        Object defaultValue = parameter.getDefaultValue();
-        LinkedHashSet<String> hints = new LinkedHashSet<>();
-        hints.add(String.valueOf(defaultValue));
-
-        if(defaultValue instanceof Boolean){
-            hints.add("true");
-            hints.add("false");
-        } else if(defaultValue instanceof Integer){
-            hints.add("0");
-            hints.add("1");
-            hints.add("10");
-            hints.add("60");
-            hints.add("120");
-        } else if(defaultValue instanceof Double){
-            hints.add("0.0");
-            hints.add("0.5");
-            hints.add("1.0");
-            hints.add("2.0");
-        }
-        return new ArrayList<>(hints);
-    }
-
-    private List<String> tabCompleteGenerator(Player player, String[] args) {
-        if(args.length == 2){
-            return tabComplete(args[1], "add", "remove", "edit_all");
-        }
-
-        if(args.length == 3){
-            String sub = args[1].toLowerCase(Locale.ROOT);
-            if(sub.equals("add")){
-                return tabComplete(args[2], getGeneratorMaterialNames());
-            }
-            if(sub.equals("edit_all")){
-                List<String> configuredMaterials = getConfiguredGeneratorMaterialNames();
-                return tabComplete(args[2], configuredMaterials.isEmpty() ? getGeneratorMaterialNames() : configuredMaterials);
-            }
-        }
-
-        if(args.length == 4 && (args[1].equalsIgnoreCase("add") || args[1].equalsIgnoreCase("edit_all"))){
-            return tabComplete(args[3], "1", "5", "10", "20", "30", "60", "120");
-        }
-
-        return List.of();
-    }
-
-    private List<String> tabCompleteTeam(Player player, String[] args) {
-        if(args.length == 2){
-            return tabComplete(args[1], "spawn", "base", "banner", "join", "leave", "protected", "rollback", "drawbridge", "fill", "clear");
-        }
-
-        if(args.length == 3){
-            String sub = args[1].toLowerCase(Locale.ROOT);
-            if(Set.of("spawn", "drawbridge", "rollback", "protected", "base", "banner", "join").contains(sub)){
-                return tabComplete(args[2], getTeamColorNames());
-            }
-            if(sub.equals("fill")){
-                return tabComplete(args[2], "withClear", "withoutClear");
-            }
-            if(sub.equals("leave")){
-                return tabComplete(args[2], getOnlinePlayerNames());
-            }
-        }
-
-        if(args.length == 4){
-            String sub = args[1].toLowerCase(Locale.ROOT);
-            if(Set.of("spawn", "drawbridge", "rollback", "protected", "base").contains(sub)){
-                return tabComplete(args[3], getTargetedBlockCoordinate(player, 0));
-            }
-            if(sub.equals("join")){
-                return tabComplete(args[3], getOnlinePlayerNames());
-            }
-            if(sub.equals("fill")){
-                return tabComplete(args[3], "randomly");
-            }
-        }
-
-        if(args.length == 5){
-            String sub = args[1].toLowerCase(Locale.ROOT);
-            if(Set.of("spawn", "drawbridge", "rollback", "protected", "base").contains(sub)){
-                return tabComplete(args[4], getTargetedBlockCoordinate(player, 1));
-            }
-        }
-
-        if(args.length == 6){
-            String sub = args[1].toLowerCase(Locale.ROOT);
-            if(Set.of("spawn", "drawbridge", "rollback", "protected", "base").contains(sub)){
-                return tabComplete(args[5], getTargetedBlockCoordinate(player, 2));
-            }
-        }
-
-        if(args.length == 7 && Set.of("base", "protected").contains(args[1].toLowerCase(Locale.ROOT))){
-            return tabComplete(args[6], getTargetedBlockCoordinate(player, 0));
-        }
-
-        if(args.length == 8 && Set.of("base", "protected").contains(args[1].toLowerCase(Locale.ROOT))){
-            return tabComplete(args[7], getTargetedBlockCoordinate(player, 1));
-        }
-
-        if(args.length == 9 && Set.of("base", "protected").contains(args[1].toLowerCase(Locale.ROOT))){
-            return tabComplete(args[8], getTargetedBlockCoordinate(player, 2));
-        }
-
-        return List.of();
-    }
-
-    private List<String> tabCompleteTrader(String[] args){
-        if(args.length == 2){
-            return tabComplete(args[1], "spawn", "remove", "respawn");
-        }
-
-        if(args.length == 3 && args[1].equalsIgnoreCase("spawn")){
-            List<String> traderNames = new ArrayList<>(getTraderNames());
-            traderNames.add("Marchand");
-            return tabComplete(args[2], traderNames);
-        }
-
-        return List.of();
-    }
-
-    private List<String> tabCompleteParameter(String[] args){
-        if(args.length == 2){
-            return tabComplete(args[1], "set", "get", "list");
-        }
-
-        if(args.length == 3 && (args[1].equalsIgnoreCase("set") || args[1].equalsIgnoreCase("get"))){
-            return tabComplete(args[2], getParameterNames());
-        }
-
-        if(args.length == 4 && args[1].equalsIgnoreCase("set")){
-            return tabComplete(args[3], getParameterValueHints(args[2]));
-        }
-
-        return List.of();
-    }
-
-    private List<String> tabCompleteEdit(String[] args){
-        if(args.length == 2){
-            return tabComplete(args[1], "join", "leave", "save", "create");
-        }
-
-        if(args.length == 3){
-            if(args[1].equalsIgnoreCase("join")){
-                return tabComplete(args[2], getWorldNames());
-            }
-            if(args[1].equalsIgnoreCase("create")){
-                return tabComplete(args[2], "new_map");
-            }
-        }
-
-        return List.of();
-    }
-
-    private List<String> tabCompleteRanking(String[] args){
-        if(args.length == 2){
-            return tabComplete(args[1], "place", "update", "remove");
-        }
-
-        if(args.length == 3 && args[1].equalsIgnoreCase("place")){
-            return tabComplete(args[2], Stream.of(RankingDisplay.RankingDisplayType.values()).map(type -> type.name().toLowerCase(Locale.ROOT)));
-        }
-
-        return List.of();
     }
 
     @Override
@@ -1192,37 +844,132 @@ public class CmdCastle extends CoreCommand {
         if(!(sender instanceof Player player)){
             return List.of();
         }
-        if(args.length == 0){
-            return List.of();
-        }
-
-        boolean canManage = player.hasPermission("castle.manage");
-        String root = args[0].toLowerCase(Locale.ROOT);
 
         if(args.length == 1){
-            return tabComplete(args[0], canManage
-                    ? List.of("help", "generator", "start", "team", "trader", "parameter", "stop", "scores", "edit", "weapons", "save", "load", "ranking")
-                    : List.of("help"));
+            return tabComplete(args[0], "generator", "start", "team", "trader", "parameter", "stop", "scores", "edit", "weapons", "save", "load", "ranking");
+        } else if(args.length == 2){
+            if(args[0].equalsIgnoreCase("generator")){
+                return tabComplete(args[1], "add", "remove", "edit_all");
+            } else if(args[0].equalsIgnoreCase("team")){
+                return tabComplete(args[1], "spawn", "base", "banner", "join", "leave", "protected", "rollback", "drawbridge", "fill", "clear");
+            } else if(args[0].equalsIgnoreCase("trader")){
+                return tabComplete(args[1], "spawn", "remove", "respawn", "type");
+            } else if(args[0].equalsIgnoreCase("parameter")){
+                return tabComplete(args[1], "set", "get", "list");
+            } else if(args[0].equalsIgnoreCase("edit")){
+                return tabComplete(args[1], "join", "leave", "save", "create");
+            } else if (args[0].equalsIgnoreCase("ranking")) {
+                return tabComplete(args[1], "place", "update", "remove");
+            } else if(args[0].equalsIgnoreCase("scores")){
+                return tabComplete(args[1], "refresh");
+            } else if(args[0].equalsIgnoreCase("start")){
+                return tabComplete(args[1], Arrays.stream(new File(ProtectYourCastleMain.getInstance().getDataFolder(), "worlds/").listFiles()).filter(File::isDirectory).map(File::getName).toList());
+            }
+        } else if(args.length == 3){
+            if(args[0].equalsIgnoreCase("generator")){
+                if(args[1].equalsIgnoreCase("add") || args[1].equalsIgnoreCase("edit_all")){
+                    return tabComplete(args[2], Arrays.stream(Material.values()).map(mat -> mat.name().toLowerCase()));
+                }
+            } else if(args[0].equalsIgnoreCase("team")){
+                if(args[1].equalsIgnoreCase("spawn") || args[1].equalsIgnoreCase("drawbridge") || args[1].equalsIgnoreCase("rollback") || args[1].equalsIgnoreCase("protected") || args[1].equalsIgnoreCase("base") || args[1].equalsIgnoreCase("banner") || args[1].equalsIgnoreCase("join")){
+                    return tabComplete(args[2], Arrays.stream(Team.TeamColor.values()).map(teamColor -> teamColor.name().toLowerCase()).toList());
+                } else if(args[1].equalsIgnoreCase("fill")){
+                    return tabComplete(args[2], "withClear", "withoutClear");
+                }
+            } else if(args[0].equalsIgnoreCase("parameter")){
+                if(args[1].equalsIgnoreCase("set") || args[1].equalsIgnoreCase("get")){
+                    return GameParameters.Parameter.existingParameters.stream().map(GameParameters.Parameter::getName).filter(s -> s.contains(args[2])).toList();
+                }
+            } else if(args[0].equalsIgnoreCase("trader")){
+                if(args[1].equalsIgnoreCase("spawn")){
+                    List<String> suggestions = new ArrayList<>(this.getTraderNames());
+                    suggestions.add("Marchand");
+                    suggestions.add("--type");
+                    return tabComplete(args[2], suggestions);
+                }
+                if(args[1].equalsIgnoreCase("type")){
+                    return tabComplete(args[2], "list", "save", "bind", "unbind", "duplicate", "delete");
+                }
+            } else if (args[0].equalsIgnoreCase("ranking")) {
+                if(args[1].equalsIgnoreCase("place")){
+                    return tabComplete(args[2], Stream.of(RankingDisplay.RankingDisplayType.values()).map(type -> type.name().toLowerCase()));
+                }
+            } else if(args[0].equalsIgnoreCase("edit")){
+                if(args[1].equalsIgnoreCase("join")){
+                    return tabComplete(args[2], Arrays.stream(new File(ProtectYourCastleMain.getInstance().getDataFolder(), "worlds/").listFiles()).filter(File::isDirectory).map(File::getName).toList());
+                }
+            }
+        } else if(args.length == 4){
+            if(args[0].equalsIgnoreCase("generator")){
+                if(args[1].equalsIgnoreCase("add") || args[1].equalsIgnoreCase("edit_all")){
+                    return tabComplete(args[3], "1", "10", "20", "30", "60");
+                }
+            } else if(args[0].equalsIgnoreCase("trader")){
+                if(args[1].equalsIgnoreCase("spawn")){
+                    if(args[2].equalsIgnoreCase("--type")){
+                        return tabComplete(args[3], this.getTraderTypeNames());
+                    }
+                    return tabComplete(args[3], "--type");
+                } else if(args[1].equalsIgnoreCase("type")){
+                    if(args[2].equalsIgnoreCase("save") || args[2].equalsIgnoreCase("bind") || args[2].equalsIgnoreCase("delete") || args[2].equalsIgnoreCase("duplicate")){
+                        return tabComplete(args[3], this.getTraderTypeNames());
+                    }
+                }
+            } else if(args[0].equalsIgnoreCase("team")){
+                if(args[1].equalsIgnoreCase("spawn") || args[1].equalsIgnoreCase("drawbridge") || args[1].equalsIgnoreCase("rollback") || args[1].equalsIgnoreCase("protected") || args[1].equalsIgnoreCase("base")){
+                    Block block = player.getTargetBlockExact(5);
+                    return block != null ? List.of(block.getLocation().getBlockX() + "") : List.of();
+                } else if(args[1].equalsIgnoreCase("join")){
+                    return tabComplete(args[3], Bukkit.getOnlinePlayers().stream().map(Player::getName).toList());
+                } else if(args[1].equalsIgnoreCase("fill")){
+                    return tabComplete(args[3], "randomly");
+                }
+            }
+        } else if(args.length == 5){
+             if(args[0].equalsIgnoreCase("team")){
+                 if(args[1].equalsIgnoreCase("spawn") || args[1].equalsIgnoreCase("drawbridge") || args[1].equalsIgnoreCase("rollback") || args[1].equalsIgnoreCase("protected") || args[1].equalsIgnoreCase("base")){
+                    Block block = player.getTargetBlockExact(5);
+                    return block != null ? List.of(block.getLocation().getBlockY() + "") : List.of();
+                }
+            } else if(args[0].equalsIgnoreCase("trader")){
+                if(args[1].equalsIgnoreCase("spawn") && args[3].equalsIgnoreCase("--type")){
+                    return tabComplete(args[4], this.getTraderTypeNames());
+                }
+                if(args[1].equalsIgnoreCase("type") && args[2].equalsIgnoreCase("duplicate")){
+                    String duplicateHint = args[3].isBlank() ? "type_copy" : args[3] + "_copy";
+                    return tabComplete(args[4], duplicateHint);
+                }
+            }
+        } else if(args.length == 6){
+            if(args[0].equalsIgnoreCase("team")){
+                if(args[1].equalsIgnoreCase("spawn") || args[1].equalsIgnoreCase("drawbridge") || args[1].equalsIgnoreCase("rollback") || args[1].equalsIgnoreCase("protected") || args[1].equalsIgnoreCase("base")){
+                    Block block = player.getTargetBlockExact(5);
+                    return block != null ? List.of(block.getLocation().getBlockZ() + "") : List.of();
+                }
+            }
+        } else if(args.length == 7){
+            if(args[0].equalsIgnoreCase("team")){
+                if(args[1].equalsIgnoreCase("base") || args[1].equalsIgnoreCase("protected")){
+                    Block block = player.getTargetBlockExact(5);
+                    return block != null ? List.of(block.getLocation().getBlockX() + "") : List.of();
+                }
+            }
+        } else if(args.length == 8){
+            if(args[0].equalsIgnoreCase("team")){
+                if(args[1].equalsIgnoreCase("base") || args[1].equalsIgnoreCase("protected")){
+                    Block block = player.getTargetBlockExact(5);
+                    return block != null ? List.of(block.getLocation().getBlockY() + "") : List.of();
+                }
+            }
+        } else if(args.length == 9){
+            if(args[0].equalsIgnoreCase("team")){
+                if(args[1].equalsIgnoreCase("base") || args[1].equalsIgnoreCase("protected")){
+                    Block block = player.getTargetBlockExact(5);
+                    return block != null ? List.of(block.getLocation().getBlockZ() + "") : List.of();
+                }
+            }
         }
 
-        if(root.equals("help")){
-            return args.length == 2 ? tabComplete(args[1], getHelpTopics()) : List.of();
-        }
-
-        if(!canManage){
-            return List.of();
-        }
-
-        return switch (root) {
-            case "generator" -> tabCompleteGenerator(player, args);
-            case "start" -> args.length == 2 ? tabComplete(args[1], getWorldNames()) : List.of();
-            case "team" -> tabCompleteTeam(player, args);
-            case "trader" -> tabCompleteTrader(args);
-            case "parameter" -> tabCompleteParameter(args);
-            case "edit" -> tabCompleteEdit(args);
-            case "ranking" -> tabCompleteRanking(args);
-            case "scores" -> args.length == 2 ? tabComplete(args[1], "refresh") : List.of();
-            default -> List.of();
-        };
+        return List.of();
     }
 }

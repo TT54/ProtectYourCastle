@@ -49,6 +49,10 @@ public class GameParameters {
     public static Parameter<Double> BASE_KNOCKBACK_RESISTANCE = new Parameter<>("base_knockback_resistance", 0.4d);
 
     public static Parameter<Boolean> ENABLE_DAMAGE_INDICATOR = new Parameter<>("enable_damage_indicator", true);
+    public static Parameter<Boolean> ENABLE_MOVEMENT_TRACE = new Parameter<>("enable_movement_trace", true);
+    public static Parameter<Integer> MOVEMENT_TRACE_SAMPLE_TICKS = new Parameter<>("movement_trace_sample_ticks", 10);
+    public static Parameter<Double> MOVEMENT_TRACE_MIN_DISTANCE = new Parameter<>("movement_trace_min_distance", 0.35d);
+    public static Parameter<Integer> MOVEMENT_TRACE_HEARTBEAT_SECONDS = new Parameter<>("movement_trace_heartbeat_seconds", 5);
 
     private final Map<Parameter<?>, Object> parametersMap;
 

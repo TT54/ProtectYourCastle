@@ -71,6 +71,9 @@ public final class ProtectYourCastleMain extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if(Game.getCurrentGame() != null){
+            Game.getCurrentGame().stopMovementTraceRecorder();
+        }
         this.saveCommon();
         this.saveGame();
     }

@@ -59,6 +59,7 @@ public class Game {
     private GameRunnable runnable;
     private World world;
     private GameScoreboard scoreboard;
+    private MovementTraceRecorder movementTraceRecorder;
 
     public Game() {
     }
@@ -95,6 +96,13 @@ public class Game {
         FileManager.copy(new File(sourceGameWorldFolder, "teams.json"), new File(ProtectYourCastleMain.getInstance().getDataFolder(), "teams.json"));
         FileManager.copy(new File(sourceGameWorldFolder, "traders.json"), new File(ProtectYourCastleMain.getInstance().getDataFolder(), "traders.json"));
         FileManager.copy(new File(sourceGameWorldFolder, "weapons.json"), new File(ProtectYourCastleMain.getInstance().getDataFolder(), "weapons.json"));
+        File sourceTraderTypesFile = new File(sourceGameWorldFolder, "trader_types.json");
+        File targetTraderTypesFile = new File(ProtectYourCastleMain.getInstance().getDataFolder(), "trader_types.json");
+        if(sourceTraderTypesFile.exists()){
+            FileManager.copy(sourceTraderTypesFile, targetTraderTypesFile);
+        } else {
+            FileManager.write("{}", targetTraderTypesFile);
+        }
 
         ProtectYourCastleMain.getInstance().loadGame();
         loadedWorld = worldName;
@@ -125,6 +133,7 @@ public class Game {
             FileManager.copy(new File(ProtectYourCastleMain.getInstance().getDataFolder(), "teams.json"), new File(sourceGameWorldFolder, "teams.json"));
             FileManager.copy(new File(ProtectYourCastleMain.getInstance().getDataFolder(), "traders.json"), new File(sourceGameWorldFolder, "traders.json"));
             FileManager.copy(new File(ProtectYourCastleMain.getInstance().getDataFolder(), "weapons.json"), new File(sourceGameWorldFolder, "weapons.json"));
+            FileManager.copy(new File(ProtectYourCastleMain.getInstance().getDataFolder(), "trader_types.json"), new File(sourceGameWorldFolder, "trader_types.json"));
         }
 
         loadedWorld = null;
@@ -162,13 +171,13 @@ public class Game {
 
         this.world = loadWorld(worldName);
         if(this.world == null){
-            System.err.println("Le monde source " + worldName + " n'existe pas !");
+            System.err.println("Le monde source " + loadedWorld + " n'existe pas !");
             return;
         }
 
         this.gameStatus = Status.PREPARING;
 
-        if(GameParameters.ENABLE_RANDOM_WEAPONS.get() && !Trader.weapons.isEmpty()){
+        if(GameParameters.ENABLE_RANDOM_WEAPONS.get()){
             Random random = new Random();
             this.selectedWeapons = Trader.weapons.get(random.nextInt(Trader.weapons.size()));
         }
@@ -216,9 +225,6 @@ public class Game {
                 ScoreboardManager.showScoreboard(player, scoreboard);
                 Team team = Team.getPlayerTeam(player.getUniqueId());
                 player.getEnderChest().clear();
-                player.setStatistic(Statistic.WALK_ONE_CM, 0);
-                player.setStatistic(Statistic.SPRINT_ONE_CM, 0);
-                player.setStatistic(Statistic.FLY_ONE_CM, 0);
                 if(team != null) {
                     spawnPlayer(player, team, true);
                 }
@@ -226,6 +232,12 @@ public class Game {
 
             this.gameStatus = Status.RUNNING;
             this.gameStatistics = new GameStatistics(System.currentTimeMillis(), -1, new HashMap<>(), Team.getPlayerTeamMapCopy());
+            this.movementTraceRecorder = new MovementTraceRecorder(this, this.world);
+            if(this.movementTraceRecorder.start()){
+                ProtectYourCastleMain.getInstance().getLogger().info("Movement trace started: " + this.movementTraceRecorder.getOutputFile().getName());
+            } else {
+                this.movementTraceRecorder = null;
+            }
         }
     }
 
@@ -235,24 +247,16 @@ public class Game {
                 this.runnable.cancel();
                 this.runnable = null;
             }
+            this.stopMovementTraceRecorder();
             currentGame = null;
             loadedWorld = null;
 
-            if(this.gameStatistics != null) {
-                this.gameStatistics.setGameEnd(System.currentTimeMillis());
-                GameStatistics.gameStatistics.add(this.gameStatistics);
-                RankingDisplay.updateDisplays();
-            }
+            this.gameStatistics.setGameEnd(System.currentTimeMillis());
+            GameStatistics.gameStatistics.add(this.gameStatistics);
+            RankingDisplay.updateDisplays();
 
             for(ResourceGenerator generator : this.getGenerators()){
                 generator.getLocation().getChunk().setForceLoaded(false);
-            }
-
-            if(this.gameStatistics != null) {
-                for(UUID uuid : this.gameStatistics.getPlayers()){
-                    OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
-                    this.gameStatistics.setPlayerStatistic(uuid, GameStatistics.StatisticKey.DISTANCE_WALKED, offlinePlayer.getStatistic(Statistic.WALK_ONE_CM) + offlinePlayer.getStatistic(Statistic.SPRINT_ONE_CM) + offlinePlayer.getStatistic(Statistic.FLY_ONE_CM));
-                }
             }
 
             for(Player player : new ArrayList<>(Bukkit.getOnlinePlayers())){
@@ -274,25 +278,29 @@ public class Game {
 
                 ProtectYourCastleMain.voiceChatBridge.joinGlobalGroup(player);
 
-                if(this.gameStatistics != null) {
-                    GameStatsInventory inv = new GameStatsInventory(player, this.gameStatistics);
-                    inv.openInventory();
-                }
+                GameStatsInventory inv = new GameStatsInventory(player, this.gameStatistics);
+                inv.openInventory();
             }
 
             for(Team team : Team.getTeams()){
                 ProtectYourCastleMain.voiceChatBridge.deleteTeamGroup(team);
             }
 
-            if(world != null) {
-                Bukkit.getScheduler().runTaskLater(ProtectYourCastleMain.getInstance(), () -> Bukkit.unloadWorld(world, false), 10L);
-            }
+            Bukkit.getScheduler().runTaskLater(ProtectYourCastleMain.getInstance(), () -> Bukkit.unloadWorld(world, false), 10L);
 
             this.scoreboard = null;
             this.gameStatus = Status.STOPPED;
             return this.gameStatistics;
         }
         return null;
+    }
+
+    public void stopMovementTraceRecorder() {
+        if(this.movementTraceRecorder != null){
+            this.movementTraceRecorder.stop();
+            ProtectYourCastleMain.getInstance().getLogger().info("Movement trace saved: " + this.movementTraceRecorder.getOutputFile().getAbsolutePath());
+            this.movementTraceRecorder = null;
+        }
     }
 
     public GameStatistics getGameStatistics() {
@@ -324,10 +332,8 @@ public class Game {
     }
 
     public void addPoint(Team.TeamColor teamColor, Player placer, int amount){
-        this.points.put(teamColor, this.getPoints(teamColor) + amount);
-        if(this.gameStatistics != null) {
-            this.gameStatistics.addStatistic(placer.getUniqueId(), GameStatistics.StatisticKey.POINTS_WON, amount);
-        }
+        this.points.put(teamColor, this.getPoints(teamColor) + 1);
+        this.gameStatistics.increaseStatistic(placer.getUniqueId(), GameStatistics.StatisticKey.POINTS_WON);
         Bukkit.broadcastMessage("§6[Castle] §aL'équipe " + teamColor.getChatColor() + teamColor.name() + "§a vient de gagner " + amount + " point grâce à " + placer.getName() + " !");
     }
 
@@ -434,6 +440,10 @@ public class Game {
 
     public void increaseDistanceInPlane(Player player, double distance) {
         this.gameStatistics.addStatistic(player.getUniqueId(), GameStatistics.StatisticKey.DISTANCE_WITH_PLANE, (int) (100 * distance));
+    }
+
+    public void increaseDistanceWalked(Player player, double distance) {
+        this.gameStatistics.addStatistic(player.getUniqueId(), GameStatistics.StatisticKey.DISTANCE_WALKED, (int) (100 * distance));
     }
 
     public void increaseDamageDealt(UUID playerUUID, float damages) {

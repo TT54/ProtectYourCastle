@@ -21,21 +21,41 @@ import java.util.*;
 
 public class Trader {
 
-    private static final Type traderType = new TypeToken<Map<UUID, Trader>>() {}.getType();
+    private static final Type tradersMapType = new TypeToken<Map<UUID, Trader>>() {}.getType();
     private static final Type weaponsType = new TypeToken<List<List<GameWeapon>>>() {}.getType();
+    private static final Type traderTypesType = new TypeToken<Map<String, TraderTypeProfile>>() {}.getType();
 
     public static Map<UUID, Trader> traders = new HashMap<>();
     public static List<List<GameWeapon>> weapons = new ArrayList<>();
+    public static Map<String, TraderTypeProfile> traderTypes = new HashMap<>();
 
     public static void load(){
         traders.clear();
         weapons.clear();
+        traderTypes.clear();
+
+        File traderTypesFile = FileManager.getFileWithoutCreating("trader_types.json", ProtectYourCastleMain.getInstance());
+        if (!traderTypesFile.exists()) {
+            ProtectYourCastleMain.getInstance().saveResource("trader_types.json", false);
+        }
+        Map<String, TraderTypeProfile> loadedProfiles = Game.gson.fromJson(FileManager.read(traderTypesFile), traderTypesType);
+        if(loadedProfiles != null){
+            for(Map.Entry<String, TraderTypeProfile> entry : loadedProfiles.entrySet()){
+                String normalizedTypeName = normalizeTypeName(entry.getKey());
+                TraderTypeProfile profile = entry.getValue();
+                if(normalizedTypeName == null || profile == null) continue;
+                traderTypes.put(normalizedTypeName, new TraderTypeProfile(
+                        cloneTradesSafely(profile.trades),
+                        profile.weaponTrader
+                ));
+            }
+        }
 
         File tradersFile = FileManager.getFileWithoutCreating("traders.json", ProtectYourCastleMain.getInstance());
         if (!tradersFile.exists()) {
             ProtectYourCastleMain.getInstance().saveResource("traders.json", false);
         }
-        Map<UUID, Trader> loadedTraders = Game.gson.fromJson(FileManager.read(tradersFile), traderType);
+        Map<UUID, Trader> loadedTraders = Game.gson.fromJson(FileManager.read(tradersFile), tradersMapType);
         traders = new HashMap<>();
         if(loadedTraders != null) {
             for(Map.Entry<UUID, Trader> entry : loadedTraders.entrySet()){
@@ -43,22 +63,16 @@ public class Trader {
                 Trader loadedTrader = entry.getValue();
                 if(traderUUID == null || loadedTrader == null) continue;
 
-                List<NPCTrade> normalizedTrades = new ArrayList<>();
-                if(loadedTrader.trades != null){
-                    for(NPCTrade trade : loadedTrader.trades){
-                        NPCTrade clone = cloneTradeSafely(trade);
-                        if(clone != null) {
-                            normalizedTrades.add(clone);
-                        }
-                    }
-                }
-
                 Trader normalizedTrader = new Trader(
                         loadedTrader.name != null ? loadedTrader.name : "Trader",
-                        normalizedTrades,
+                        cloneTradesSafely(loadedTrader.trades),
                         loadedTrader.weaponTrader
                 );
                 normalizedTrader.savedLocation = loadedTrader.savedLocation;
+                normalizedTrader.traderType = normalizeTypeName(loadedTrader.traderType);
+                if(normalizedTrader.traderType != null && !traderTypes.containsKey(normalizedTrader.traderType)) {
+                    normalizedTrader.traderType = null;
+                }
                 traders.put(traderUUID, normalizedTrader);
             }
         }
@@ -97,6 +111,9 @@ public class Trader {
 
         File weaponsFile = FileManager.getFileWithoutCreating("weapons.json", ProtectYourCastleMain.getInstance());
         FileManager.write(Game.gson.toJson(weapons), weaponsFile);
+
+        File traderTypesFile = FileManager.getFileWithoutCreating("trader_types.json", ProtectYourCastleMain.getInstance());
+        FileManager.write(Game.gson.toJson(traderTypes), traderTypesFile);
     }
 
     public static boolean isTrader(UUID entityUUID) {
@@ -126,10 +143,79 @@ public class Trader {
         }
     }
 
+    public static Set<String> getTraderTypeNames() {
+        return new TreeSet<>(traderTypes.keySet());
+    }
+
+    public static boolean hasTraderType(String typeName) {
+        String normalized = normalizeTypeName(typeName);
+        return normalized != null && traderTypes.containsKey(normalized);
+    }
+
+    public static int getTraderTypeTradeCount(String typeName) {
+        TraderTypeProfile profile = getTraderTypeProfile(typeName);
+        return profile == null ? -1 : profile.trades.size();
+    }
+
+    public static Boolean isTraderTypeWeaponTrader(String typeName) {
+        TraderTypeProfile profile = getTraderTypeProfile(typeName);
+        return profile == null ? null : profile.weaponTrader;
+    }
+
+    private static TraderTypeProfile getTraderTypeProfile(String typeName) {
+        String normalized = normalizeTypeName(typeName);
+        if(normalized == null) {
+            return null;
+        }
+        return traderTypes.get(normalized);
+    }
+
+    public static boolean saveTypeFromTrader(String typeName, Trader sourceTrader) {
+        if(sourceTrader == null) return false;
+
+        String normalized = normalizeTypeName(typeName);
+        if(!isTypeNameValid(normalized)) return false;
+
+        TraderTypeProfile profile = traderTypes.computeIfAbsent(normalized, k -> new TraderTypeProfile(new ArrayList<>(), false));
+        profile.trades = cloneTradesSafely(sourceTrader.getTrades());
+        profile.weaponTrader = sourceTrader.isWeaponTrader();
+
+        sourceTrader.traderType = normalized;
+        return true;
+    }
+
+    public static boolean duplicateTraderType(String sourceTypeName, String targetTypeName) {
+        String source = normalizeTypeName(sourceTypeName);
+        String target = normalizeTypeName(targetTypeName);
+        if(source == null || target == null || !isTypeNameValid(target)) return false;
+        if(!traderTypes.containsKey(source) || traderTypes.containsKey(target)) return false;
+
+        TraderTypeProfile sourceProfile = traderTypes.get(source);
+        traderTypes.put(target, new TraderTypeProfile(cloneTradesSafely(sourceProfile.trades), sourceProfile.weaponTrader));
+        return true;
+    }
+
+    public static boolean deleteTraderType(String typeName) {
+        String normalized = normalizeTypeName(typeName);
+        if(normalized == null) return false;
+
+        TraderTypeProfile removedProfile = traderTypes.remove(normalized);
+        if(removedProfile == null) return false;
+
+        for(Trader trader : traders.values()) {
+            if(trader != null && normalized.equals(trader.traderType)) {
+                trader.unbindTypeWithFallback(removedProfile);
+            }
+        }
+
+        return true;
+    }
+
     private final List<NPCTrade> trades;
     private final String name;
     private boolean weaponTrader;
     private SavedLocation savedLocation;
+    private String traderType;
 
     public Trader(String name, boolean weaponTrader) {
         this.weaponTrader = weaponTrader;
@@ -138,7 +224,7 @@ public class Trader {
     }
 
     public Trader(String name, List<NPCTrade> trades, boolean weaponTrader) {
-        this.trades = trades;
+        this.trades = trades == null ? new ArrayList<>() : trades;
         this.name = name;
         this.weaponTrader = weaponTrader;
     }
@@ -181,10 +267,33 @@ public class Trader {
         traders.put(villager.getUniqueId(), this);
     }
 
+    public boolean bindToType(String typeName) {
+        String normalized = normalizeTypeName(typeName);
+        if(normalized == null || !traderTypes.containsKey(normalized)){
+            return false;
+        }
+        this.traderType = normalized;
+        return true;
+    }
 
+    public void unbindType() {
+        TraderTypeProfile profile = this.getBoundTypeProfile();
+        if(profile != null) {
+            this.unbindTypeWithFallback(profile);
+        } else {
+            this.traderType = null;
+        }
+    }
+
+    private void unbindTypeWithFallback(TraderTypeProfile profile) {
+        this.trades.clear();
+        this.trades.addAll(cloneTradesSafely(profile.trades));
+        this.weaponTrader = profile.weaponTrader;
+        this.traderType = null;
+    }
 
     public void addTrade(NPCTrade trade){
-        this.trades.add(trade);
+        this.getTrades().add(trade);
     }
 
     public String getName() {
@@ -197,29 +306,43 @@ public class Trader {
         final List<NPCTrade> merchantTrades = new ArrayList<>();
         final Game currentGame = Game.getCurrentGame();
         final List<GameWeapon> weaponsToTrade = currentGame != null ? currentGame.getSelectedWeapons() : List.of();
-        if(this.weaponTrader && currentGame != null && !weaponsToTrade.isEmpty() && GameParameters.ENABLE_RANDOM_WEAPONS.get()){
+        if(this.isWeaponTrader() && currentGame != null && !weaponsToTrade.isEmpty() && GameParameters.ENABLE_RANDOM_WEAPONS.get()){
             int progressiveDelay = Math.max(1, GameParameters.PROGRESSIVE_WEAPONS_DELAY.get());
             int weaponsToAdd = Math.min(weaponsToTrade.size(),
-                    GameParameters.PROGRESSIVE_WEAPONS_BASE.get() + currentGame.getTime() / progressiveDelay);
+                    Math.max(0, GameParameters.PROGRESSIVE_WEAPONS_BASE.get()) + currentGame.getTime() / progressiveDelay);
 
             for(int i = 0; i < weaponsToAdd; i++){
                 merchantTrades.add(weaponsToTrade.get(i).gunTrade);
                 merchantTrades.add(weaponsToTrade.get(i).ammoTrade);
             }
         } else{
-            merchantTrades.addAll(this.trades);
+            merchantTrades.addAll(this.getTrades());
         }
         for(NPCTrade trade : merchantTrades){
             if(trade == null || trade.reward == null || trade.input == null) continue;
             MerchantRecipe recipe = new MerchantRecipe(trade.reward.clone(), Integer.MAX_VALUE);
             for(ItemStack is : trade.input){
-                if(is == null) continue;
-                recipe.addIngredient(is.clone());
+                if(is != null){
+                    recipe.addIngredient(is.clone());
+                }
             }
             recipes.add(recipe);
         }
         merchantMenu.setRecipes(recipes);
         return merchantMenu;
+    }
+
+    private static List<NPCTrade> cloneTradesSafely(List<NPCTrade> trades) {
+        List<NPCTrade> clonedTrades = new ArrayList<>();
+        if(trades == null) return clonedTrades;
+
+        for(NPCTrade trade : trades) {
+            NPCTrade cloned = cloneTradeSafely(trade);
+            if(cloned != null) {
+                clonedTrades.add(cloned);
+            }
+        }
+        return clonedTrades;
     }
 
     private static NPCTrade cloneTradeSafely(NPCTrade trade) {
@@ -236,24 +359,59 @@ public class Trader {
         return new NPCTrade(clonedInput, trade.reward.clone());
     }
 
+    private TraderTypeProfile getBoundTypeProfile() {
+        String normalized = normalizeTypeName(this.traderType);
+        if(normalized == null) {
+            return null;
+        }
+        TraderTypeProfile profile = traderTypes.get(normalized);
+        if(profile != null){
+            this.traderType = normalized;
+        }
+        return profile;
+    }
+
+    private static String normalizeTypeName(String typeName) {
+        if(typeName == null) {
+            return null;
+        }
+        String normalized = typeName.trim().toLowerCase(Locale.ROOT);
+        return normalized.isBlank() ? null : normalized;
+    }
+
+    private static boolean isTypeNameValid(String normalizedTypeName) {
+        return normalizedTypeName != null && normalizedTypeName.matches("[a-z0-9_-]+");
+    }
+
     private Merchant getMerchantMenu() {
         return this.buildMerchantMenu();
     }
 
     public List<NPCTrade> getTrades() {
-        return this.trades;
+        TraderTypeProfile profile = this.getBoundTypeProfile();
+        return profile != null ? profile.trades : this.trades;
     }
 
     public void removeTrade(NPCTrade trade) {
-        this.trades.remove(trade);
+        this.getTrades().remove(trade);
     }
 
     public boolean isWeaponTrader() {
-        return weaponTrader;
+        TraderTypeProfile profile = this.getBoundTypeProfile();
+        return profile != null ? profile.weaponTrader : this.weaponTrader;
     }
 
     public void setWeaponTrader(boolean weaponTrader) {
-        this.weaponTrader = weaponTrader;
+        TraderTypeProfile profile = this.getBoundTypeProfile();
+        if(profile != null) {
+            profile.weaponTrader = weaponTrader;
+        } else {
+            this.weaponTrader = weaponTrader;
+        }
+    }
+
+    public String getTraderType() {
+        return traderType;
     }
 
     public static class NPCTrade{
@@ -285,10 +443,14 @@ public class Trader {
         @Override
         public NPCTrade clone() {
             List<ItemStack> clonedInput = new ArrayList<>();
-            for(ItemStack is : this.input){
-                clonedInput.add(is.clone());
+            if(this.input != null){
+                for(ItemStack is : this.input){
+                    if(is != null){
+                        clonedInput.add(is.clone());
+                    }
+                }
             }
-            return new NPCTrade(clonedInput, this.reward.clone());
+            return new NPCTrade(clonedInput, this.reward == null ? null : this.reward.clone());
         }
     }
 
@@ -318,6 +480,17 @@ public class Trader {
 
         public NPCTrade getAmmoTrade() {
             return ammoTrade;
+        }
+    }
+
+    public static class TraderTypeProfile {
+
+        private List<NPCTrade> trades;
+        private boolean weaponTrader;
+
+        public TraderTypeProfile(List<NPCTrade> trades, boolean weaponTrader) {
+            this.trades = trades == null ? new ArrayList<>() : trades;
+            this.weaponTrader = weaponTrader;
         }
     }
 
