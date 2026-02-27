@@ -162,13 +162,13 @@ public class Game {
 
         this.world = loadWorld(worldName);
         if(this.world == null){
-            System.err.println("Le monde source " + loadedWorld + " n'existe pas !");
+            System.err.println("Le monde source " + worldName + " n'existe pas !");
             return;
         }
 
         this.gameStatus = Status.PREPARING;
 
-        if(GameParameters.ENABLE_RANDOM_WEAPONS.get()){
+        if(GameParameters.ENABLE_RANDOM_WEAPONS.get() && !Trader.weapons.isEmpty()){
             Random random = new Random();
             this.selectedWeapons = Trader.weapons.get(random.nextInt(Trader.weapons.size()));
         }
@@ -238,17 +238,21 @@ public class Game {
             currentGame = null;
             loadedWorld = null;
 
-            this.gameStatistics.setGameEnd(System.currentTimeMillis());
-            GameStatistics.gameStatistics.add(this.gameStatistics);
-            RankingDisplay.updateDisplays();
+            if(this.gameStatistics != null) {
+                this.gameStatistics.setGameEnd(System.currentTimeMillis());
+                GameStatistics.gameStatistics.add(this.gameStatistics);
+                RankingDisplay.updateDisplays();
+            }
 
             for(ResourceGenerator generator : this.getGenerators()){
                 generator.getLocation().getChunk().setForceLoaded(false);
             }
 
-            for(UUID uuid : this.gameStatistics.getPlayers()){
-                OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
-                this.gameStatistics.setPlayerStatistic(uuid, GameStatistics.StatisticKey.DISTANCE_WALKED, offlinePlayer.getStatistic(Statistic.WALK_ONE_CM) + offlinePlayer.getStatistic(Statistic.SPRINT_ONE_CM) + offlinePlayer.getStatistic(Statistic.FLY_ONE_CM));
+            if(this.gameStatistics != null) {
+                for(UUID uuid : this.gameStatistics.getPlayers()){
+                    OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
+                    this.gameStatistics.setPlayerStatistic(uuid, GameStatistics.StatisticKey.DISTANCE_WALKED, offlinePlayer.getStatistic(Statistic.WALK_ONE_CM) + offlinePlayer.getStatistic(Statistic.SPRINT_ONE_CM) + offlinePlayer.getStatistic(Statistic.FLY_ONE_CM));
+                }
             }
 
             for(Player player : new ArrayList<>(Bukkit.getOnlinePlayers())){
@@ -270,15 +274,19 @@ public class Game {
 
                 ProtectYourCastleMain.voiceChatBridge.joinGlobalGroup(player);
 
-                GameStatsInventory inv = new GameStatsInventory(player, this.gameStatistics);
-                inv.openInventory();
+                if(this.gameStatistics != null) {
+                    GameStatsInventory inv = new GameStatsInventory(player, this.gameStatistics);
+                    inv.openInventory();
+                }
             }
 
             for(Team team : Team.getTeams()){
                 ProtectYourCastleMain.voiceChatBridge.deleteTeamGroup(team);
             }
 
-            Bukkit.getScheduler().runTaskLater(ProtectYourCastleMain.getInstance(), () -> Bukkit.unloadWorld(world, false), 10L);
+            if(world != null) {
+                Bukkit.getScheduler().runTaskLater(ProtectYourCastleMain.getInstance(), () -> Bukkit.unloadWorld(world, false), 10L);
+            }
 
             this.scoreboard = null;
             this.gameStatus = Status.STOPPED;
@@ -316,8 +324,10 @@ public class Game {
     }
 
     public void addPoint(Team.TeamColor teamColor, Player placer, int amount){
-        this.points.put(teamColor, this.getPoints(teamColor) + 1);
-        this.gameStatistics.increaseStatistic(placer.getUniqueId(), GameStatistics.StatisticKey.POINTS_WON);
+        this.points.put(teamColor, this.getPoints(teamColor) + amount);
+        if(this.gameStatistics != null) {
+            this.gameStatistics.addStatistic(placer.getUniqueId(), GameStatistics.StatisticKey.POINTS_WON, amount);
+        }
         Bukkit.broadcastMessage("§6[Castle] §aL'équipe " + teamColor.getChatColor() + teamColor.name() + "§a vient de gagner " + amount + " point grâce à " + placer.getName() + " !");
     }
 

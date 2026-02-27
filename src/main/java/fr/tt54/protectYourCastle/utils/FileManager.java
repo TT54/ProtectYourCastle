@@ -231,7 +231,9 @@ public class FileManager {
 
     public static void copyFolder(File initialFolder, File destinationFolder){
         destinationFolder.mkdir();
-        for(File file : initialFolder.listFiles()){
+        File[] files = initialFolder.listFiles();
+        if(files == null) return;
+        for(File file : files){
             copy(file, new File(destinationFolder, file.getName()));
         }
     }

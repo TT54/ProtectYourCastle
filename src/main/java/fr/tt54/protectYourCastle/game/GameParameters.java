@@ -73,6 +73,9 @@ public class GameParameters {
         }
 
         gameParameters = Game.gson.fromJson(FileManager.read(parametersFile), GameParameters.class);
+        if(gameParameters == null){
+            gameParameters = new GameParameters();
+        }
     }
 
     public static void save(){
@@ -89,7 +92,11 @@ public class GameParameters {
     }
 
     public <T> T getParameter(Parameter<T> param){
-        return (T) parametersMap.get(param);
+        Object value = parametersMap.get(param);
+        if(value == null){
+            return param.getDefaultValue();
+        }
+        return (T) value;
     }
 
     public boolean setParameter(String paramName, String value) {

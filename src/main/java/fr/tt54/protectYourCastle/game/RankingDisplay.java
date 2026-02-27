@@ -12,6 +12,7 @@ import org.bukkit.entity.TextDisplay;
 import java.io.File;
 import java.lang.reflect.Type;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -30,6 +31,9 @@ public class RankingDisplay {
         }
 
         displays = Game.gson.fromJson(FileManager.read(displaysFile), displaysType);
+        if(displays == null){
+            displays = new HashMap<>();
+        }
         displays.values().removeIf(rankingDisplay -> rankingDisplay.rankingDisplayType == null);
 
         for(RankingDisplay display : displays.values()){

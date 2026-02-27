@@ -35,13 +35,60 @@ public class Trader {
         if (!tradersFile.exists()) {
             ProtectYourCastleMain.getInstance().saveResource("traders.json", false);
         }
-        traders = Game.gson.fromJson(FileManager.read(tradersFile), traderType);
+        Map<UUID, Trader> loadedTraders = Game.gson.fromJson(FileManager.read(tradersFile), traderType);
+        traders = new HashMap<>();
+        if(loadedTraders != null) {
+            for(Map.Entry<UUID, Trader> entry : loadedTraders.entrySet()){
+                UUID traderUUID = entry.getKey();
+                Trader loadedTrader = entry.getValue();
+                if(traderUUID == null || loadedTrader == null) continue;
+
+                List<NPCTrade> normalizedTrades = new ArrayList<>();
+                if(loadedTrader.trades != null){
+                    for(NPCTrade trade : loadedTrader.trades){
+                        NPCTrade clone = cloneTradeSafely(trade);
+                        if(clone != null) {
+                            normalizedTrades.add(clone);
+                        }
+                    }
+                }
+
+                Trader normalizedTrader = new Trader(
+                        loadedTrader.name != null ? loadedTrader.name : "Trader",
+                        normalizedTrades,
+                        loadedTrader.weaponTrader
+                );
+                normalizedTrader.savedLocation = loadedTrader.savedLocation;
+                traders.put(traderUUID, normalizedTrader);
+            }
+        }
 
         File weaponsFile = FileManager.getFileWithoutCreating("weapons.json", ProtectYourCastleMain.getInstance());
         if (!weaponsFile.exists()) {
             ProtectYourCastleMain.getInstance().saveResource("weapons.json", false);
         }
-        weapons = Game.gson.fromJson(FileManager.read(weaponsFile), weaponsType);
+        List<List<GameWeapon>> loadedWeapons = Game.gson.fromJson(FileManager.read(weaponsFile), weaponsType);
+        weapons = new ArrayList<>();
+        if(loadedWeapons != null){
+            for(List<GameWeapon> bundle : loadedWeapons){
+                if(bundle == null) continue;
+
+                List<GameWeapon> normalizedBundle = new ArrayList<>();
+                for(GameWeapon gameWeapon : bundle){
+                    if(gameWeapon == null) continue;
+
+                    NPCTrade gunTrade = cloneTradeSafely(gameWeapon.gunTrade);
+                    NPCTrade ammoTrade = cloneTradeSafely(gameWeapon.ammoTrade);
+                    if(gunTrade == null || ammoTrade == null) continue;
+
+                    normalizedBundle.add(new GameWeapon(gunTrade, ammoTrade, gameWeapon.overPowered));
+                }
+
+                if(!normalizedBundle.isEmpty()){
+                    weapons.add(normalizedBundle);
+                }
+            }
+        }
     }
 
     public static void save(){
@@ -65,12 +112,18 @@ public class Trader {
     }
 
     public static void openTradeMenu(UUID entityUUID, Player player){
-        player.openMerchant(traders.get(entityUUID).getMerchantMenu(), true);
+        Trader trader = traders.get(entityUUID);
+        if(trader != null) {
+            player.openMerchant(trader.getMerchantMenu(), true);
+        }
     }
 
     public static void openEditionMenu(UUID traderUUID, Player player) {
-        TradeListInventory inv = new TradeListInventory(player, 1, traders.get(traderUUID));
-        inv.openInventory();
+        Trader trader = traders.get(traderUUID);
+        if(trader != null) {
+            TradeListInventory inv = new TradeListInventory(player, 1, trader);
+            inv.openInventory();
+        }
     }
 
     private final List<NPCTrade> trades;
@@ -142,27 +195,45 @@ public class Trader {
         Merchant merchantMenu = Bukkit.createMerchant(this.name);
         List<MerchantRecipe> recipes = new ArrayList<>();
         final List<NPCTrade> merchantTrades = new ArrayList<>();
-        final List<GameWeapon> weaponsToTrade = Game.getCurrentGame().getSelectedWeapons();
-        if(this.weaponTrader && Game.getCurrentGame() != null && !weaponsToTrade.isEmpty() && GameParameters.ENABLE_RANDOM_WEAPONS.get()){
+        final Game currentGame = Game.getCurrentGame();
+        final List<GameWeapon> weaponsToTrade = currentGame != null ? currentGame.getSelectedWeapons() : List.of();
+        if(this.weaponTrader && currentGame != null && !weaponsToTrade.isEmpty() && GameParameters.ENABLE_RANDOM_WEAPONS.get()){
+            int progressiveDelay = Math.max(1, GameParameters.PROGRESSIVE_WEAPONS_DELAY.get());
             int weaponsToAdd = Math.min(weaponsToTrade.size(),
-                    GameParameters.PROGRESSIVE_WEAPONS_BASE.get() + Game.getCurrentGame().getTime() / GameParameters.PROGRESSIVE_WEAPONS_DELAY.get());
+                    GameParameters.PROGRESSIVE_WEAPONS_BASE.get() + currentGame.getTime() / progressiveDelay);
 
             for(int i = 0; i < weaponsToAdd; i++){
                 merchantTrades.add(weaponsToTrade.get(i).gunTrade);
                 merchantTrades.add(weaponsToTrade.get(i).ammoTrade);
             }
         } else{
-            merchantTrades.addAll(trades);
+            merchantTrades.addAll(this.trades);
         }
         for(NPCTrade trade : merchantTrades){
+            if(trade == null || trade.reward == null || trade.input == null) continue;
             MerchantRecipe recipe = new MerchantRecipe(trade.reward.clone(), Integer.MAX_VALUE);
             for(ItemStack is : trade.input){
+                if(is == null) continue;
                 recipe.addIngredient(is.clone());
             }
             recipes.add(recipe);
         }
         merchantMenu.setRecipes(recipes);
         return merchantMenu;
+    }
+
+    private static NPCTrade cloneTradeSafely(NPCTrade trade) {
+        if(trade == null || trade.reward == null || trade.input == null){
+            return null;
+        }
+
+        List<ItemStack> clonedInput = new ArrayList<>();
+        for(ItemStack is : trade.input){
+            if(is != null){
+                clonedInput.add(is.clone());
+            }
+        }
+        return new NPCTrade(clonedInput, trade.reward.clone());
     }
 
     private Merchant getMerchantMenu() {

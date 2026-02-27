@@ -38,6 +38,9 @@ public class GameScoreboard extends ImpyriaScoreboard {
 
     private void drawScoreboard(FastBoard fastBoard, Player player){
         Game game = Game.getCurrentGame();
+        if(game == null){
+            return;
+        }
         Team team = Team.getPlayerTeam(player.getUniqueId());
         int minutes = (GameParameters.GAME_DURATION.get() - game.getTime()) / 60;
         int seconds = (GameParameters.GAME_DURATION.get() - game.getTime()) % 60;
@@ -47,15 +50,19 @@ public class GameScoreboard extends ImpyriaScoreboard {
 
         String teamName = team != null ? team.getColor().getChatColor() + team.getColor().name() : "§cAucune";
 
-        String teamBanner = team != null ? team.getBannerLocation().getBlockX() + " / " + team.getBannerLocation().getBlockZ() : "§cAucune";
-        Location target = team == null ? null : team.getBannerLocation().clone().add(.5, 0, .5);
+        Location teamBannerLocation = team != null ? team.getBannerLocation() : null;
+        String teamBanner = teamBannerLocation != null ? teamBannerLocation.getBlockX() + " / " + teamBannerLocation.getBlockZ() : "§cAucune";
+        Location target = teamBannerLocation == null ? null : teamBannerLocation.clone().add(.5, 0, .5);
         Vector dist = target == null || target.getWorld() != player.getWorld() ? new Vector(0, 0, 0) : target.toVector().subtract(player.getLocation().toVector()).setY(0);
         double distance = dist.length();
-        dist.normalize();
-        Vector playerEyes = player.getLocation().getDirection().clone().setY(0);
-        float angle = target == null ? 0 : dist.angle(playerEyes);
-        boolean left = target == null || dist.getCrossProduct(playerEyes).getY() < 0;
-        if(left) angle = (float) (2 * Math.PI - angle);
+        float angle = 0f;
+        if(target != null && distance > 0){
+            dist.normalize();
+            Vector playerEyes = player.getLocation().getDirection().clone().setY(0);
+            angle = dist.angle(playerEyes);
+            boolean left = dist.getCrossProduct(playerEyes).getY() < 0;
+            if(left) angle = (float) (2 * Math.PI - angle);
+        }
         int arrowIndex = ((int) ((angle + Math.PI / 8) * 1000000)) / ((int) (Math.PI / 4 * 1000000)) % arrows.length;
 
         int i = 0;

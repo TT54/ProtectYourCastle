@@ -72,9 +72,10 @@ public class GameListener implements Listener {
         Team team = Team.getPlayerTeam(player.getUniqueId());
         if(team != null){
             for(Team t : Team.getTeams()){
-                if(t != team && t.getBase().contains(event.getBlock().getLocation())){
+                if(t != team && t.getBase() != null && t.getBase().contains(event.getBlock().getLocation())){
                     event.setCancelled(true);
-                    if(event.getBlock().getLocation().distanceSquared(t.getBannerLocation()) < .1){
+                    Location bannerLocation = t.getBannerLocation();
+                    if(bannerLocation != null && event.getBlock().getLocation().distanceSquared(bannerLocation) < .1){
                         Game game = Game.getCurrentGame();
                         if(game.getBannerHolders().containsKey(team.getColor()) || !game.pickupBanner(player)){
                             player.sendMessage("§cVotre équipe a déjà une bannière dans un inventaire");
@@ -98,7 +99,7 @@ public class GameListener implements Listener {
         Team team = Team.getPlayerTeam(player.getUniqueId());
         if(team != null){
             for(Team t : Team.getTeams()){
-                if(t != team && t.getBase().contains(event.getBlock().getLocation())){
+                if(t != team && t.getBase() != null && t.getBase().contains(event.getBlock().getLocation())){
                     event.setCancelled(true);
                     player.sendMessage("§cVous ne pouvez pas poser de blocs à la main dans la base ennemie");
                 }
@@ -113,7 +114,8 @@ public class GameListener implements Listener {
 
         if(event.getClickedBlock() != null){
             Team team = Team.getPlayerTeam(player.getUniqueId());
-            if(team != null && event.getClickedBlock().getLocation().distanceSquared(team.getBannerLocation()) < .1){
+            Location teamBanner = team != null ? team.getBannerLocation() : null;
+            if(teamBanner != null && event.getClickedBlock().getLocation().distanceSquared(teamBanner) < .1){
                 event.setCancelled(true);
                 if(Game.getCurrentGame().isBannerHolder(player)){
                     Game.getCurrentGame().placeBanner(team, player);
@@ -246,7 +248,8 @@ public class GameListener implements Listener {
 
                 for(Team.TeamColor teamColor : Team.TeamColor.values()){
                     Team team = Team.getTeam(teamColor);
-                    if(team.getBannerLocation().distanceSquared(block.getLocation()) <= 16){
+                    Location bannerLocation = team != null ? team.getBannerLocation() : null;
+                    if(bannerLocation != null && bannerLocation.distanceSquared(block.getLocation()) <= 16){
                         return true;
                     }
                 }
@@ -264,7 +267,8 @@ public class GameListener implements Listener {
 
                 for(Team.TeamColor teamColor : Team.TeamColor.values()){
                     Team team = Team.getTeam(teamColor);
-                    if(team.getBannerLocation().distanceSquared(block.getLocation()) <= 16){
+                    Location bannerLocation = team != null ? team.getBannerLocation() : null;
+                    if(bannerLocation != null && bannerLocation.distanceSquared(block.getLocation()) <= 16){
                         return true;
                     }
                 }

@@ -35,7 +35,32 @@ public class Team {
             ProtectYourCastleMain.getInstance().saveResource("teams.json", false);
         }
 
-        teams = Game.gson.fromJson(FileManager.read(teamsFile), teamsType);
+        Map<TeamColor, Team> loadedTeams = Game.gson.fromJson(FileManager.read(teamsFile), teamsType);
+        if(loadedTeams == null) {
+            loadedTeams = new HashMap<>();
+        }
+
+        Map<TeamColor, Team> normalizedTeams = new HashMap<>();
+        for(TeamColor teamColor : TeamColor.values()){
+            Team loadedTeam = loadedTeams.get(teamColor);
+            if(loadedTeam == null){
+                normalizedTeams.put(teamColor, new Team(teamColor, null, null, null, null, null, null, new HashSet<>()));
+                continue;
+            }
+
+            Set<UUID> members = loadedTeam.members == null ? new HashSet<>() : new HashSet<>(loadedTeam.members);
+            normalizedTeams.put(teamColor, new Team(
+                    teamColor,
+                    loadedTeam.spawnLocation,
+                    loadedTeam.bannerLocation,
+                    loadedTeam.rollbackLocation,
+                    loadedTeam.drawbridgeLocation,
+                    loadedTeam.base,
+                    loadedTeam.protectedSpawn,
+                    members
+            ));
+        }
+        teams = normalizedTeams;
 
         if(!oldPlayerTeams.isEmpty()) {
             for(Team team : teams.values()){
@@ -53,9 +78,7 @@ public class Team {
         }
 
         for(TeamColor teamColor : TeamColor.values()){
-            if(!teams.containsKey(teamColor)){
-                teams.put(teamColor, new Team(teamColor, null, null, null, null, null, null, new HashSet<>()));
-            }
+            teams.computeIfAbsent(teamColor, color -> new Team(color, null, null, null, null, null, null, new HashSet<>()));
         }
     }
 

@@ -41,7 +41,8 @@ public class ResourceGenerator {
             ProtectYourCastleMain.getInstance().saveResource("generators.json", false);
         }
 
-        resourceGenerators = Game.gson.fromJson(FileManager.read(generatorsFile), generatorsType);
+        List<ResourceGenerator> loadedGenerators = Game.gson.fromJson(FileManager.read(generatorsFile), generatorsType);
+        resourceGenerators = loadedGenerators != null ? loadedGenerators : new ArrayList<>();
     }
 
     public static void save(){
@@ -74,8 +75,10 @@ public class ResourceGenerator {
     public static boolean removeResourceGenerator(ResourceGenerator generator) {
         Entity textDisplay = generator.getLocation().getWorld().getNearbyEntities(
                 generator.getLocation().add(0, 1.5, 0),
-                .1, .1, .1, e -> e instanceof TextDisplay).stream().toList().get(0);
-        textDisplay.remove();
+                .1, .1, .1, e -> e instanceof TextDisplay).stream().findFirst().orElse(null);
+        if(textDisplay != null) {
+            textDisplay.remove();
+        }
         return resourceGenerators.remove(generator);
     }
 
@@ -112,6 +115,7 @@ public class ResourceGenerator {
     }
 
     public void generate(int amount){
+        if(this.getLocation().getWorld() == null) return;
         this.timeBeforeNextDrop--;
         if(this.timeBeforeNextDrop == 0){
             this.timeBeforeNextDrop = this.cooldown;
@@ -121,6 +125,7 @@ public class ResourceGenerator {
     }
 
     public void updateName(){
+        if(this.getLocation().getWorld() == null) return;
         for(TextDisplay display : this.getLocation().getWorld().getNearbyEntities(this.getLocation().add(0, 1.5, 0), .1, .1, .1, e -> e instanceof TextDisplay).stream().map(e -> (TextDisplay) e).toList()){
             display.setText("§eGénérateur de " + material.name().toLowerCase() + "\n" + "§aProchain spawn dans : §b" + timeBeforeNextDrop + "s");
         }

@@ -29,11 +29,17 @@ public class GameStatistics {
         }
 
         gameStatistics = Game.gson.fromJson(FileManager.read(statisticsFile), statisticsType);
+        if(gameStatistics == null){
+            gameStatistics = new ArrayList<>();
+        }
         recalculateAllPlayersScores();
     }
 
     public static void recalculateAllPlayersScores(){
         playerGamesScore.clear();
+        playerCurrentElo.clear();
+        playerTotalScore.clear();
+        playerBestElo.clear();
         for(GameStatistics statistics : gameStatistics){
             if(statistics.playerScores == null || statistics.playerScores.isEmpty()) {
                 statistics.playerScores = new HashMap<>();

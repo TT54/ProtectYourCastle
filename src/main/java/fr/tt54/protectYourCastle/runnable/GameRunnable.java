@@ -7,6 +7,7 @@ import fr.tt54.protectYourCastle.game.Team;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Banner;
@@ -53,8 +54,13 @@ public class GameRunnable extends BukkitRunnable {
 
         for(Team.TeamColor teamColor : Team.TeamColor.values()){
             Team team = Team.getTeam(teamColor);
-            if(!(team.getBannerLocation().getBlock().getState() instanceof Banner)){
-                team.getBannerLocation().getBlock().setType(Material.valueOf(teamColor.getBanner().name()));
+            if(team == null) continue;
+
+            Location bannerLocation = team.getBannerLocation();
+            if(bannerLocation == null) continue;
+
+            if(!(bannerLocation.getBlock().getState() instanceof Banner)){
+                bannerLocation.getBlock().setType(Material.valueOf(teamColor.getBanner().name()));
             }
 
             Player player = game.getBannerHolder(teamColor);
