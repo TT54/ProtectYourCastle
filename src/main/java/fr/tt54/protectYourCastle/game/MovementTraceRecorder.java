@@ -5,6 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -134,7 +135,8 @@ public class MovementTraceRecorder {
         this.pendingLines.add("#sample_ticks=" + this.sampleTicks);
         this.pendingLines.add("#min_distance_blocks=" + this.minDistanceBlocks);
         this.pendingLines.add("#heartbeat_seconds=" + (this.heartbeatMs / 1000L));
-        this.pendingLines.add("#format=P;playerId;uuid;name;team | M;tMs;playerId;x10;y10;z10;yaw10;pitch10;flags");
+        this.pendingLines.add("#mode_codes=0:foot,1:flying_vehicle,2:train,3:boat,4:mount,5:gliding,6:other_vehicle");
+        this.pendingLines.add("#format=P;playerId;uuid;name;team | M;tMs;playerId;x10;y10;z10;yaw10;pitch10;flags;mode");
     }
 
     private void samplePlayers() {
@@ -162,8 +164,8 @@ public class MovementTraceRecorder {
             EncodedSample encodedSample = EncodedSample.from(player);
             LastSample previous = this.lastSamples.get(player.getUniqueId());
             if(this.shouldRecord(previous, encodedSample, now)){
-                this.pendingLines.add("M;" + relativeMs + ";" + playerId + ";" + encodedSample.x10 + ";" + encodedSample.y10 + ";" + encodedSample.z10 + ";" + encodedSample.yaw10 + ";" + encodedSample.pitch10 + ";" + encodedSample.flags);
-                this.lastSamples.put(player.getUniqueId(), new LastSample(now, encodedSample.x10, encodedSample.y10, encodedSample.z10, encodedSample.yaw10, encodedSample.pitch10, encodedSample.flags));
+                this.pendingLines.add("M;" + relativeMs + ";" + playerId + ";" + encodedSample.x10 + ";" + encodedSample.y10 + ";" + encodedSample.z10 + ";" + encodedSample.yaw10 + ";" + encodedSample.pitch10 + ";" + encodedSample.flags + ";" + encodedSample.modeCode);
+                this.lastSamples.put(player.getUniqueId(), new LastSample(now, encodedSample.x10, encodedSample.y10, encodedSample.z10, encodedSample.yaw10, encodedSample.pitch10, encodedSample.flags, encodedSample.modeCode));
             }
         }
     }
@@ -188,6 +190,9 @@ public class MovementTraceRecorder {
             return true;
         }
         if(previous.flags != current.flags){
+            return true;
+        }
+        if(previous.modeCode != current.modeCode){
             return true;
         }
 
@@ -258,18 +263,21 @@ public class MovementTraceRecorder {
         private final int yaw10;
         private final int pitch10;
         private final int flags;
+        private final int modeCode;
 
-        private EncodedSample(int x10, int y10, int z10, int yaw10, int pitch10, int flags) {
+        private EncodedSample(int x10, int y10, int z10, int yaw10, int pitch10, int flags, int modeCode) {
             this.x10 = x10;
             this.y10 = y10;
             this.z10 = z10;
             this.yaw10 = yaw10;
             this.pitch10 = pitch10;
             this.flags = flags;
+            this.modeCode = modeCode;
         }
 
         private static EncodedSample from(Player player) {
             Location loc = player.getLocation();
+            MovementMode movementMode = MovementMode.from(player);
             int flags = 0;
             if(player.isOnGround()){
                 flags |= 1;
@@ -299,7 +307,8 @@ public class MovementTraceRecorder {
                     (int) Math.round(loc.getZ() * 10d),
                     (int) Math.round(normalizeYaw(loc.getYaw()) * 10d),
                     (int) Math.round(loc.getPitch() * 10d),
-                    flags
+                    flags,
+                    movementMode.code
             );
         }
     }
@@ -312,8 +321,9 @@ public class MovementTraceRecorder {
         private final int yaw10;
         private final int pitch10;
         private final int flags;
+        private final int modeCode;
 
-        private LastSample(long timestampMs, int x10, int y10, int z10, int yaw10, int pitch10, int flags) {
+        private LastSample(long timestampMs, int x10, int y10, int z10, int yaw10, int pitch10, int flags, int modeCode) {
             this.timestampMs = timestampMs;
             this.x10 = x10;
             this.y10 = y10;
@@ -321,6 +331,77 @@ public class MovementTraceRecorder {
             this.yaw10 = yaw10;
             this.pitch10 = pitch10;
             this.flags = flags;
+            this.modeCode = modeCode;
+        }
+    }
+
+    private enum MovementMode {
+        FOOT(0),
+        FLYING_VEHICLE(1),
+        TRAIN(2),
+        BOAT(3),
+        MOUNT(4),
+        GLIDING(5),
+        OTHER_VEHICLE(6);
+
+        private final int code;
+
+        MovementMode(int code) {
+            this.code = code;
+        }
+
+        private static MovementMode from(Player player) {
+            if(player.isGliding()){
+                return GLIDING;
+            }
+
+            Entity vehicle = player.getVehicle();
+            if(vehicle == null){
+                return FOOT;
+            }
+
+            String vehicleType = vehicle.getType().name().toLowerCase(Locale.ROOT);
+            if(vehicleType.contains("minecart")){
+                return TRAIN;
+            }
+            if(vehicleType.contains("boat")){
+                return BOAT;
+            }
+            if(isMountType(vehicleType)){
+                return MOUNT;
+            }
+            if(isFlyingVehicle(vehicle, vehicleType, player)){
+                return FLYING_VEHICLE;
+            }
+            return OTHER_VEHICLE;
+        }
+
+        private static boolean isMountType(String vehicleType) {
+            return vehicleType.contains("horse")
+                    || vehicleType.contains("llama")
+                    || vehicleType.contains("camel")
+                    || vehicleType.contains("donkey")
+                    || vehicleType.contains("mule")
+                    || vehicleType.equals("pig")
+                    || vehicleType.equals("strider")
+                    || vehicleType.equals("ravager");
+        }
+
+        private static boolean isFlyingVehicle(Entity vehicle, String vehicleType, Player player) {
+            if(!vehicle.isOnGround()){
+                return true;
+            }
+            if(player.isFlying()){
+                return true;
+            }
+            return vehicleType.contains("air")
+                    || vehicleType.contains("plane")
+                    || vehicleType.contains("aircraft")
+                    || vehicleType.contains("heli")
+                    || vehicleType.contains("drone")
+                    || vehicleType.contains("jet")
+                    || vehicleType.contains("gyro")
+                    || vehicleType.contains("quadcopter");
         }
     }
 }
