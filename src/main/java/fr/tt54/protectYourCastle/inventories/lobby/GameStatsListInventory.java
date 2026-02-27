@@ -48,7 +48,13 @@ public class GameStatsListInventory extends PageableInventory<GameStatistics> {
                                 + " " + Team.TeamColor.YELLOW.getChatColor() + Team.TeamColor.YELLOW.name(),
                         "§7----------"
                 )
-                .addLoreLine(gameStatistics.getPlayers().stream().sorted(Comparator.comparingDouble(uuid -> -gameStatistics.getPlayerScore(uuid))).map(uuid -> "§f - " + gameStatistics.getPlayerTeam(uuid).getChatColor() + Bukkit.getOfflinePlayer(uuid).getName() + " §8 (" + format.format(gameStatistics.getPlayerScore(uuid)) + ")").toList())
+                .addLoreLine(gameStatistics.getPlayers().stream()
+                        .sorted(Comparator.comparingDouble(uuid -> -gameStatistics.getPlayerScore(uuid)))
+                        .map(uuid -> {
+                            Team.TeamColor color = gameStatistics.getPlayerTeam(uuid);
+                            String chatColor = color == null ? "§7" : color.getChatColor();
+                            return "§f - " + chatColor + Bukkit.getOfflinePlayer(uuid).getName() + " §8 (" + format.format(gameStatistics.getPlayerScore(uuid)) + ")";
+                        }).toList())
                 .addLoreLine("§7----------", "§eDurée : §f" + TimeUnit.getShortFormattedTimeLeft((int) (gameStatistics.getGameEnd() - gameStatistics.getGameBegin()) / 1000, TimeUnit.HOURS))
                 .build();
     }

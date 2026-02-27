@@ -23,10 +23,13 @@ public class WeaponsBundleListInventory extends PageableInventory<List<Trader.Ga
 
     @Override
     protected ItemStack getItemFromObject(List<Trader.GameWeapon> weapons) {
+        Trader.GameWeapon first = weapons.stream().filter(w -> w != null && w.getGunTrade() != null && w.getGunTrade().getReward() != null).findFirst().orElse(null);
         return weapons.isEmpty() ?
                 new ItemBuilder(Material.BARRIER, "§cVide").build()
+                : first == null
+                ? new ItemBuilder(Material.BARRIER, "§cBundle invalide").setLore("§eClique gauche pour éditer", "§eClique droit pour supprimer").build()
                 :
-                new ItemBuilder(weapons.get(0).getGunTrade().getReward().clone())
+                new ItemBuilder(first.getGunTrade().getReward().clone())
                         .setName("§aBundle de " + weapons.size() + " arme" + (weapons.size() > 1 ? "s" : ""))
                         .setLore("§eClique gauche pour éditer", "§eClique droit pour supprimer")
                         .build();

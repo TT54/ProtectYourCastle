@@ -28,6 +28,9 @@ public class EditWeaponsBundleInventory extends PageableInventory<Trader.GameWea
 
     @Override
     protected ItemStack getItemFromObject(Trader.GameWeapon weapon) {
+        if(weapon == null || weapon.getGunTrade() == null || weapon.getGunTrade().getReward() == null){
+            return new ItemBuilder(Material.BARRIER, "§cArme invalide").build();
+        }
         return weapon.getGunTrade().getReward().clone();
     }
 

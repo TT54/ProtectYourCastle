@@ -39,23 +39,39 @@ public class GameStatsInventory extends CorePersonalInventory {
     public @NotNull Inventory getInventory() {
         Inventory inv = createBaseInventory(5);
 
+        if(this.gameStats == null){
+            inv.setItem(9 * 2 + 4, new ItemBuilder(Material.BARRIER, "§cAucune statistique disponible").build());
+            inv.setItem(9 * 4, DefaultItems.BACK.build());
+            return inv;
+        }
+
         if(GameParameters.DISPLAY_SCORE.get()){
             inv.setItem(4, this.getPlayersScoreItem());
         }
 
         Team.TeamColor winner = gameStats.getWinner();
-        inv.setItem(9 + 4,
-                new ItemBuilder(winner.getBanner(), "§eVictoire " + winner.getChatColor() + winner.name() + " : §e" + gameStats.getTeamStatistic(winner, GameStatistics.StatisticKey.POINTS_WON))
-                        .setLore("§7----------")
-                        .addLoreLine(Team.TeamColor.RED.getChatColor() + Team.TeamColor.RED.name() + " "
-                                + (gameStats.getWinner() == Team.TeamColor.RED ? "§f§l" : "§7")
-                                + gameStats.getTeamStatistic(Team.TeamColor.RED, GameStatistics.StatisticKey.POINTS_WON)
-                                + " §8- "
-                                + (gameStats.getWinner() == Team.TeamColor.YELLOW ? "§f§l" : "§7")
-                                + gameStats.getTeamStatistic(Team.TeamColor.YELLOW, GameStatistics.StatisticKey.POINTS_WON)
-                                + " " + Team.TeamColor.YELLOW.getChatColor() + Team.TeamColor.YELLOW.name())
-                        .build()
-        );
+        if(winner != null){
+            inv.setItem(9 + 4,
+                    new ItemBuilder(winner.getBanner(), "§eVictoire " + winner.getChatColor() + winner.name() + " : §e" + gameStats.getTeamStatistic(winner, GameStatistics.StatisticKey.POINTS_WON))
+                            .setLore("§7----------")
+                            .addLoreLine(Team.TeamColor.RED.getChatColor() + Team.TeamColor.RED.name() + " "
+                                    + (gameStats.getWinner() == Team.TeamColor.RED ? "§f§l" : "§7")
+                                    + gameStats.getTeamStatistic(Team.TeamColor.RED, GameStatistics.StatisticKey.POINTS_WON)
+                                    + " §8- "
+                                    + (gameStats.getWinner() == Team.TeamColor.YELLOW ? "§f§l" : "§7")
+                                    + gameStats.getTeamStatistic(Team.TeamColor.YELLOW, GameStatistics.StatisticKey.POINTS_WON)
+                                    + " " + Team.TeamColor.YELLOW.getChatColor() + Team.TeamColor.YELLOW.name())
+                            .build()
+            );
+        } else{
+            inv.setItem(9 + 4,
+                    new ItemBuilder(Material.PAPER, "§eMatch nul")
+                            .setLore("§7----------")
+                            .addLoreLine(Team.TeamColor.RED.getChatColor() + Team.TeamColor.RED.name() + " §7" + gameStats.getTeamStatistic(Team.TeamColor.RED, GameStatistics.StatisticKey.POINTS_WON)
+                                    + " §8- §7" + gameStats.getTeamStatistic(Team.TeamColor.YELLOW, GameStatistics.StatisticKey.POINTS_WON) + " " + Team.TeamColor.YELLOW.getChatColor() + Team.TeamColor.YELLOW.name())
+                            .build()
+            );
+        }
 
         for(int i = 0; i < GameStatistics.StatisticKey.values().length; i++){
             if(i >= slots.length) break;
@@ -79,20 +95,36 @@ public class GameStatsInventory extends CorePersonalInventory {
     private ItemStack getPlayersScoreItem() {
         DecimalFormat format = new DecimalFormat("#");
         List<Map.Entry<UUID, Double>> sortedScores = this.gameStats.getPlayerScores().entrySet().stream().sorted(Comparator.comparingDouble(value -> -value.getValue())).toList();
+        if(sortedScores.isEmpty()){
+            return new ItemBuilder(Material.BARRIER, "§cAucun score joueur").build();
+        }
         return new ItemBuilder(Material.DIAMOND, "§bMVP : §6§l" + Bukkit.getOfflinePlayer(sortedScores.get(0).getKey()).getName())
-                .addLoreLine(sortedScores.stream().map(entry -> "§7 - " + this.gameStats.getPlayerTeam(entry.getKey()).getChatColor() + Bukkit.getOfflinePlayer(entry.getKey()).getName() + "§7 : §f" + format.format(entry.getValue())).toList())
+                .addLoreLine(sortedScores.stream()
+                        .map(entry -> {
+                            Team.TeamColor color = this.gameStats.getPlayerTeam(entry.getKey());
+                            String chatColor = color == null ? "§7" : color.getChatColor();
+                            return "§7 - " + chatColor + Bukkit.getOfflinePlayer(entry.getKey()).getName() + "§7 : §f" + format.format(entry.getValue());
+                        }).toList())
                 .build();
     }
 
     public ItemStack getTeamInfoItem(Team.TeamColor teamColor){
+        List<String> players = this.gameStats.getPlayers().stream()
+                .filter(uuid -> this.gameStats.getPlayerTeam(uuid) == teamColor)
+                .map(uuid -> "§f - " + teamColor.getChatColor() + Bukkit.getOfflinePlayer(uuid).getName())
+                .toList();
+
         return new ItemBuilder(teamColor.getBanner(), teamColor.getChatColor() + teamColor.name())
                 .setLore("§7----------")
-                .addLoreLine(this.gameStats.getPlayers().stream().filter(uuid -> this.gameStats.getPlayerTeam(uuid) == teamColor).map(uuid -> "§f - " + teamColor.getChatColor() + Bukkit.getOfflinePlayer(uuid).getName()).toList())
+                .addLoreLine(players)
                 .build();
     }
 
     public ItemStack drawBestPlayerStats(GameStatistics.StatisticKey key){
         List<UUID> results = this.gameStats.getPlayers().stream().sorted(Comparator.comparingInt(uuid -> -this.gameStats.getPlayerStatistic(uuid, key))).toList();
+        if(results.isEmpty()){
+            return new ItemBuilder(Material.BARRIER, "§cAucune donnée pour : " + key.getDisplayName()).build();
+        }
         UUID bestUUID = results.get(0);
         OfflinePlayer p = Bukkit.getOfflinePlayer(bestUUID);
         int bestStat = this.gameStats.getPlayerStatistic(bestUUID, key);
@@ -100,7 +132,11 @@ public class GameStatsInventory extends CorePersonalInventory {
         return new ItemBuilder(Material.PLAYER_HEAD, "§eTop §6" + key.getDisplayName() + "§e : §6§l" + p.getName())
                 .setHeadOwner(p)
                 .setLore(results.stream()
-                        .map(uuid -> this.gameStats.getPlayerTeam(uuid).getChatColor() + Bukkit.getOfflinePlayer(uuid).getName() + " §e--> §f" + (this.gameStats.getPlayerStatistic(uuid, key) / key.getDivisionDisplayFactor()) + key.getSuffix())
+                        .map(uuid -> {
+                            Team.TeamColor color = this.gameStats.getPlayerTeam(uuid);
+                            String chatColor = color == null ? "§7" : color.getChatColor();
+                            return chatColor + Bukkit.getOfflinePlayer(uuid).getName() + " §e--> §f" + (this.gameStats.getPlayerStatistic(uuid, key) / key.getDivisionDisplayFactor()) + key.getSuffix();
+                        })
                         .toList())
                 .build();
     }

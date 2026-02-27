@@ -320,6 +320,9 @@ public class Trader {
         }
         for(NPCTrade trade : merchantTrades){
             if(trade == null || trade.reward == null || trade.input == null) continue;
+            if(currentGame != null && currentGame.isRunning() && currentGame.getTime() < trade.getAvailableAfterMinutes() * 60){
+                continue;
+            }
             MerchantRecipe recipe = new MerchantRecipe(trade.reward.clone(), Integer.MAX_VALUE);
             for(ItemStack is : trade.input){
                 if(is != null){
@@ -356,7 +359,7 @@ public class Trader {
                 clonedInput.add(is.clone());
             }
         }
-        return new NPCTrade(clonedInput, trade.reward.clone());
+        return new NPCTrade(clonedInput, trade.reward.clone(), trade.getAvailableAfterMinutes());
     }
 
     private TraderTypeProfile getBoundTypeProfile() {
@@ -418,10 +421,16 @@ public class Trader {
 
         private List<ItemStack> input;
         private ItemStack reward;
+        private int availableAfterMinutes;
 
         public NPCTrade(List<ItemStack> input, ItemStack reward) {
+            this(input, reward, 0);
+        }
+
+        public NPCTrade(List<ItemStack> input, ItemStack reward, int availableAfterMinutes) {
             this.input = input;
             this.reward = reward;
+            this.availableAfterMinutes = Math.max(0, availableAfterMinutes);
         }
 
         public List<ItemStack> getInput() {
@@ -440,6 +449,14 @@ public class Trader {
             this.reward = reward;
         }
 
+        public int getAvailableAfterMinutes() {
+            return Math.max(0, this.availableAfterMinutes);
+        }
+
+        public void setAvailableAfterMinutes(int availableAfterMinutes) {
+            this.availableAfterMinutes = Math.max(0, availableAfterMinutes);
+        }
+
         @Override
         public NPCTrade clone() {
             List<ItemStack> clonedInput = new ArrayList<>();
@@ -450,7 +467,7 @@ public class Trader {
                     }
                 }
             }
-            return new NPCTrade(clonedInput, this.reward == null ? null : this.reward.clone());
+            return new NPCTrade(clonedInput, this.reward == null ? null : this.reward.clone(), this.getAvailableAfterMinutes());
         }
     }
 

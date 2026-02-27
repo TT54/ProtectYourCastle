@@ -24,7 +24,12 @@ public class TradeListInventory extends PageableInventory<Trader.NPCTrade> {
 
     @Override
     protected ItemStack getItemFromObject(Trader.NPCTrade trade) {
-        return trade.getReward().clone();
+        if(trade == null || trade.getReward() == null){
+            return new ItemBuilder(Material.BARRIER, "§cTrade invalide").build();
+        }
+        return new ItemBuilder(trade.getReward().clone())
+                .addLoreLine("§8Disponibilite: §f" + TradeTimingUtils.formatDelay(trade.getAvailableAfterMinutes()))
+                .build();
     }
 
     @Override

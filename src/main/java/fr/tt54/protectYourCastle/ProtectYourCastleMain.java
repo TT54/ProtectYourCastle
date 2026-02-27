@@ -5,6 +5,7 @@ import fr.tt54.protectYourCastle.cmd.CmdDrawbridge;
 import fr.tt54.protectYourCastle.cmd.CmdStats;
 import fr.tt54.protectYourCastle.game.*;
 import fr.tt54.protectYourCastle.game.Team;
+import fr.tt54.protectYourCastle.inventories.trades.TradeTimingChatInputListener;
 import fr.tt54.protectYourCastle.listeners.BannerListener;
 import fr.tt54.protectYourCastle.listeners.GameListener;
 import fr.tt54.protectYourCastle.listeners.ModEventListener;
@@ -33,6 +34,7 @@ public final class ProtectYourCastleMain extends JavaPlugin {
 
         this.getServer().getPluginManager().registerEvents(new GameListener(), this);
         this.getServer().getPluginManager().registerEvents(new BannerListener(), this);
+        this.getServer().getPluginManager().registerEvents(new TradeTimingChatInputListener(), this);
 
         Scoreboard scoreboard = Bukkit.getServer().getScoreboardManager().getMainScoreboard();
         if(scoreboard.getObjective("health") == null){

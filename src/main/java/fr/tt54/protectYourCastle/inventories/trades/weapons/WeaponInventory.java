@@ -31,7 +31,7 @@ public class WeaponInventory extends CorePersonalInventory {
         this.displayedWeapon = displayedWeapon;
         this.bundle = bundle;
         this.previousInventory = previousInventory;
-        this.overpoweredWeapon = displayedWeapon.isOverPowered();
+        this.overpoweredWeapon = displayedWeapon != null && displayedWeapon.isOverPowered();
     }
 
     public WeaponInventory(Player player, List<Trader.GameWeapon> bundle, CorePersonalInventory previousInventory) {
@@ -45,14 +45,16 @@ public class WeaponInventory extends CorePersonalInventory {
         inv.setItem(9 + 2, new ItemBuilder(Material.BOW, "§aArme").build());
         inv.setItem(3 * 9 + 2, new ItemBuilder(Material.ARROW, "§aMunitions").build());
 
-        inv.setItem(9 + 4, this.displayedWeapon.getGunTrade().getInput().isEmpty() ? DefaultItems.AIR.build() : this.displayedWeapon.getGunTrade().getInput().get(0).clone());
-        inv.setItem(9 + 5, this.displayedWeapon.getGunTrade().getInput().size() < 2 ? DefaultItems.AIR.build() : this.displayedWeapon.getGunTrade().getInput().get(1).clone());
+        List<ItemStack> gunInputs = this.displayedWeapon.getGunTrade().getInput();
+        List<ItemStack> ammoInputs = this.displayedWeapon.getAmmoTrade().getInput();
+        inv.setItem(9 + 4, gunInputs.isEmpty() || gunInputs.get(0) == null ? DefaultItems.AIR.build() : gunInputs.get(0).clone());
+        inv.setItem(9 + 5, gunInputs.size() < 2 || gunInputs.get(1) == null ? DefaultItems.AIR.build() : gunInputs.get(1).clone());
         inv.setItem(9 + 7, this.displayedWeapon.getGunTrade().getReward() == null ? DefaultItems.AIR.build() : this.displayedWeapon.getGunTrade().getReward().clone());
 
         inv.setItem(2 * 9 + 4, this.overpoweredWeapon ? new ItemBuilder(Material.LIME_STAINED_GLASS_PANE, "§aArme OP").build() : new ItemBuilder(Material.RED_STAINED_GLASS_PANE, "§cArme non OP").build());
 
-        inv.setItem(3 * 9 + 4, this.displayedWeapon.getAmmoTrade().getInput().isEmpty() ? DefaultItems.AIR.build() : this.displayedWeapon.getAmmoTrade().getInput().get(0).clone());
-        inv.setItem(3 * 9 + 5, this.displayedWeapon.getAmmoTrade().getInput().size() < 2 ? DefaultItems.AIR.build() : this.displayedWeapon.getAmmoTrade().getInput().get(1).clone());
+        inv.setItem(3 * 9 + 4, ammoInputs.isEmpty() || ammoInputs.get(0) == null ? DefaultItems.AIR.build() : ammoInputs.get(0).clone());
+        inv.setItem(3 * 9 + 5, ammoInputs.size() < 2 || ammoInputs.get(1) == null ? DefaultItems.AIR.build() : ammoInputs.get(1).clone());
         inv.setItem(3 * 9 + 7, this.displayedWeapon.getAmmoTrade().getReward() == null ? DefaultItems.AIR.build() : this.displayedWeapon.getAmmoTrade().getReward().clone());
 
         inv.setItem(9 * 4 + 8, new ItemBuilder(Material.LIME_WOOL, "§aValider").build());
@@ -63,6 +65,11 @@ public class WeaponInventory extends CorePersonalInventory {
 
     @Override
     public void onInventoryClick(InventoryClickEvent event) {
+        if(event.getClickedInventory() != event.getInventory() && event.isShiftClick()){
+            event.setCancelled(true);
+            return;
+        }
+
         if(event.getClickedInventory() == event.getInventory()){
             int slot = event.getSlot();
             ItemStack is = event.getCurrentItem();
@@ -142,6 +149,9 @@ public class WeaponInventory extends CorePersonalInventory {
                     boolean found = false;
                     for(List<Trader.GameWeapon> bundle : Trader.weapons){
                         for(Trader.GameWeapon weapon : bundle){
+                            if(weapon == null || weapon.getGunTrade() == null || weapon.getGunTrade().getReward() == null || weapon.getAmmoTrade() == null){
+                                continue;
+                            }
                             if(newGun.getType() == weapon.getGunTrade().getReward().getType()){
                                 event.getInventory().setItem(9 + 4, !weapon.getGunTrade().getInput().isEmpty() ? weapon.getGunTrade().getInput().get(0).clone() : DefaultItems.AIR.build());
                                 event.getInventory().setItem(9 + 5, weapon.getGunTrade().getInput().size() > 1 ? weapon.getGunTrade().getInput().get(1).clone() : DefaultItems.AIR.build());

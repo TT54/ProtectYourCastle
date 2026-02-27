@@ -8,6 +8,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.inventory.InventoryView;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,11 +30,16 @@ public class CoreInventoryListener implements Listener {
         openedInv.remove(player.getUniqueId());
     }
 
+    private static boolean isManagedView(InventoryView view, CorePersonalInventory inv) {
+        return inv != null
+                && inv.getOpenedInventory() != null
+                && view.getTopInventory().equals(inv.getOpenedInventory());
+    }
 
     @EventHandler(ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
         CorePersonalInventory inv = openedInv.get(event.getWhoClicked().getUniqueId());
-        if (inv != null && inv.getTitle().equalsIgnoreCase(event.getView().getTitle())) {
+        if (isManagedView(event.getView(), inv)) {
             inv.onInventoryClick(event);
         }
     }
@@ -41,7 +47,7 @@ public class CoreInventoryListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onInventoryDrag(InventoryDragEvent event) {
         CorePersonalInventory inv = openedInv.get(event.getWhoClicked().getUniqueId());
-        if (inv != null && inv.getTitle().equalsIgnoreCase(event.getView().getTitle())) {
+        if (isManagedView(event.getView(), inv)) {
             inv.onInventoryDrag(event);
         }
     }
@@ -49,7 +55,7 @@ public class CoreInventoryListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onInventoryClose(InventoryCloseEvent event) {
         CorePersonalInventory inv = openedInv.get(event.getPlayer().getUniqueId());
-        if (inv != null && inv.getTitle().equalsIgnoreCase(event.getView().getTitle())) {
+        if (isManagedView(event.getView(), inv)) {
             closeInv((Player) event.getPlayer());
             inv.onInventoryClose(event);
         }
