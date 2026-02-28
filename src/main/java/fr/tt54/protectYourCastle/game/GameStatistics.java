@@ -28,10 +28,17 @@ public class GameStatistics {
             ProtectYourCastleMain.getInstance().saveResource("statistics.json", false);
         }
 
-        gameStatistics = Game.gson.fromJson(FileManager.read(statisticsFile), statisticsType);
+        try {
+            gameStatistics = Game.gson.fromJson(FileManager.read(statisticsFile), statisticsType);
+        } catch (Throwable throwable){
+            ProtectYourCastleMain.getInstance().getLogger().warning("statistics.json invalide, fallback sur une liste vide: " + throwable.getClass().getSimpleName());
+            gameStatistics = null;
+        }
         if(gameStatistics == null){
             gameStatistics = new ArrayList<>();
         }
+
+        gameStatistics.removeIf(statistics -> statistics == null || statistics.values == null || statistics.playerTeam == null);
         recalculateAllPlayersScores();
     }
 

@@ -30,7 +30,12 @@ public class RankingDisplay {
             ProtectYourCastleMain.getInstance().saveResource("displays.json", false);
         }
 
-        displays = Game.gson.fromJson(FileManager.read(displaysFile), displaysType);
+        try {
+            displays = Game.gson.fromJson(FileManager.read(displaysFile), displaysType);
+        } catch (Throwable throwable){
+            ProtectYourCastleMain.getInstance().getLogger().warning("displays.json invalide, fallback sur une liste vide: " + throwable.getClass().getSimpleName());
+            displays = null;
+        }
         if(displays == null){
             displays = new HashMap<>();
         }

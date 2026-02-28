@@ -34,7 +34,7 @@ public class ItemSerialization {
             ItemStack i = (ItemStack) dataInput.readObject();
             dataInput.close();
             return i;
-        } catch (ClassNotFoundException | IOException ignored) {}
+        } catch (Throwable ignored) {}
         return null;
     }
 }

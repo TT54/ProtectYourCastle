@@ -2,6 +2,7 @@ package fr.tt54.protectYourCastle.utils;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 
 import java.util.UUID;
 
@@ -16,6 +17,10 @@ public record SavedLocation(UUID world, double x, double y, double z, float yaw,
     }
 
     public Location toLocation() {
-        return new Location(Bukkit.getWorld(this.world), this.x, this.y, this.z, this.yaw, this.pitch);
+        World targetWorld = this.world == null ? null : Bukkit.getWorld(this.world);
+        if(targetWorld == null && !Bukkit.getWorlds().isEmpty()){
+            targetWorld = Bukkit.getWorlds().get(0);
+        }
+        return new Location(targetWorld, this.x, this.y, this.z, this.yaw, this.pitch);
     }
 }

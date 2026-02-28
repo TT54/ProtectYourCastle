@@ -116,8 +116,26 @@ public class Area {
 
         @Override
         public Area deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+            if(!jsonElement.isJsonObject()){
+                return null;
+            }
+
             JsonObject object = jsonElement.getAsJsonObject();
-            UUID world = UUID.fromString(object.get("world").getAsString());
+            UUID world = null;
+            if(object.has("world")) {
+                String worldValue = object.get("world").getAsString();
+                try {
+                    world = UUID.fromString(worldValue);
+                } catch (IllegalArgumentException ignored){
+                    World resolvedWorld = Bukkit.getWorld(worldValue);
+                    if(resolvedWorld != null){
+                        world = resolvedWorld.getUID();
+                    }
+                }
+            }
+            if(world == null && !Bukkit.getWorlds().isEmpty()){
+                world = Bukkit.getWorlds().get(0).getUID();
+            }
             int minX = object.get("minX").getAsInt();
             int minY = !object.has("minY") ? -1000 : object.get("minY").getAsInt();
             int minZ = object.get("minZ").getAsInt();

@@ -54,6 +54,12 @@ public class GameParameters {
     public static Parameter<Double> MOVEMENT_TRACE_MIN_DISTANCE = new Parameter<>("movement_trace_min_distance", 0.35d);
     public static Parameter<Integer> MOVEMENT_TRACE_HEARTBEAT_SECONDS = new Parameter<>("movement_trace_heartbeat_seconds", 5);
 
+    private static final Map<String, String> LEGACY_PARAMETER_ALIASES = new HashMap<>();
+
+    static {
+        LEGACY_PARAMETER_ALIASES.put("keep_artifactes", "keep_artifacts");
+    }
+
     private final Map<Parameter<?>, Object> parametersMap;
 
     public GameParameters() {
@@ -76,7 +82,12 @@ public class GameParameters {
             return;
         }
 
-        gameParameters = Game.gson.fromJson(FileManager.read(parametersFile), GameParameters.class);
+        try {
+            gameParameters = Game.gson.fromJson(FileManager.read(parametersFile), GameParameters.class);
+        } catch (Throwable throwable){
+            ProtectYourCastleMain.getInstance().getLogger().warning("parameters.json invalide, fallback sur valeurs par defaut: " + throwable.getClass().getSimpleName());
+            gameParameters = null;
+        }
         if(gameParameters == null){
             gameParameters = new GameParameters();
         }
@@ -168,13 +179,17 @@ public class GameParameters {
         }
 
         public Object getFromJson(JsonElement element){
-            T t = getDefaultValue();
-            if(t instanceof Integer){
-                return element.getAsInt();
-            } else if(t instanceof Double){
-                return element.getAsDouble();
-            } else if(t instanceof Boolean){
-                return element.getAsBoolean();
+            try {
+                T t = getDefaultValue();
+                if(t instanceof Integer){
+                    return element.getAsInt();
+                } else if(t instanceof Double){
+                    return element.getAsDouble();
+                } else if(t instanceof Boolean){
+                    return element.getAsBoolean();
+                }
+            } catch (Exception ignored){
+                return this.getDefaultValue();
             }
             return this.getDefaultValue();
         }
@@ -211,14 +226,28 @@ public class GameParameters {
 
     public static class GameParametersJsonDeserializer implements JsonDeserializer<GameParameters>{
 
+        private JsonElement getParameterElement(JsonObject object, String parameterName){
+            if(object.has(parameterName)){
+                return object.get(parameterName);
+            }
+
+            String alias = LEGACY_PARAMETER_ALIASES.get(parameterName);
+            if(alias != null && object.has(alias)){
+                return object.get(alias);
+            }
+
+            return null;
+        }
+
         @Override
         public GameParameters deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
             JsonObject object = jsonElement.getAsJsonObject();
             Map<Parameter<?>, Object> settings = new HashMap<>();
             for(String paramName : Parameter.parametersName.keySet()){
                 Parameter<?> param = Parameter.getParameter(paramName);
-                if(object.has(paramName)){
-                    settings.put(param, param.getFromJson(object.get(paramName)));
+                JsonElement valueElement = getParameterElement(object, paramName);
+                if(valueElement != null){
+                    settings.put(param, param.getFromJson(valueElement));
                 } else {
                     settings.put(param, param.getDefaultValue());
                 }

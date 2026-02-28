@@ -35,7 +35,13 @@ public class Team {
             ProtectYourCastleMain.getInstance().saveResource("teams.json", false);
         }
 
-        Map<TeamColor, Team> loadedTeams = Game.gson.fromJson(FileManager.read(teamsFile), teamsType);
+        Map<TeamColor, Team> loadedTeams;
+        try {
+            loadedTeams = Game.gson.fromJson(FileManager.read(teamsFile), teamsType);
+        } catch (Throwable throwable){
+            ProtectYourCastleMain.getInstance().getLogger().warning("teams.json invalide, fallback sur une configuration vide: " + throwable.getClass().getSimpleName());
+            loadedTeams = null;
+        }
         if(loadedTeams == null) {
             loadedTeams = new HashMap<>();
         }

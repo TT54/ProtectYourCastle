@@ -11,6 +11,7 @@ import fr.tt54.protectYourCastle.scoreboard.ScoreboardManager;
 import fr.tt54.protectYourCastle.utils.Area;
 import fr.tt54.protectYourCastle.utils.FileManager;
 import fr.tt54.protectYourCastle.utils.ItemBuilder;
+import fr.tt54.protectYourCastle.utils.SavedLocation;
 import fr.tt54.protectYourCastle.utils.SerializerUtils;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
@@ -40,6 +41,8 @@ public class Game {
             .registerTypeHierarchyAdapter(ItemStack.class, new SerializerUtils.ItemStackDeserializer())
             .registerTypeAdapter(Location.class, new SerializerUtils.LocationSerializer())
             .registerTypeAdapter(Location.class, new SerializerUtils.LocationDeserializer())
+            .registerTypeAdapter(SavedLocation.class, new SerializerUtils.SavedLocationSerializer())
+            .registerTypeAdapter(SavedLocation.class, new SerializerUtils.SavedLocationDeserializer())
             .registerTypeAdapter(Area.class, new Area.AreaSerializer())
             .registerTypeAdapter(Area.class, new Area.AreaDeserializer())
             .registerTypeAdapter(GameParameters.class, new GameParameters.GameParametersJsonSerializer())

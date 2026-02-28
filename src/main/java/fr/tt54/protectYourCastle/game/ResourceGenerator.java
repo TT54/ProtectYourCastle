@@ -41,8 +41,23 @@ public class ResourceGenerator {
             ProtectYourCastleMain.getInstance().saveResource("generators.json", false);
         }
 
-        List<ResourceGenerator> loadedGenerators = Game.gson.fromJson(FileManager.read(generatorsFile), generatorsType);
-        resourceGenerators = loadedGenerators != null ? loadedGenerators : new ArrayList<>();
+        List<ResourceGenerator> loadedGenerators;
+        try {
+            loadedGenerators = Game.gson.fromJson(FileManager.read(generatorsFile), generatorsType);
+        } catch (Throwable throwable){
+            ProtectYourCastleMain.getInstance().getLogger().warning("generators.json invalide, fallback sur une liste vide: " + throwable.getClass().getSimpleName());
+            loadedGenerators = null;
+        }
+
+        resourceGenerators = new ArrayList<>();
+        if(loadedGenerators != null){
+            for(ResourceGenerator generator : loadedGenerators){
+                if(generator == null || generator.material == null || generator.location == null){
+                    continue;
+                }
+                resourceGenerators.add(generator);
+            }
+        }
     }
 
     public static void save(){

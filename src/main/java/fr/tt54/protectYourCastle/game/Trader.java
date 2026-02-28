@@ -38,7 +38,13 @@ public class Trader {
         if (!traderTypesFile.exists()) {
             ProtectYourCastleMain.getInstance().saveResource("trader_types.json", false);
         }
-        Map<String, TraderTypeProfile> loadedProfiles = Game.gson.fromJson(FileManager.read(traderTypesFile), traderTypesType);
+        Map<String, TraderTypeProfile> loadedProfiles;
+        try {
+            loadedProfiles = Game.gson.fromJson(FileManager.read(traderTypesFile), traderTypesType);
+        } catch (Throwable throwable){
+            ProtectYourCastleMain.getInstance().getLogger().warning("trader_types.json invalide, fallback sur des types vides: " + throwable.getClass().getSimpleName());
+            loadedProfiles = null;
+        }
         if(loadedProfiles != null){
             for(Map.Entry<String, TraderTypeProfile> entry : loadedProfiles.entrySet()){
                 String normalizedTypeName = normalizeTypeName(entry.getKey());
@@ -55,7 +61,13 @@ public class Trader {
         if (!tradersFile.exists()) {
             ProtectYourCastleMain.getInstance().saveResource("traders.json", false);
         }
-        Map<UUID, Trader> loadedTraders = Game.gson.fromJson(FileManager.read(tradersFile), tradersMapType);
+        Map<UUID, Trader> loadedTraders;
+        try {
+            loadedTraders = Game.gson.fromJson(FileManager.read(tradersFile), tradersMapType);
+        } catch (Throwable throwable){
+            ProtectYourCastleMain.getInstance().getLogger().warning("traders.json invalide, fallback sur des traders vides: " + throwable.getClass().getSimpleName());
+            loadedTraders = null;
+        }
         traders = new HashMap<>();
         if(loadedTraders != null) {
             for(Map.Entry<UUID, Trader> entry : loadedTraders.entrySet()){
@@ -81,7 +93,13 @@ public class Trader {
         if (!weaponsFile.exists()) {
             ProtectYourCastleMain.getInstance().saveResource("weapons.json", false);
         }
-        List<List<GameWeapon>> loadedWeapons = Game.gson.fromJson(FileManager.read(weaponsFile), weaponsType);
+        List<List<GameWeapon>> loadedWeapons;
+        try {
+            loadedWeapons = Game.gson.fromJson(FileManager.read(weaponsFile), weaponsType);
+        } catch (Throwable throwable){
+            ProtectYourCastleMain.getInstance().getLogger().warning("weapons.json invalide, fallback sur une liste vide: " + throwable.getClass().getSimpleName());
+            loadedWeapons = null;
+        }
         weapons = new ArrayList<>();
         if(loadedWeapons != null){
             for(List<GameWeapon> bundle : loadedWeapons){
