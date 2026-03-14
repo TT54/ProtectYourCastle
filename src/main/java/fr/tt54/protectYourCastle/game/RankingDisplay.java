@@ -5,6 +5,7 @@ import fr.tt54.protectYourCastle.ProtectYourCastleMain;
 import fr.tt54.protectYourCastle.utils.FileManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.TextDisplay;
@@ -13,6 +14,7 @@ import java.io.File;
 import java.lang.reflect.Type;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -40,10 +42,6 @@ public class RankingDisplay {
             displays = new HashMap<>();
         }
         displays.values().removeIf(rankingDisplay -> rankingDisplay.rankingDisplayType == null);
-
-        for(RankingDisplay display : displays.values()){
-            display.update();
-        }
     }
 
     public static void save(){
@@ -60,8 +58,10 @@ public class RankingDisplay {
     }
 
     public static void updateDisplays(){
-        for(RankingDisplay display : displays.values()){
-            display.update();
+        int removedDisplays = updateDisplaysInternal();
+        if(removedDisplays > 0){
+            ProtectYourCastleMain.getInstance().getLogger().warning(removedDisplays + " display(s) de classement introuvable(s) ont ete supprimes de displays.json");
+            save();
         }
     }
 
@@ -82,11 +82,24 @@ public class RankingDisplay {
         this.rankingDisplayType = rankingDisplayType;
     }
 
-    public void update(){
-        TextDisplay textDisplay = (TextDisplay) Bukkit.getEntity(this.displayTextUUID);
-        if(textDisplay == null){
-            System.err.println("Impossible de trouver le display " + this.displayTextUUID + " pour le classement " + this.rankingDisplayType.getDisplayName());
-            return;
+    private static int updateDisplaysInternal(){
+        int removedDisplays = 0;
+        Iterator<Map.Entry<UUID, RankingDisplay>> iterator = displays.entrySet().iterator();
+        while(iterator.hasNext()){
+            Map.Entry<UUID, RankingDisplay> entry = iterator.next();
+            RankingDisplay display = entry.getValue();
+            if(display == null || !display.update()){
+                iterator.remove();
+                removedDisplays++;
+            }
+        }
+        return removedDisplays;
+    }
+
+    public boolean update(){
+        Entity entity = Bukkit.getEntity(this.displayTextUUID);
+        if(!(entity instanceof TextDisplay textDisplay)){
+            return false;
         }
 
         textDisplay.setBillboard(Display.Billboard.VERTICAL);
@@ -97,16 +110,21 @@ public class RankingDisplay {
         StringBuilder text = new StringBuilder("§eTop " + rankingDisplayType.getDisplayName() + " :\n");
         for(int i = 0; i < Math.min(10, players.size()); i++){
             UUID playerUUID = players.get(i);
+            String playerName = Bukkit.getOfflinePlayer(playerUUID).getName();
+            if(playerName == null || playerName.isBlank()){
+                playerName = playerUUID.toString().substring(0, 8);
+            }
             text.append("§")
                     .append(i == 0 ? "6" : i == 1 ? "a" : i == 2 ? "a" : "f")
                     .append(i + 1)
                     .append(". ")
-                    .append(Bukkit.getOfflinePlayer(playerUUID).getName())
+                    .append(playerName)
                     .append(" : §e")
                     .append(scores.get(playerUUID).intValue())
                     .append("\n");
         }
         textDisplay.setText(text.toString());
+        return true;
     }
 
     public enum RankingDisplayType {

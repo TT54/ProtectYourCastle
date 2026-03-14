@@ -15,6 +15,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.*;
 
+import java.io.File;
+
 public final class ProtectYourCastleMain extends JavaPlugin {
 
     private static ProtectYourCastleMain instance;
@@ -23,6 +25,7 @@ public final class ProtectYourCastleMain extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
+        this.ensureCameraImagesDirectory();
 
         this.loadCommon();
         this.loadGame();
@@ -94,5 +97,15 @@ public final class ProtectYourCastleMain extends JavaPlugin {
 
     public static ProtectYourCastleMain getInstance() {
         return instance;
+    }
+
+    private void ensureCameraImagesDirectory(){
+        File cameraImagesDirectory = new File(Bukkit.getWorldContainer(), "world/camera_images");
+        if(cameraImagesDirectory.exists()){
+            return;
+        }
+        if(!cameraImagesDirectory.mkdirs()){
+            getLogger().warning("Impossible de creer le dossier camera_images: " + cameraImagesDirectory.getAbsolutePath());
+        }
     }
 }
