@@ -2,6 +2,7 @@ package fr.tt54.protectYourCastle.inventories.traders.trades;
 
 import fr.tt54.protectYourCastle.game.Trader;
 import fr.tt54.protectYourCastle.inventories.PageableInventory;
+import fr.tt54.protectYourCastle.utils.ItemBuilder;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -20,7 +21,7 @@ public class TradesListInventory extends PageableInventory<Trader.TradesBase> {
 
     @Override
     protected ItemStack getItemFromObject(Trader.TradesBase tradesBase) {
-        return tradesBase.getTrades().isEmpty() ? new ItemStack(Material.BARRIER) : tradesBase.getTrades().get(0).getReward().clone();
+        return tradesBase.getTrades().isEmpty() ? new ItemStack(Material.BARRIER) : new ItemBuilder(tradesBase.getTrades().get(0).getReward().clone(), "§e" + tradesBase.getName()).build();
     }
 
     @Override

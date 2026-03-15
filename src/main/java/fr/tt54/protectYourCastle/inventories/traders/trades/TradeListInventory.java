@@ -2,6 +2,7 @@ package fr.tt54.protectYourCastle.inventories.traders.trades;
 
 import fr.tt54.protectYourCastle.game.Trader;
 import fr.tt54.protectYourCastle.inventories.PageableInventory;
+import fr.tt54.protectYourCastle.utils.DefaultItems;
 import fr.tt54.protectYourCastle.utils.ItemBuilder;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -35,6 +36,7 @@ public class TradeListInventory extends PageableInventory<Trader.NPCTrade> {
     @Override
     protected void generateOverlayInv(Inventory inv) {
         inv.setItem(9 * 5 + 8, new ItemBuilder(Material.DIAMOND, "§aCréer un trade").build());
+        inv.setItem(9 * 5, DefaultItems.BACK.build());
 /*        inv.setItem(9 * 5 + 4, (trades.isWeaponTrader() ?
                 new ItemBuilder(Material.LIME_STAINED_GLASS_PANE, "§aNPC vendeur d'armes") :
                 new ItemBuilder(Material.RED_STAINED_GLASS_PANE, "§cNPC normal"))
@@ -54,6 +56,8 @@ public class TradeListInventory extends PageableInventory<Trader.NPCTrade> {
             if(event.getSlot() == 9 * 5 + 8) {
                 AddTradeInventory inv = new AddTradeInventory(player, this.trades, this);
                 inv.openInventory();
+            } else if(event.getSlot() == 9 * 5){
+                new TradesListInventory(player, 1).openInventory();
             } /*else if(event.getSlot() == 9 * 5 + 4){
                 this.trades.setWeaponTrader(!this.trades.isWeaponTrader());
                 this.openInventory();
