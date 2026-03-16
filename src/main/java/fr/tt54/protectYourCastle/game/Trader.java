@@ -166,8 +166,10 @@ public class Trader {
         final List<NPCTrade> merchantTrades = new ArrayList<>();
         if(this.weaponTrader && Game.getCurrentGame() != null && !Game.getCurrentGame().getSelectedWeapons().isEmpty() && GameParameters.ENABLE_RANDOM_WEAPONS.get()){
             final List<GameWeapon> weaponsToTrade = Game.getCurrentGame().getSelectedWeapons();
-            int weaponsToAdd = Math.min(weaponsToTrade.size(),
-                    GameParameters.PROGRESSIVE_WEAPONS_BASE.get() + Game.getCurrentGame().getTime() / GameParameters.PROGRESSIVE_WEAPONS_DELAY.get());
+            int weaponsToAdd = GameParameters.ENABLE_PROGRESSIVE_WEAPONS.get() ?
+                    Math.min(weaponsToTrade.size(), GameParameters.PROGRESSIVE_WEAPONS_BASE.get() + Game.getCurrentGame().getTime() / GameParameters.PROGRESSIVE_WEAPONS_DELAY.get())
+                    :
+                    weaponsToTrade.size();
 
             for(int i = 0; i < weaponsToAdd; i++){
                 merchantTrades.add(weaponsToTrade.get(i).gunTrade);
