@@ -166,6 +166,8 @@ public class Game {
             return;
         }
 
+        Bukkit.broadcastMessage("§6[Castle] §ePréparation de la partie en cours, veuillez patienter...");
+
         this.world = loadWorld(worldName);
         if(this.world == null){
             System.err.println("Le monde source " + loadedWorld + " n'existe pas !");
