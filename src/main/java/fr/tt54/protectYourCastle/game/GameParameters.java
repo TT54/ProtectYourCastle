@@ -15,39 +15,40 @@ public class GameParameters {
 
     public static GameParameters gameParameters;
 
-    public static Parameter<Integer> MAP_RADIUS = new Parameter<>("map_radius", 500);
-    public static Parameter<Integer> GAME_DURATION = new Parameter<>("game_duration", 60);
-    public static Parameter<Integer> RESPAWN_DELAY = new Parameter<>("respawn_delay", 20);
+    public static final Parameter<Integer> MAP_RADIUS = new Parameter<>("map_radius", 500);
+    public static final Parameter<Integer> GAME_DURATION = new Parameter<>("game_duration", 60);
+    public static final Parameter<Integer> RESPAWN_DELAY = new Parameter<>("respawn_delay", 20);
 
-    public static Parameter<Integer> LOBBY_X = new Parameter<>("lobby_x", 0);
-    public static Parameter<Integer> LOBBY_Y = new Parameter<>("lobby_y", 100);
-    public static Parameter<Integer> LOBBY_Z = new Parameter<>("lobby_z", 0);
+    public static final Parameter<Integer> LOBBY_X = new Parameter<>("lobby_x", 0);
+    public static final Parameter<Integer> LOBBY_Y = new Parameter<>("lobby_y", 100);
+    public static final Parameter<Integer> LOBBY_Z = new Parameter<>("lobby_z", 0);
 
-    public static Parameter<Boolean> KEEP_ARTIFACTS = new Parameter<>("keep_artifactes", true);
-    public static Parameter<Boolean> KEEP_ARMOR = new Parameter<>("keep_armor", true);
-    public static Parameter<Boolean> INCREASED_RESOURCES = new Parameter<>("increased_resources", true);
+    public static final Parameter<Boolean> KEEP_ARTIFACTS = new Parameter<>("keep_artifactes", true);
+    public static final Parameter<Boolean> KEEP_ARMOR = new Parameter<>("keep_armor", true);
+    public static final Parameter<Boolean> KEEP_SWORDS = new Parameter<>("keep_swords", true);
+    public static final Parameter<Boolean> INCREASED_RESOURCES = new Parameter<>("increased_resources", true);
 
-    public static Parameter<Boolean> DISPLAY_SCORE = new Parameter<>("display_score", true);
-    public static Parameter<Double> PERSONAL_SCORE_WIN = new Parameter<>("personal_score_win", 50d);
-    public static Parameter<Double> PERSONAL_SCORE_KILLS_COEFF = new Parameter<>("personal_score_kills_coeff", 80d);
-    public static Parameter<Double> PERSONAL_SCORE_KILLS_BASE = new Parameter<>("personal_score_kills_base", 0.2d);
-    public static Parameter<Double> PERSONAL_SCORE_DEATHS_COEFF = new Parameter<>("personal_score_deaths_coeff", 20d);
-    public static Parameter<Double> SCORE_POINTS_REDUCTION = new Parameter<>("score_points_reduction", 6d);
-    public static Parameter<Double> BANNER_RATIO_POINTS_REDUCTION = new Parameter<>("banner_ratio_points_reduction", 4d);
-    public static Parameter<Double> TEAM_BANNERS_BROKEN_COEFF = new Parameter<>("team_banners_broken_coeff", 20d);
-    public static Parameter<Double> BEST_GAME_FACTOR = new Parameter<>("best_game_factor", 0.6d);
-    public static Parameter<Double> WORST_GAME_FACTOR = new Parameter<>("worst_game_factor", 0.4d);
-    public static Parameter<Integer> SCORES_USED = new Parameter<>("scores_used", 5);
+    public static final Parameter<Boolean> DISPLAY_SCORE = new Parameter<>("display_score", true);
+    public static final Parameter<Double> PERSONAL_SCORE_WIN = new Parameter<>("personal_score_win", 50d);
+    public static final Parameter<Double> PERSONAL_SCORE_KILLS_COEFF = new Parameter<>("personal_score_kills_coeff", 80d);
+    public static final Parameter<Double> PERSONAL_SCORE_KILLS_BASE = new Parameter<>("personal_score_kills_base", 0.2d);
+    public static final Parameter<Double> PERSONAL_SCORE_DEATHS_COEFF = new Parameter<>("personal_score_deaths_coeff", 20d);
+    public static final Parameter<Double> SCORE_POINTS_REDUCTION = new Parameter<>("score_points_reduction", 6d);
+    public static final Parameter<Double> BANNER_RATIO_POINTS_REDUCTION = new Parameter<>("banner_ratio_points_reduction", 4d);
+    public static final Parameter<Double> TEAM_BANNERS_BROKEN_COEFF = new Parameter<>("team_banners_broken_coeff", 20d);
+    public static final Parameter<Double> BEST_GAME_FACTOR = new Parameter<>("best_game_factor", 0.6d);
+    public static final Parameter<Double> WORST_GAME_FACTOR = new Parameter<>("worst_game_factor", 0.4d);
+    public static final Parameter<Integer> SCORES_USED = new Parameter<>("scores_used", 5);
 
-    public static Parameter<Boolean> ENABLE_BOSS_BAR = new Parameter<>("enable_boss_bar", true);
-    public static Parameter<Boolean> ENABLE_BOOST_FOR_SMALL_TEAM = new Parameter<>("enable_boost_for_small_team", true);
-    public static Parameter<Double> HEALTH_BOOST_FOR_SMALL_TEAM = new Parameter<>("health_boost_for_small_team", 10d);
-    public static Parameter<Boolean> ENABLE_RANDOM_WEAPONS = new Parameter<>("enable_random_weapons", true);
-    public static Parameter<Integer> WEAPONS_TO_SELECT = new Parameter<>("weapons_to_select", 4);
-    public static Parameter<Boolean> PROGRESSIVE_WEAPONS = new Parameter<>("progressive_weapons", true);
-    public static Parameter<Integer> PROGRESSIVE_WEAPONS_BASE = new Parameter<>("progressive_weapons_base", 2);
-    public static Parameter<Integer> PROGRESSIVE_WEAPONS_DELAY = new Parameter<>("progressive_weapons_delay", 20 * 60);
-    public static Parameter<Double> BASE_KNOCKBACK_RESISTANCE = new Parameter<>("base_knockback_resistance", 0.4d);
+    public static final Parameter<Boolean> ENABLE_BOSS_BAR = new Parameter<>("enable_boss_bar", true);
+    public static final Parameter<Boolean> ENABLE_BOOST_FOR_SMALL_TEAM = new Parameter<>("enable_boost_for_small_team", true);
+    public static final Parameter<Double> HEALTH_BOOST_FOR_SMALL_TEAM = new Parameter<>("health_boost_for_small_team", 10d);
+    public static final Parameter<Boolean> ENABLE_RANDOM_WEAPONS = new Parameter<>("enable_random_weapons", true);
+    public static final Parameter<Integer> WEAPONS_TO_SELECT = new Parameter<>("weapons_to_select", 4);
+    public static final Parameter<Boolean> PROGRESSIVE_WEAPONS = new Parameter<>("progressive_weapons", true);
+    public static final Parameter<Integer> PROGRESSIVE_WEAPONS_BASE = new Parameter<>("progressive_weapons_base", 2);
+    public static final Parameter<Integer> PROGRESSIVE_WEAPONS_DELAY = new Parameter<>("progressive_weapons_delay", 20 * 60);
+    public static final Parameter<Double> BASE_KNOCKBACK_RESISTANCE = new Parameter<>("base_knockback_resistance", 0.4d);
 
     public static Parameter<Boolean> ENABLE_DAMAGE_INDICATOR = new Parameter<>("enable_damage_indicator", true);
 

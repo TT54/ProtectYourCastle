@@ -145,7 +145,9 @@ public class GameListener implements Listener {
         for(ItemStack is : event.getEntity().getInventory().getStorageContents()){
             if(is == null) continue;
             if(ALLOWED_DROPS.contains(is.getType())) addedDrops.add(is.clone());
-            is.setAmount(0);
+            if(!is.getType().name().contains("SWORD") || !GameParameters.KEEP_SWORDS.get()){
+                is.setAmount(0);
+            }
         }
         for(ItemStack is : event.getEntity().getInventory().getExtraContents()){
             if(is == null) continue;
