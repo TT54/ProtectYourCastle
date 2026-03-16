@@ -16,6 +16,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -114,13 +115,13 @@ public class GameListener implements Listener {
         if(Game.getCurrentGame() == null || !Game.getCurrentGame().isRunning()) return;
         Player player = event.getPlayer();
 
-        if(event.getClickedBlock() != null){
+        if(event.getClickedBlock() != null && event.getHand() == EquipmentSlot.HAND){
             Team team = Team.getPlayerTeam(player.getUniqueId());
             if(team != null && event.getClickedBlock().getLocation().distanceSquared(team.getBannerLocation()) < .1){
                 event.setCancelled(true);
                 if(Game.getCurrentGame().isBannerHolder(player)){
                     Game.getCurrentGame().placeBanner(team, player);
-                } else{
+                } else if(event.getAction() == Action.LEFT_CLICK_BLOCK){
                     player.sendMessage("§cVous ne pouvez pas casser votre bannière !");
                 }
                 return;
