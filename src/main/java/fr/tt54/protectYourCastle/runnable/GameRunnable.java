@@ -61,6 +61,8 @@ public class GameRunnable extends BukkitRunnable {
             if(player != null){
                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("§eVous portez une bannière " + teamColor.getChatColor() + teamColor.name().toLowerCase() + "§e !"));
             }
+
+            game.updateBannerHolderBar(teamColor);
         }
 
         for(Player player : Bukkit.getOnlinePlayers()){

@@ -16,6 +16,9 @@ import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -53,6 +56,7 @@ public class Game {
     private int time;
     private final Map<Team.TeamColor, Integer> points = new HashMap<>();
     private final Map<Team.TeamColor, UUID> bannerHolders = new HashMap<>();
+    private final Map<Team.TeamColor, BossBar> bannerHoldersBar = new HashMap<>();
     private GameStatistics gameStatistics;
     private List<Trader.GameWeapon> selectedWeapons = new ArrayList<>();
 
@@ -341,7 +345,51 @@ public class Game {
         }
 
         bannerHolders.put(team.getColor(), player.getUniqueId());
+        BossBar bossBar = Bukkit.createBossBar("§fPorteur " + team.getColor().getChatColor() + player.getName(), BarColor.valueOf(team.getColor().name()), BarStyle.SEGMENTED_20);
+        bannerHoldersBar.put(team.getColor(), bossBar);
+        updateBannerHolderBar(team.getColor());
+        for(Player p : Bukkit.getOnlinePlayers()){
+            System.out.println("Displaying banner holder bar to " + p.getName());
+            bossBar.addPlayer(p);
+            bossBar.setVisible(true);
+        }
+
         return true;
+    }
+
+    public BossBar getBannerHolderBar(Team.TeamColor teamColor){
+        return bannerHoldersBar.get(teamColor);
+    }
+
+    public void displayHolderBars(Player player){
+        for(Team.TeamColor teamColor : Team.TeamColor.values()){
+            BossBar bar = bannerHoldersBar.get(teamColor);
+            if(bar != null){
+                bar.addPlayer(player);
+            }
+        }
+    }
+
+    public void updateBannerHolderBar(Team.TeamColor teamColor){
+        UUID holderUUID = bannerHolders.get(teamColor);
+        BossBar bar = bannerHoldersBar.get(teamColor);
+        if(holderUUID == null || bar == null){
+            if(bar != null){
+                bar.removeAll();
+                bannerHoldersBar.remove(teamColor);
+            }
+            return;
+        }
+
+        Player holder = Bukkit.getPlayer(holderUUID);
+        Team team = Team.getTeam(teamColor);
+        if(holder != null && holder.getWorld() == team.getBannerLocation().getWorld()){
+            Team redTeam = Team.getTeam(Team.TeamColor.RED);
+            Team yellowTeam = Team.getTeam(Team.TeamColor.YELLOW);
+            double maxDistance = redTeam.getBannerLocation().distance(yellowTeam.getBannerLocation());
+            double distance = holder.getLocation().distance(team.getBannerLocation());
+            bar.setProgress(1 - Math.min(distance / maxDistance, 1d));
+        }
     }
 
     public void placeBanner(Team team, Player player) {
