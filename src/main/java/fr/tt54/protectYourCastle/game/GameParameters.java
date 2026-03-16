@@ -39,6 +39,7 @@ public class GameParameters {
     public static Parameter<Double> WORST_GAME_FACTOR = new Parameter<>("worst_game_factor", 0.4d);
     public static Parameter<Integer> SCORES_USED = new Parameter<>("scores_used", 5);
 
+    public static Parameter<Boolean> ENABLE_BOSS_BAR = new Parameter<>("enable_boss_bar", true);
     public static Parameter<Boolean> ENABLE_BOOST_FOR_SMALL_TEAM = new Parameter<>("enable_boost_for_small_team", true);
     public static Parameter<Double> HEALTH_BOOST_FOR_SMALL_TEAM = new Parameter<>("health_boost_for_small_team", 10d);
     public static Parameter<Boolean> ENABLE_RANDOM_WEAPONS = new Parameter<>("enable_random_weapons", true);

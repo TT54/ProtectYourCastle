@@ -345,13 +345,15 @@ public class Game {
         }
 
         bannerHolders.put(team.getColor(), player.getUniqueId());
-        BossBar bossBar = Bukkit.createBossBar("§fPorteur " + team.getColor().getChatColor() + player.getName(), BarColor.valueOf(team.getColor().name()), BarStyle.SEGMENTED_20);
-        bannerHoldersBar.put(team.getColor(), bossBar);
-        updateBannerHolderBar(team.getColor());
-        for(Player p : Bukkit.getOnlinePlayers()){
-            System.out.println("Displaying banner holder bar to " + p.getName());
-            bossBar.addPlayer(p);
-            bossBar.setVisible(true);
+
+        if(GameParameters.ENABLE_BOSS_BAR.get()) {
+            BossBar bossBar = Bukkit.createBossBar("§fPorteur " + team.getColor().getChatColor() + player.getName(), BarColor.valueOf(team.getColor().name()), BarStyle.SEGMENTED_20);
+            bannerHoldersBar.put(team.getColor(), bossBar);
+            this.updateBannerHolderBar(team.getColor());
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                bossBar.addPlayer(p);
+                bossBar.setVisible(true);
+            }
         }
 
         return true;
