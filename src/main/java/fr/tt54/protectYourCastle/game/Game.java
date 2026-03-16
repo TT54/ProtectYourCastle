@@ -458,7 +458,10 @@ public class Game {
         if(player.getInventory().getLeggings() == null || player.getInventory().getLeggings().getType() == Material.AIR) player.getInventory().setLeggings(new ItemStack(Material.IRON_LEGGINGS));
         if(player.getInventory().getBoots() == null || player.getInventory().getBoots().getType() == Material.AIR) player.getInventory().setBoots(new ItemStack(Material.IRON_BOOTS));
 
-        player.getInventory().addItem(new ItemBuilder(Material.IRON_SWORD).addEnchant(Enchantment.DAMAGE_ALL, 20).build(), new ItemBuilder(Material.BREAD, 4).build());
+        player.getInventory().addItem(new ItemBuilder(Material.BREAD, 5).build());
+        if(!player.getInventory().contains(Material.IRON_SWORD) && !player.getInventory().contains(Material.DIAMOND_SWORD) && !player.getInventory().contains(Material.NETHERITE_SWORD)) {
+            player.getInventory().addItem(new ItemBuilder(Material.IRON_SWORD).addEnchant(Enchantment.DAMAGE_ALL, 15).build());
+        }
     }
 
     public void addKill(@NotNull Player killer, boolean critical) {
